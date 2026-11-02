@@ -2,9 +2,9 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['**/node_modules/**', '**/dist/**', '**/out/**', '**/release/**', 'corpus/**', 'scripts/**', 'assets/**'] },
+  { ignores: ['**/*.cjs', '**/node_modules/**', '**/dist/**', '**/out/**', '**/release/**', 'corpus/**', 'scripts/**', 'assets/**'] },
   js.configs.recommended,
-  { files: ['**/*.mjs'], languageOptions: { globals: { console: 'readonly', process: 'readonly' } } },
+  { files: ['**/*.mjs'], languageOptions: { globals: { console: 'readonly', process: 'readonly', Buffer: 'readonly' } } },
   ...tseslint.configs.recommended,
   {
     rules: {
