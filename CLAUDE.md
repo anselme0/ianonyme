@@ -14,10 +14,10 @@ Tu es un membre à part entière de l'équipe sur la partie technique. Tu codes 
 
 | Document | Contenu | Quand le lire |
 |---|---|---|
-| `DOCUMENTATION.md` | Fonctionnel, architecture, stack, contrat de données (annexe A), détection (B), LLM local (C) | Toujours, avant de toucher au moteur |
-| `UI_UX.md` | Interface, vocabulaire, messages, écrans | Avant tout travail sur l'interface ou un texte affiché |
-| `DEV_SETUP.md` | Outils, commandes, configuration, sécurité, journaux, tests, git | Avant de créer un fichier, une commande ou un test |
-| `MODELE_LOCAL_TESTS.md` | Protocole de choix du modèle local | Pour tout ce qui touche au LLM local |
+| `docs/DOCUMENTATION.md` | Fonctionnel, architecture, stack, contrat de données (annexe A), détection (B), LLM local (C) | Toujours, avant de toucher au moteur |
+| `docs/UI_UX.md` | Interface, vocabulaire, messages, écrans | Avant tout travail sur l'interface ou un texte affiché |
+| `docs/DEV_SETUP.md` | Outils, commandes, configuration, sécurité, journaux, tests, git | Avant de créer un fichier, une commande ou un test |
+| `docs/MODELE_LOCAL_TESTS.md` | Protocole de choix du modèle local | Pour tout ce qui touche au LLM local |
 
 En cas de contradiction entre deux documents, ou entre le code et un document : **signale-le, ne tranche pas en silence**. Quand tu changes un contrat ou une décision, mets le document à jour dans le même commit.
 

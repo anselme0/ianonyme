@@ -165,7 +165,7 @@ N'ajoute rien qui ne soit pas dans les documents (pas de fonctionnalités « bon
 
 ### 6.1 Logos
 
-Quatre fichiers sont à la racine : `logo.svg` (logo complet en couleurs), `logo-noir-blanc.svg` (logo complet en noir et blanc), `logo-court-couleurs.svg` et `logo-court-noir-blanc.svg` (icône seule). Utilise l'icône seule dans l'application (barre latérale, fenêtre, icône Windows de l'installeur) et le logo complet pour l'écran de démarrage et la fenêtre « À propos », comme dans `UI_UX.md` §2.1. Chaque fichier contient un bloc `<metadata>` volumineux (manifeste de contenu) : ne modifie pas les originaux, mais utilise des **copies sans ce bloc** dans les ressources de l'application (dossier d'assets). Il faudra aussi produire l'icône Windows à partir de l'icône seule.
+Quatre fichiers sont dans `assets/logo/` (ils étaient à la racine au départ) : `logo.svg` (logo complet en couleurs), `logo-noir-blanc.svg` (logo complet en noir et blanc), `logo-court-couleurs.svg` et `logo-court-noir-blanc.svg` (icône seule). Utilise l'icône seule dans l'application (barre latérale, fenêtre, icône Windows de l'installeur) et le logo complet pour l'écran de démarrage et la fenêtre « À propos », comme dans `UI_UX.md` §2.1. Chaque fichier contient un bloc `<metadata>` volumineux (manifeste de contenu) : ne modifie pas les originaux, mais utilise des **copies sans ce bloc** dans les ressources de l'application (dossier d'assets). Il faudra aussi produire l'icône Windows à partir de l'icône seule.
 
 ### 6.2 Interdits
 

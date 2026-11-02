@@ -41,7 +41,7 @@
 
 ### 2.1 Le logo
 
-Le logo (fichier `logo.svg`) montre un document sur fond marine, avec un masque (type loup) sur sa partie haute et des lignes de texte en dessous. Deux lignes sont grises et une est verte : **la ligne verte représente l'information protégée**. Ce détail est notre motif signature : on le reprend dans l'interface (voir 2.4).
+Le logo (fichier `assets/logo/logo.svg`) montre un document sur fond marine, avec un masque (type loup) sur sa partie haute et des lignes de texte en dessous. Deux lignes sont grises et une est verte : **la ligne verte représente l'information protégée**. Ce détail est notre motif signature : on le reprend dans l'interface (voir 2.4).
 
 Le mot « IAnonyme » est écrit avec « IA » en vert et « nonyme » en marine.
 
