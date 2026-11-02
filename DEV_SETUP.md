@@ -55,14 +55,9 @@ Conséquences :
 
 ## 3. Création du dépôt
 
-Le dossier n'est pas encore un dépôt git. Première étape :
+Le dépôt git existe (branche `main`, commit initial, `.gitignore`, `.gitattributes` et `.editorconfig` déjà en place). Le contenu de référence de ces fichiers est donné ci-dessous : à utiliser pour vérifier ou compléter, pas pour les refaire.
 
-```
-cd ianonyme
-git init -b main
-```
-
-Fichiers à créer avant le premier commit :
+Fichiers de référence :
 
 **`.gitignore`**
 
@@ -258,7 +253,7 @@ Une tâche est terminée quand :
 
 Pour la première session de code, dans cet ordre :
 
-1. Initialiser le dépôt (§3), poser `.gitignore`, `.gitattributes`, `.editorconfig`.
+1. Vérifier le dépôt existant (§3) et commiter les documents encore non suivis.
 2. Créer le monorepo vide (pnpm, TypeScript strict, Vitest, ESLint) avec les paquets `engine`, `desktop` et le stub `server`.
 3. Faire tourner les **spikes** (`DOCUMENTATION.md`, §15), en commençant par `node-llama-cpp` empaqueté.
 4. Écrire les types et la signature de l'API du moteur (annexe A), avec les tests de masquage et de flux en premier.

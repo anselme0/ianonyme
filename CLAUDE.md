@@ -58,9 +58,16 @@ En cas de contradiction entre deux documents, ou entre le code et un document : 
 
 ## Environnements : ce que tu peux et ne peux pas faire
 
-- Dans le shell Linux lié au poste d'Anselme : écrire le code, lancer les tests du moteur, le typage, le lint, les scripts de mesure. **Electron, l'interface et l'empaquetage Windows ne s'exécutent pas là** : dis à Anselme précisément quoi lancer et quoi vérifier sur Windows, et ne déclare jamais « testé » ce que tu n'as pas pu exécuter.
+Ce que tu peux exécuter dépend de la session :
+
+- **Session Claude Code directement sur le PC Windows d'Anselme** : tu peux tout lancer, y compris Electron, les tests de bout en bout (Playwright en mode Electron, avec captures d'écran à regarder), l'empaquetage de l'installeur Windows et Ollama.
+- **Session dans un shell Linux lié au poste (ou dans le cloud)** : tu écris le code et lances les tests du moteur, le typage, le lint et les scripts de mesure. **Electron, l'interface et l'empaquetage Windows ne s'exécutent pas là** : dis à Anselme précisément quoi lancer et vérifier sur Windows.
+
+Dans tous les cas, ne déclare jamais « testé » ce que tu n'as pas pu exécuter : sépare « vérifié » et « écrit mais non vérifié » dans `PROGRESS.md`.
+
 - Modifie les fichiers du dossier **en place** ; ne les recopie pas ailleurs. Avant d'écraser un fichier qu'un autre a pu modifier, vérifie son état.
-- Pas de suppression de fichiers sans demander.
+- Pas de suppression de fichiers sans raison forte notée dans `DECISIONS.md`.
+- Pour une session autonome longue, suis `NIGHT_RUN.md` et tiens `PROGRESS.md` et `DECISIONS.md` à jour.
 
 ## Façon de travailler
 
