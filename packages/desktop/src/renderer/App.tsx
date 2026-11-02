@@ -201,7 +201,7 @@ export function App() {
     }
     const timer = setTimeout(() => setBrief((b) => (b ? { ...b, left: b.left - 1 } : b)), 1000);
     return () => clearTimeout(timer);
-  }, [brief]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [brief]);
 
   // ---- Conversations ----
   const resetDraft = (): void => {

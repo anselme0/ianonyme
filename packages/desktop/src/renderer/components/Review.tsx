@@ -102,7 +102,7 @@ export function Review(p: ReviewProps) {
   useEffect(() => {
     if (!current) return;
     doc.current?.querySelector(`[data-mark-id="${CSS.escape(current.mention.id)}"]`)?.scrollIntoView?.({ block: 'center' });
-  }, [current?.key]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [current?.key]);
 
   const onMouseUp = (): void => {
     const sel = window.getSelection();

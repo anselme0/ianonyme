@@ -29,7 +29,7 @@ test('fenêtre isolée : pas d’accès à Node, CSP stricte, navigation bloqué
 
   const prefs = await app.evaluate(({ BrowserWindow }) => {
     const wc = BrowserWindow.getAllWindows()[0]!.webContents;
-    const p = wc.getLastWebPreferences();
+    const p = (wc as unknown as { getLastWebPreferences(): { contextIsolation: boolean; nodeIntegration: boolean; sandbox: boolean } }).getLastWebPreferences();
     return { ctx: p.contextIsolation, node: p.nodeIntegration, sandbox: p.sandbox };
   });
   expect(prefs).toEqual({ ctx: true, node: false, sandbox: true });
