@@ -153,3 +153,16 @@ describe('allers-retours', () => {
     expect(back).toContain('fictif@exemple.org');
   });
 });
+
+describe('nom de fichier, cas de séparateurs', () => {
+  it('reconnaît une valeur reliée par des soulignés dans un texte', () => {
+    const state = stateWith(['Jean Garnier']);
+    expect(mask('rapport_Jean_Garnier.docx', state).masked).toBe('rapport_[PERSONNE_1].docx');
+    expect(protectFileName(state, 'Jean.Garnier.pdf').maskedName).toBe('[PERSONNE_1].pdf');
+  });
+  it('ouvre la casse mixte dans la forme lisible', () => {
+    const r = protectFileName(createState(), 'ExpertiseJeanGarnier_v2.docx');
+    expect(r.readableName).toBe('Expertise Jean Garnier v2.docx');
+    expect(r.maskedName).not.toContain('Garnier');
+  });
+});

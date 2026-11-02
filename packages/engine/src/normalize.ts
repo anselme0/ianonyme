@@ -12,7 +12,7 @@ const APOS_RE = /['‘’‛ʼ`´]/;
 export function normalizeChar(c: string): string {
   if (INVISIBLE_RE.test(c)) return INVISIBLE;
   if (/\s/.test(c)) return ' ';
-  if (DASH_RE.test(c)) return ' ';
+  if (DASH_RE.test(c) || c === '_') return ' ';
   if (APOS_RE.test(c)) return "'";
   const base = c.normalize('NFKD')[0] ?? c;
   return base.toLowerCase()[0] ?? base;

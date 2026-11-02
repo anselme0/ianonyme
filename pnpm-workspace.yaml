@@ -4,3 +4,5 @@ allowBuilds:
   esbuild: true
   electron: true
   node-llama-cpp: true
+  electron-winstaller: false
+nodeLinker: hoisted

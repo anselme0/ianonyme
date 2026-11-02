@@ -37,19 +37,22 @@ export function ingestText(
   return { state: current, mentions: final.mentions, conflicts: final.conflicts };
 }
 
-/** Nom de fichier traité comme une entrée : détecté, accepté puis masqué. */
+/**
+ * Nom de fichier traité comme une entrée : détecté, accepté puis masqué.
+ * `readableName` est la forme à placer dans le message : séparateurs (`_`) et casse mixte
+ * (`JeanGarnier`) sont ouverts en espaces pour que les valeurs soient reconnues puis masquées.
+ */
 export function protectFileName(
   state: ConversationState,
   fileName: string,
-): { state: ConversationState; maskedName: string } {
+): { state: ConversationState; maskedName: string; readableName: string } {
   const dot = fileName.lastIndexOf('.');
   const base = dot > 0 ? fileName.slice(0, dot) : fileName;
   const ext = dot > 0 ? fileName.slice(dot) : '';
-  // Les séparateurs usuels des noms de fichier deviennent des espaces pour la détection.
-  const readable = base.replace(/[_]+/g, ' ');
+  const readable = base.replace(/[_.]+/g, ' ').replace(/(\p{Ll})(\p{Lu})/gu, '$1 $2');
   const { state: next } = ingestText(state, readable);
   const { masked } = mask(readable, next);
-  return { state: next, maskedName: `${masked}${ext}` };
+  return { state: next, maskedName: `${masked}${ext}`, readableName: `${readable}${ext}` };
 }
 
 export interface ProtectionSummary {
