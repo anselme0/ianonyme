@@ -1,0 +1,186 @@
+{
+ "document": "ajust-01.txt",
+ "entities": [
+  {
+   "id": "E1",
+   "category": "PERSONNE",
+   "canonical": "Philippe Lacombe",
+   "mentions": [
+    {
+     "text": "Philippe Lacombe",
+     "kind": "direct"
+    },
+    {
+     "text": "P. Lacombe",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E2",
+   "category": "ADRESSE",
+   "canonical": "14 rue des Tilleuls",
+   "mentions": [
+    {
+     "text": "14 rue des Tilleuls, 69003 Lyon",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E3",
+   "category": "TELEPHONE",
+   "canonical": "04 72 33 18 45",
+   "mentions": [
+    {
+     "text": "04 72 33 18 45",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E4",
+   "category": "EMAIL",
+   "canonical": "p.lacombe@expertises-lacombe.fr",
+   "mentions": [
+    {
+     "text": "p.lacombe@expertises-lacombe.fr",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E5",
+   "category": "PERSONNE",
+   "canonical": "Jean Garnier",
+   "mentions": [
+    {
+     "text": "Jean Garnier",
+     "kind": "direct"
+    },
+    {
+     "text": "M. Garnier",
+     "kind": "direct"
+    },
+    {
+     "text": "Garnier",
+     "kind": "direct"
+    },
+    {
+     "text": "Le maire de la commune",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E6",
+   "category": "PERSONNE",
+   "canonical": "Claire Vidal",
+   "mentions": [
+    {
+     "text": "Claire Vidal",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E7",
+   "category": "ORGANISATION",
+   "canonical": "BATIFRANCE SARL",
+   "mentions": [
+    {
+     "text": "BATIFRANCE SARL",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E8",
+   "category": "PERSONNE",
+   "canonical": "Sophie Renard",
+   "mentions": [
+    {
+     "text": "Sophie Renard",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E9",
+   "category": "PERSONNE",
+   "canonical": "beau-frère de Sophie Renard",
+   "mentions": [
+    {
+     "text": "son beau-frère",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E10",
+   "category": "PERSONNE",
+   "canonical": "prédécesseur de Garnier",
+   "mentions": [
+    {
+     "text": "son prédécesseur",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E11",
+   "category": "TELEPHONE",
+   "canonical": "06 12 34 56 78",
+   "mentions": [
+    {
+     "text": "06 12 34 56 78",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E12",
+   "category": "IBAN",
+   "canonical": "FR76 3000 6000 0112 3456 7890 189",
+   "mentions": [
+    {
+     "text": "FR76 3000 6000 0112 3456 7890 189",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E13",
+   "category": "NUM_DOSSIER",
+   "canonical": "RG 24/01532",
+   "mentions": [
+    {
+     "text": "RG 24/01532",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E14",
+   "category": "NUM_DOSSIER",
+   "canonical": "EXP-2024-0417",
+   "mentions": [
+    {
+     "text": "EXP-2024-0417",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E15",
+   "category": "LIEU",
+   "canonical": "Valmont-sur-Aure",
+   "mentions": [
+    {
+     "text": "Valmont-sur-Aure",
+     "kind": "direct"
+    }
+   ]
+  }
+ ]
+}

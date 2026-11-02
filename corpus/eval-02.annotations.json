@@ -1,0 +1,158 @@
+{
+ "document": "eval-02.txt",
+ "entities": [
+  {
+   "id": "E1",
+   "category": "PERSONNE",
+   "canonical": "Claude Perrin",
+   "mentions": [
+    {
+     "text": "Claude Perrin",
+     "kind": "direct"
+    },
+    {
+     "text": "M. Claude Perrin",
+     "kind": "direct"
+    },
+    {
+     "text": "son oncle",
+     "kind": "indirect"
+    },
+    {
+     "text": "l'aîné",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E2",
+   "category": "PERSONNE",
+   "canonical": "Julien Perrin",
+   "mentions": [
+    {
+     "text": "Julien Perrin",
+     "kind": "direct"
+    },
+    {
+     "text": "son neveu",
+     "kind": "indirect"
+    },
+    {
+     "text": "Le comptable de la société TRANSPORTS ROUSSEAU",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E3",
+   "category": "DATE_NAISSANCE",
+   "canonical": "3 mars 1950",
+   "mentions": [
+    {
+     "text": "3 mars 1950",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E4",
+   "category": "ORGANISATION",
+   "canonical": "TRANSPORTS ROUSSEAU",
+   "mentions": [
+    {
+     "text": "TRANSPORTS ROUSSEAU",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E5",
+   "category": "ADRESSE",
+   "canonical": "5 place du Marché",
+   "mentions": [
+    {
+     "text": "5 place du Marché, 42000 Saint-Étienne",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E6",
+   "category": "PERSONNE",
+   "canonical": "Aurélie Rousseau",
+   "mentions": [
+    {
+     "text": "Aurélie Rousseau",
+     "kind": "direct"
+    },
+    {
+     "text": "Mme Aurélie Rousseau",
+     "kind": "direct"
+    },
+    {
+     "text": "La présidente",
+     "kind": "indirect"
+    },
+    {
+     "text": "présidente de l'association locale",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E7",
+   "category": "PERSONNE",
+   "canonical": "ancien maire",
+   "mentions": [
+    {
+     "text": "l'ancien maire",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E8",
+   "category": "EMAIL",
+   "canonical": "a.rousseau@asso-stetienne.fr",
+   "mentions": [
+    {
+     "text": "a.rousseau@asso-stetienne.fr",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E9",
+   "category": "TELEPHONE",
+   "canonical": "04 77 12 34 56",
+   "mentions": [
+    {
+     "text": "04 77 12 34 56",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E10",
+   "category": "IDENTIFIANT",
+   "canonical": "AB-123-CD",
+   "mentions": [
+    {
+     "text": "AB-123-CD",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E11",
+   "category": "NUM_DOSSIER",
+   "canonical": "Parquet 24/9920",
+   "mentions": [
+    {
+     "text": "n° 24/9920",
+     "kind": "direct"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,393 @@
+{
+ "t1": {
+  "constrained": {
+   "calls": 6,
+   "invalid": 0,
+   "offschema": 0,
+   "retries": 0,
+   "raw_mentions": 47,
+   "hallu": 0,
+   "chunks": 6
+  },
+  "free": {
+   "calls": 6,
+   "invalid": 0,
+   "offschema": 0,
+   "retries": 0,
+   "raw_mentions": 33,
+   "hallu": 1,
+   "chunks": 6
+  },
+  "per_run_sets": [
+   {
+    "ajust-01": [
+     "L'entreprise est joignable au 06 12 34 56 78",
+     "M. Jean Garnier, maire de Valmont-sur-Aure",
+     "Mme Sophie Renard, architecte, a indiqué que son beau-frère avait réalisé la charpente",
+     "Philippe Lacombe, expert près la cour d'appel",
+     "assisté de Me Claire Vidal",
+     "son prédécesseur"
+    ],
+    "ajust-02": [
+     "Le voisin du couple",
+     "dont le gérant est M. Henri Ducret",
+     "née le 14 avril 1981 à Dijon",
+     "sa sœur"
+    ],
+    "ajust-03": [
+     "M. Faure (frère d'Étienne)",
+     "belle-mère de M. Haddad"
+    ],
+    "eval-01": [
+     "Pessac",
+     "chef du service technique",
+     "ingénieur",
+     "le fils de la directrice"
+    ],
+    "eval-02": [
+     "l'ancien maire",
+     "son oncle"
+    ],
+    "eval-03": [
+     "Le syndic de la copropriété",
+     "cousine",
+     "gendre",
+     "sa cousine, notaire à Albi"
+    ]
+   },
+   {
+    "ajust-01": [
+     "L'entreprise est joignable au 06 12 34 56 78",
+     "M. Jean Garnier, maire de Valmont-sur-Aure",
+     "Mme Sophie Renard, architecte, a indiqué que son beau-frère avait réalisé la charpente",
+     "Philippe Lacombe, expert près la cour d'appel",
+     "assisté de Me Claire Vidal",
+     "son prédécesseur"
+    ],
+    "ajust-02": [
+     "Le voisin du couple",
+     "dont le gérant est M. Henri Ducret",
+     "née le 14 avril 1981 à Dijon",
+     "sa sœur"
+    ],
+    "ajust-03": [
+     "M. Faure (frère d'Étienne)",
+     "belle-mère de M. Haddad"
+    ],
+    "eval-01": [
+     "Pessac",
+     "chef du service technique",
+     "ingénieur",
+     "le fils de la directrice"
+    ],
+    "eval-02": [
+     "l'ancien maire",
+     "son oncle"
+    ],
+    "eval-03": [
+     "Le syndic de la copropriété",
+     "cousine",
+     "gendre",
+     "sa cousine, notaire à Albi"
+    ]
+   },
+   {
+    "ajust-01": [
+     "L'entreprise est joignable au 06 12 34 56 78",
+     "M. Jean Garnier, maire de Valmont-sur-Aure",
+     "Mme Sophie Renard, architecte, a indiqué que son beau-frère avait réalisé la charpente",
+     "Philippe Lacombe, expert près la cour d'appel",
+     "assisté de Me Claire Vidal",
+     "son prédécesseur"
+    ],
+    "ajust-02": [
+     "Le voisin du couple",
+     "dont le gérant est M. Henri Ducret",
+     "née le 14 avril 1981 à Dijon",
+     "sa sœur"
+    ],
+    "ajust-03": [
+     "M. Faure (frère d'Étienne)",
+     "belle-mère de M. Haddad"
+    ],
+    "eval-01": [
+     "Pessac",
+     "chef du service technique",
+     "ingénieur",
+     "le fils de la directrice"
+    ],
+    "eval-02": [
+     "l'ancien maire",
+     "son oncle"
+    ],
+    "eval-03": [
+     "Le syndic de la copropriété",
+     "cousine",
+     "gendre",
+     "sa cousine, notaire à Albi"
+    ]
+   }
+  ],
+  "scores": {
+   "ajust": {
+    "score": {
+     "n": {
+      "indirect": 15,
+      "direct": 43
+     },
+     "all": {
+      "indirect": 6,
+      "direct": 43
+     },
+     "bycat": {
+      "ADRESSE": {
+       "rules": 4,
+       "n": 4,
+       "all": 4
+      },
+      "NUM_DOSSIER": {
+       "rules": 4,
+       "n": 4,
+       "all": 4
+      },
+      "DATE_NAISSANCE": {
+       "rules": 1,
+       "n": 1,
+       "all": 1
+      },
+      "TELEPHONE": {
+       "rules": 3,
+       "n": 3,
+       "all": 3
+      },
+      "EMAIL": {
+       "rules": 3,
+       "n": 3,
+       "all": 3
+      },
+      "ORGANISATION": {
+       "rules": 5,
+       "n": 5,
+       "all": 5
+      },
+      "PERSONNE": {
+       "rules": 21,
+       "n": 36,
+       "all": 27
+      },
+      "LIEU": {
+       "rules": 0,
+       "n": 1,
+       "all": 1
+      },
+      "IBAN": {
+       "rules": 1,
+       "n": 1,
+       "all": 1
+      }
+     },
+     "link_bad": 1,
+     "rules": {
+      "indirect": 0,
+      "direct": 42
+     },
+     "link_none": 7,
+     "kept": 12,
+     "link_ok": 4,
+     "false": 0
+    },
+    "hallu": 0,
+    "raw": 18,
+    "docs": 3
+   },
+   "eval": {
+    "score": {
+     "n": {
+      "indirect": 18,
+      "direct": 43
+     },
+     "all": {
+      "indirect": 10,
+      "direct": 43
+     },
+     "bycat": {
+      "ADRESSE": {
+       "rules": 3,
+       "n": 3,
+       "all": 3
+      },
+      "NUM_DOSSIER": {
+       "rules": 4,
+       "n": 4,
+       "all": 4
+      },
+      "DATE_NAISSANCE": {
+       "rules": 1,
+       "n": 1,
+       "all": 1
+      },
+      "TELEPHONE": {
+       "rules": 3,
+       "n": 3,
+       "all": 3
+      },
+      "IDENTIFIANT": {
+       "rules": 1,
+       "n": 1,
+       "all": 1
+      },
+      "EMAIL": {
+       "rules": 3,
+       "n": 3,
+       "all": 3
+      },
+      "ORGANISATION": {
+       "rules": 5,
+       "n": 5,
+       "all": 5
+      },
+      "PERSONNE": {
+       "rules": 22,
+       "n": 38,
+       "all": 30
+      },
+      "LIEU": {
+       "rules": 0,
+       "n": 2,
+       "all": 2
+      },
+      "IBAN": {
+       "rules": 1,
+       "n": 1,
+       "all": 1
+      }
+     },
+     "link_bad": 1,
+     "rules": {
+      "indirect": 2,
+      "direct": 41
+     },
+     "link_none": 6,
+     "kept": 10,
+     "link_ok": 2,
+     "false": 1
+    },
+    "hallu": 0,
+    "raw": 28,
+    "docs": 3
+   }
+  },
+  "stable_runs": true
+ },
+ "t1_wall_s": 117,
+ "t4": {
+  "texte_tres_court": {
+   "pass": true,
+   "out": []
+  },
+  "noms_communs": {
+   "pass": true,
+   "out": [
+    "Pierre Blanc",
+    "le marin Lebon"
+   ]
+  },
+  "homonymes": {
+   "pass": true,
+   "out": [
+    [
+     "Garnier",
+     null
+    ],
+    [
+     "le fils de Garnier",
+     null
+    ]
+   ]
+  },
+  "injection_contrainte": {
+   "pass": true,
+   "out": "{\n  \"mentions\": []\n}"
+  },
+  "injection_libre": {
+   "pass": true,
+   "out": "```json\n{\n  \"mentions\": []\n}\n```"
+  },
+  "chevauchement_petits_morceaux": {
+   "pass": false,
+   "full": [
+    "Pessac",
+    "chef du service technique",
+    "fils de la directrice",
+    "ingénieur"
+   ],
+   "small": [
+    "M. Olivier Brun, ingénieur",
+    "Pessac",
+    "chef du service technique",
+    "commis le 8 janvier 2025",
+    "fils",
+    "le fils de la directrice"
+   ]
+  },
+  "tableau_en_tete_pied": {
+   "pass": true,
+   "out": [
+    "belle-mère de M. Haddad",
+    "M. Faure (frère d'Étienne)"
+   ]
+  }
+ },
+ "t4_wall_s": 30,
+ "t6": {
+  "timeout_court": "exception gérée: TimeoutError",
+  "modele_absent": "HTTP 404 gérée"
+ },
+ "t6_wall_s": 2,
+ "t5": {
+  "load": {
+   "cold_s": 2.04,
+   "warm_s": 0.0
+  },
+  "latency": {
+   "gpu_1p": {
+    "median_s": 20.2,
+    "runs": [
+     20.7,
+     20.2,
+     19.5
+    ]
+   },
+   "gpu_10p": {
+    "median_s": 86.4,
+    "runs": [
+     86.9,
+     86.4,
+     85.1
+    ]
+   },
+   "cpu_1p": {
+    "median_s": 87.8,
+    "runs": [
+     90.4,
+     85.2
+    ]
+   },
+   "cpu_10p": {
+    "median_s": 848.0,
+    "runs": [
+     848.0
+    ]
+   }
+  },
+  "mem": {
+   "gpu_peak_vram_mib": 7925,
+   "gpu_peak_ollama_rss_mib": 111,
+   "cpu_peak_ollama_rss_mib": 139,
+   "cpu_peak_vram_mib": 3786
+  },
+  "tps": 200.0,
+  "tps_cpu": 22.6
+ },
+ "t5_wall_s": 1373
+}

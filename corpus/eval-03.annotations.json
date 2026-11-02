@@ -1,0 +1,187 @@
+{
+ "document": "eval-03.txt",
+ "entities": [
+  {
+   "id": "E1",
+   "category": "PERSONNE",
+   "canonical": "Thomas Barbier",
+   "mentions": [
+    {
+     "text": "Thomas Barbier",
+     "kind": "direct"
+    },
+    {
+     "text": "M. Thomas Barbier",
+     "kind": "direct"
+    },
+    {
+     "text": "Barbier",
+     "kind": "direct"
+    },
+    {
+     "text": "Le demandeur",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E2",
+   "category": "PERSONNE",
+   "canonical": "Hélène Giraud",
+   "mentions": [
+    {
+     "text": "Hélène Giraud",
+     "kind": "direct"
+    },
+    {
+     "text": "Mme Giraud",
+     "kind": "direct"
+    },
+    {
+     "text": "expert en bâtiment",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E3",
+   "category": "ADRESSE",
+   "canonical": "9 rue Pasteur",
+   "mentions": [
+    {
+     "text": "9 rue Pasteur, 31000 Toulouse",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E4",
+   "category": "TELEPHONE",
+   "canonical": "06 45 67 89 01",
+   "mentions": [
+    {
+     "text": "06 45 67 89 01",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E5",
+   "category": "PERSONNE",
+   "canonical": "gendre de Giraud",
+   "mentions": [
+    {
+     "text": "le gendre de Mme Giraud",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E6",
+   "category": "PERSONNE",
+   "canonical": "Paul Morel",
+   "mentions": [
+    {
+     "text": "Paul Morel",
+     "kind": "direct"
+    },
+    {
+     "text": "L'architecte du projet",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E7",
+   "category": "PERSONNE",
+   "canonical": "syndic",
+   "mentions": [
+    {
+     "text": "Le syndic de la copropriété",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E8",
+   "category": "PERSONNE",
+   "canonical": "cousine de Giraud",
+   "mentions": [
+    {
+     "text": "sa cousine, notaire à Albi",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E9",
+   "category": "LIEU",
+   "canonical": "Albi",
+   "mentions": [
+    {
+     "text": "Albi",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E10",
+   "category": "ORGANISATION",
+   "canonical": "Mairie de Cugnaux",
+   "mentions": [
+    {
+     "text": "La Mairie de Cugnaux",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E11",
+   "category": "ORGANISATION",
+   "canonical": "SCI LES PINS",
+   "mentions": [
+    {
+     "text": "SCI LES PINS",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E12",
+   "category": "PERSONNE",
+   "canonical": "Roger Meunier",
+   "mentions": [
+    {
+     "text": "Roger Meunier",
+     "kind": "direct"
+    },
+    {
+     "text": "le gérant de la SCI LES PINS",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E13",
+   "category": "EMAIL",
+   "canonical": "h.giraud@orange.fr",
+   "mentions": [
+    {
+     "text": "h.giraud@orange.fr",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E14",
+   "category": "NUM_DOSSIER",
+   "canonical": "RG 25/03307",
+   "mentions": [
+    {
+     "text": "RG 25/03307",
+     "kind": "direct"
+    }
+   ]
+  }
+ ]
+}

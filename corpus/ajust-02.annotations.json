@@ -1,0 +1,166 @@
+{
+ "document": "ajust-02.txt",
+ "entities": [
+  {
+   "id": "E1",
+   "category": "PERSONNE",
+   "canonical": "Isabelle Moreau",
+   "mentions": [
+    {
+     "text": "Isabelle Moreau",
+     "kind": "direct"
+    },
+    {
+     "text": "Mme Moreau",
+     "kind": "direct"
+    },
+    {
+     "text": "Madame Isabelle Moreau",
+     "kind": "direct"
+    },
+    {
+     "text": "Isabelle MOREAU",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E2",
+   "category": "DATE_NAISSANCE",
+   "canonical": "14 avril 1981",
+   "mentions": [
+    {
+     "text": "14 avril 1981",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E3",
+   "category": "ADRESSE",
+   "canonical": "8 avenue de la République",
+   "mentions": [
+    {
+     "text": "8 avenue de la République, 21000 Dijon",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E4",
+   "category": "PERSONNE",
+   "canonical": "Marc Moreau",
+   "mentions": [
+    {
+     "text": "Marc Moreau",
+     "kind": "direct"
+    },
+    {
+     "text": "Son époux",
+     "kind": "indirect"
+    },
+    {
+     "text": "son mari",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E5",
+   "category": "ORGANISATION",
+   "canonical": "DUCRET FRÈRES SAS",
+   "mentions": [
+    {
+     "text": "DUCRET FRÈRES SAS",
+     "kind": "direct"
+    },
+    {
+     "text": "Société DUCRET FRÈRES",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E6",
+   "category": "PERSONNE",
+   "canonical": "Henri Ducret",
+   "mentions": [
+    {
+     "text": "Henri Ducret",
+     "kind": "direct"
+    },
+    {
+     "text": "M. Henri Ducret",
+     "kind": "direct"
+    },
+    {
+     "text": "Ducret",
+     "kind": "direct"
+    },
+    {
+     "text": "Le gérant de l'entreprise",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E7",
+   "category": "PERSONNE",
+   "canonical": "Nadia Benali",
+   "mentions": [
+    {
+     "text": "Nadia Benali",
+     "kind": "direct"
+    },
+    {
+     "text": "la directrice de l'agence bancaire",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E8",
+   "category": "PERSONNE",
+   "canonical": "soeur d'Isabelle Moreau",
+   "mentions": [
+    {
+     "text": "Sa sœur",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E9",
+   "category": "EMAIL",
+   "canonical": "h.ducret@ducret-freres.fr",
+   "mentions": [
+    {
+     "text": "h.ducret@ducret-freres.fr",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E10",
+   "category": "PERSONNE",
+   "canonical": "voisin des Moreau",
+   "mentions": [
+    {
+     "text": "Le voisin du couple",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E11",
+   "category": "NUM_DOSSIER",
+   "canonical": "Parquet 23/4471",
+   "mentions": [
+    {
+     "text": "n° 23/4471",
+     "kind": "direct"
+    }
+   ]
+  }
+ ]
+}

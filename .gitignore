@@ -1,0 +1,20 @@
+node_modules/
+dist/
+out/
+release/
+.idea/
+.vscode/
+*.log
+
+# Secrets et configuration locale
+config/local.config.json
+.env
+.env.*
+!.env.example
+
+# Modèles locaux (volumineux, téléchargés au premier lancement)
+models/
+*.gguf
+
+# Résultats temporaires du banc d'essai
+scripts/results/*.log

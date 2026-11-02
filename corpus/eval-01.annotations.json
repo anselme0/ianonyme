@@ -1,0 +1,187 @@
+{
+ "document": "eval-01.txt",
+ "entities": [
+  {
+   "id": "E1",
+   "category": "PERSONNE",
+   "canonical": "Antoine Delmas",
+   "mentions": [
+    {
+     "text": "Antoine Delmas",
+     "kind": "direct"
+    },
+    {
+     "text": "A. Delmas",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E2",
+   "category": "ADRESSE",
+   "canonical": "27 chemin des Vignes",
+   "mentions": [
+    {
+     "text": "27 chemin des Vignes, 33000 Bordeaux",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E3",
+   "category": "TELEPHONE",
+   "canonical": "05 56 78 90 12",
+   "mentions": [
+    {
+     "text": "05 56 78 90 12",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E4",
+   "category": "EMAIL",
+   "canonical": "a.delmas@delmas-expert.fr",
+   "mentions": [
+    {
+     "text": "a.delmas@delmas-expert.fr",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E5",
+   "category": "PERSONNE",
+   "canonical": "Corinne Lefèvre",
+   "mentions": [
+    {
+     "text": "Corinne Lefèvre",
+     "kind": "direct"
+    },
+    {
+     "text": "Mme Lefèvre",
+     "kind": "direct"
+    },
+    {
+     "text": "Lefèvre",
+     "kind": "direct"
+    },
+    {
+     "text": "directrice de la clinique des Cèdres",
+     "kind": "indirect"
+    },
+    {
+     "text": "la directrice",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E6",
+   "category": "PERSONNE",
+   "canonical": "Olivier Brun",
+   "mentions": [
+    {
+     "text": "Olivier Brun",
+     "kind": "direct"
+    },
+    {
+     "text": "M. Brun",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E7",
+   "category": "PERSONNE",
+   "canonical": "Sylvie Marchand",
+   "mentions": [
+    {
+     "text": "Sylvie Marchand",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E8",
+   "category": "ORGANISATION",
+   "canonical": "SAS CLINIQUE DES CÈDRES",
+   "mentions": [
+    {
+     "text": "SAS CLINIQUE DES CÈDRES",
+     "kind": "direct"
+    },
+    {
+     "text": "clinique des Cèdres",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E9",
+   "category": "PERSONNE",
+   "canonical": "chef du service technique",
+   "mentions": [
+    {
+     "text": "le chef du service technique",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E10",
+   "category": "PERSONNE",
+   "canonical": "fils de Corinne Lefèvre",
+   "mentions": [
+    {
+     "text": "le fils de la directrice",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E11",
+   "category": "IBAN",
+   "canonical": "FR14 2004 1010 0505 0001 3M02 606",
+   "mentions": [
+    {
+     "text": "FR14 2004 1010 0505 0001 3M02 606",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E12",
+   "category": "LIEU",
+   "canonical": "Pessac",
+   "mentions": [
+    {
+     "text": "Pessac",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E13",
+   "category": "NUM_DOSSIER",
+   "canonical": "RG 25/00871",
+   "mentions": [
+    {
+     "text": "RG 25/00871",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E14",
+   "category": "NUM_DOSSIER",
+   "canonical": "EXP-2025-0133",
+   "mentions": [
+    {
+     "text": "EXP-2025-0133",
+     "kind": "direct"
+    }
+   ]
+  }
+ ]
+}

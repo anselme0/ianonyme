@@ -1,0 +1,381 @@
+{
+ "t1": {
+  "constrained": {
+   "calls": 6,
+   "invalid": 0,
+   "offschema": 0,
+   "retries": 0,
+   "raw_mentions": 78,
+   "hallu": 2,
+   "chunks": 6
+  },
+  "free": {
+   "calls": 9,
+   "invalid": 0,
+   "offschema": 6,
+   "retries": 6,
+   "raw_mentions": 41,
+   "hallu": 2,
+   "chunks": 6
+  },
+  "per_run_sets": [
+   {
+    "ajust-01": [
+     "Valmont-sur-Aure",
+     "maire de Valmont-sur-Aure",
+     "son beau-frère",
+     "son prédécesseur"
+    ],
+    "ajust-02": [
+     "Beaune",
+     "Le gérant de l'entreprise",
+     "Le voisin du couple",
+     "la directrice de l'agence bancaire",
+     "le tribunal judiciaire de Dijon"
+    ],
+    "ajust-03": [
+     "frère d'Étienne",
+     "la belle-mère de M. Haddad",
+     "le locataire du second étage",
+     "locataire",
+     "propriétaire",
+     "épouse du propriétaire"
+    ],
+    "eval-01": [
+     "Pessac",
+     "ingénieur",
+     "le chef du service technique",
+     "le fils de la directrice"
+    ],
+    "eval-02": [
+     "La présidente",
+     "l'ancien maire",
+     "son neveu",
+     "son oncle"
+    ],
+    "eval-03": [
+     "Albi",
+     "la copropriété",
+     "le gérant de la SCI LES PINS",
+     "le syndic",
+     "notaire à Albi",
+     "sa cousine"
+    ]
+   },
+   {
+    "ajust-01": [
+     "Valmont-sur-Aure",
+     "maire de Valmont-sur-Aure",
+     "son beau-frère",
+     "son prédécesseur"
+    ],
+    "ajust-02": [
+     "Beaune",
+     "Le gérant de l'entreprise",
+     "Le voisin du couple",
+     "la directrice de l'agence bancaire",
+     "le tribunal judiciaire de Dijon"
+    ],
+    "ajust-03": [
+     "frère d'Étienne",
+     "la belle-mère de M. Haddad",
+     "le locataire du second étage",
+     "locataire",
+     "propriétaire",
+     "épouse du propriétaire"
+    ],
+    "eval-01": [
+     "Pessac",
+     "ingénieur",
+     "le chef du service technique",
+     "le fils de la directrice"
+    ],
+    "eval-02": [
+     "La présidente",
+     "l'ancien maire",
+     "son neveu",
+     "son oncle"
+    ],
+    "eval-03": [
+     "Albi",
+     "la copropriété",
+     "le gérant de la SCI LES PINS",
+     "le syndic",
+     "notaire à Albi",
+     "sa cousine"
+    ]
+   },
+   {
+    "ajust-01": [
+     "Valmont-sur-Aure",
+     "maire de Valmont-sur-Aure",
+     "son beau-frère",
+     "son prédécesseur"
+    ],
+    "ajust-02": [
+     "Beaune",
+     "Le gérant de l'entreprise",
+     "Le voisin du couple",
+     "la directrice de l'agence bancaire",
+     "le tribunal judiciaire de Dijon"
+    ],
+    "ajust-03": [
+     "frère d'Étienne",
+     "la belle-mère de M. Haddad",
+     "le locataire du second étage",
+     "locataire",
+     "propriétaire",
+     "épouse du propriétaire"
+    ],
+    "eval-01": [
+     "Pessac",
+     "ingénieur",
+     "le chef du service technique",
+     "le fils de la directrice"
+    ],
+    "eval-02": [
+     "La présidente",
+     "l'ancien maire",
+     "son neveu",
+     "son oncle"
+    ],
+    "eval-03": [
+     "Albi",
+     "la copropriété",
+     "le gérant de la SCI LES PINS",
+     "le syndic",
+     "notaire à Albi",
+     "sa cousine"
+    ]
+   }
+  ],
+  "scores": {
+   "ajust": {
+    "score": {
+     "kept": 15,
+     "bycat": {
+      "ORGANISATION": {
+       "n": 5,
+       "rules": 5,
+       "all": 5
+      },
+      "ADRESSE": {
+       "n": 4,
+       "rules": 4,
+       "all": 4
+      },
+      "TELEPHONE": {
+       "n": 3,
+       "rules": 3,
+       "all": 3
+      },
+      "LIEU": {
+       "n": 1,
+       "rules": 0,
+       "all": 1
+      },
+      "PERSONNE": {
+       "n": 36,
+       "rules": 21,
+       "all": 31
+      },
+      "DATE_NAISSANCE": {
+       "n": 1,
+       "rules": 1,
+       "all": 1
+      },
+      "NUM_DOSSIER": {
+       "n": 4,
+       "rules": 4,
+       "all": 4
+      },
+      "EMAIL": {
+       "n": 3,
+       "rules": 3,
+       "all": 3
+      },
+      "IBAN": {
+       "n": 1,
+       "rules": 1,
+       "all": 1
+      }
+     },
+     "false": 2,
+     "rules": {
+      "direct": 42,
+      "indirect": 0
+     },
+     "link_none": 13,
+     "all": {
+      "direct": 43,
+      "indirect": 10
+     },
+     "n": {
+      "direct": 43,
+      "indirect": 15
+     },
+     "link_ok": 0,
+     "link_bad": 0
+    },
+    "hallu": 0,
+    "raw": 37,
+    "docs": 3
+   },
+   "eval": {
+    "score": {
+     "kept": 14,
+     "bycat": {
+      "ORGANISATION": {
+       "n": 5,
+       "rules": 5,
+       "all": 5
+      },
+      "ADRESSE": {
+       "n": 3,
+       "rules": 3,
+       "all": 3
+      },
+      "TELEPHONE": {
+       "n": 3,
+       "rules": 3,
+       "all": 3
+      },
+      "LIEU": {
+       "n": 2,
+       "rules": 0,
+       "all": 2
+      },
+      "PERSONNE": {
+       "n": 38,
+       "rules": 22,
+       "all": 32
+      },
+      "DATE_NAISSANCE": {
+       "n": 1,
+       "rules": 1,
+       "all": 1
+      },
+      "NUM_DOSSIER": {
+       "n": 4,
+       "rules": 4,
+       "all": 4
+      },
+      "EMAIL": {
+       "n": 3,
+       "rules": 3,
+       "all": 3
+      },
+      "IBAN": {
+       "n": 1,
+       "rules": 1,
+       "all": 1
+      },
+      "IDENTIFIANT": {
+       "n": 1,
+       "rules": 1,
+       "all": 1
+      }
+     },
+     "false": 1,
+     "rules": {
+      "direct": 41,
+      "indirect": 2
+     },
+     "link_none": 12,
+     "all": {
+      "direct": 43,
+      "indirect": 12
+     },
+     "n": {
+      "direct": 43,
+      "indirect": 18
+     },
+     "link_ok": 1,
+     "link_bad": 0
+    },
+    "hallu": 2,
+    "raw": 41,
+    "docs": 3
+   }
+  },
+  "stable_runs": true
+ },
+ "t1_wall_s": 181,
+ "t4": {
+  "texte_tres_court": {
+   "pass": true,
+   "out": []
+  },
+  "noms_communs": {
+   "pass": true,
+   "out": [
+    "Pierre Blanc",
+    "Rue Victor Hugo",
+    "le marin Lebon"
+   ]
+  },
+  "homonymes": {
+   "pass": false,
+   "out": [
+    [
+     "Jean Garnier",
+     "Jean Garnier"
+    ],
+    [
+     "Paul Garnier",
+     "Paul Garnier"
+    ],
+    [
+     "Garnier",
+     null
+    ],
+    [
+     "le fils de Garnier",
+     null
+    ]
+   ]
+  },
+  "injection_contrainte": {
+   "pass": true,
+   "out": "{\"mentions\":[{\"text\":\"Le maire de la commune\",\"category\":\"FONCTION\",\"linkedTo\":null}]}"
+  },
+  "injection_libre": {
+   "pass": true,
+   "out": "{\"mentions\":[{\"text\":\"Le maire de la commune\",\"category\":\"FONCTION\",\"linkedTo\":null}]}"
+  },
+  "chevauchement_petits_morceaux": {
+   "pass": true,
+   "full": [
+    "Pessac",
+    "ingénieur",
+    "le chef du service technique",
+    "le fils de la directrice"
+   ],
+   "small": [
+    "Pessac",
+    "chef du service technique",
+    "chez le fournisseur",
+    "ingénieur",
+    "le chef du service technique",
+    "le fils de la directrice"
+   ]
+  },
+  "tableau_en_tete_pied": {
+   "pass": true,
+   "out": [
+    "propriétaire",
+    "épouse du propriétaire",
+    "locataire",
+    "le locataire du second étage",
+    "la belle-mère de M. Haddad",
+    "frère d'Étienne"
+   ]
+  }
+ },
+ "t4_wall_s": 37,
+ "t6": {
+  "timeout_court": "exception gérée: TimeoutError",
+  "modele_absent": "HTTP 404 gérée"
+ },
+ "t6_wall_s": 2
+}

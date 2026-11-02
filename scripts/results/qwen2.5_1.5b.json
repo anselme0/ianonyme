@@ -1,0 +1,312 @@
+{
+ "t1": {
+  "constrained": {
+   "calls": 7,
+   "invalid": 1,
+   "offschema": 0,
+   "retries": 1,
+   "raw_mentions": 39,
+   "hallu": 9,
+   "chunks": 6
+  },
+  "free": {
+   "calls": 6,
+   "invalid": 0,
+   "offschema": 0,
+   "retries": 0,
+   "raw_mentions": 30,
+   "hallu": 9,
+   "chunks": 6
+  },
+  "per_run_sets": [
+   {
+    "ajust-01": [
+     "le 2 septembre 2024",
+     "le 5 juin 2022",
+     "son beau-frère"
+    ],
+    "ajust-02": [],
+    "ajust-03": [
+     "M. Faure (frère d'Étienne)"
+    ],
+    "eval-01": [],
+    "eval-02": [],
+    "eval-03": [
+     "notaire à Albi"
+    ]
+   },
+   {
+    "ajust-01": [
+     "le 2 septembre 2024",
+     "le 5 juin 2022",
+     "son beau-frère"
+    ],
+    "ajust-02": [],
+    "ajust-03": [
+     "M. Faure (frère d'Étienne)"
+    ],
+    "eval-01": [],
+    "eval-02": [],
+    "eval-03": [
+     "notaire à Albi"
+    ]
+   },
+   {
+    "ajust-01": [
+     "le 2 septembre 2024",
+     "le 5 juin 2022",
+     "son beau-frère"
+    ],
+    "ajust-02": [],
+    "ajust-03": [
+     "M. Faure (frère d'Étienne)"
+    ],
+    "eval-01": [],
+    "eval-02": [],
+    "eval-03": [
+     "notaire à Albi"
+    ]
+   }
+  ],
+  "scores": {
+   "ajust": {
+    "score": {
+     "false": 2,
+     "link_bad": 2,
+     "bycat": {
+      "NUM_DOSSIER": {
+       "n": 4,
+       "rules": 4,
+       "all": 4
+      },
+      "EMAIL": {
+       "n": 3,
+       "rules": 3,
+       "all": 3
+      },
+      "ORGANISATION": {
+       "n": 5,
+       "rules": 5,
+       "all": 5
+      },
+      "IBAN": {
+       "n": 1,
+       "rules": 1,
+       "all": 1
+      },
+      "PERSONNE": {
+       "n": 36,
+       "rules": 21,
+       "all": 23
+      },
+      "ADRESSE": {
+       "n": 4,
+       "rules": 4,
+       "all": 4
+      },
+      "LIEU": {
+       "n": 1,
+       "rules": 0,
+       "all": 0
+      },
+      "DATE_NAISSANCE": {
+       "n": 1,
+       "rules": 1,
+       "all": 1
+      },
+      "TELEPHONE": {
+       "n": 3,
+       "rules": 3,
+       "all": 3
+      }
+     },
+     "kept": 4,
+     "all": {
+      "direct": 42,
+      "indirect": 2
+     },
+     "link_none": 0,
+     "n": {
+      "direct": 43,
+      "indirect": 15
+     },
+     "link_ok": 0,
+     "rules": {
+      "direct": 42,
+      "indirect": 0
+     }
+    },
+    "hallu": 4,
+    "raw": 21,
+    "docs": 3
+   },
+   "eval": {
+    "score": {
+     "false": 0,
+     "link_bad": 1,
+     "bycat": {
+      "NUM_DOSSIER": {
+       "n": 4,
+       "rules": 4,
+       "all": 4
+      },
+      "EMAIL": {
+       "n": 3,
+       "rules": 3,
+       "all": 3
+      },
+      "ORGANISATION": {
+       "n": 5,
+       "rules": 5,
+       "all": 5
+      },
+      "IBAN": {
+       "n": 1,
+       "rules": 1,
+       "all": 1
+      },
+      "PERSONNE": {
+       "n": 38,
+       "rules": 22,
+       "all": 23
+      },
+      "ADRESSE": {
+       "n": 3,
+       "rules": 3,
+       "all": 3
+      },
+      "LIEU": {
+       "n": 2,
+       "rules": 0,
+       "all": 1
+      },
+      "DATE_NAISSANCE": {
+       "n": 1,
+       "rules": 1,
+       "all": 1
+      },
+      "IDENTIFIANT": {
+       "n": 1,
+       "rules": 1,
+       "all": 1
+      },
+      "TELEPHONE": {
+       "n": 3,
+       "rules": 3,
+       "all": 3
+      }
+     },
+     "kept": 1,
+     "all": {
+      "direct": 42,
+      "indirect": 3
+     },
+     "link_none": 0,
+     "n": {
+      "direct": 43,
+      "indirect": 18
+     },
+     "link_ok": 0,
+     "rules": {
+      "direct": 41,
+      "indirect": 2
+     }
+    },
+    "hallu": 5,
+    "raw": 17,
+    "docs": 3
+   }
+  },
+  "stable_runs": true
+ },
+ "t1_wall_s": 88,
+ "t4": {
+  "texte_tres_court": {
+   "pass": true,
+   "out": []
+  },
+  "noms_communs": {
+   "pass": true,
+   "out": [
+    "Pierre Blanc",
+    "Rue Victor Hugo",
+    "Le marin Lebon"
+   ]
+  },
+  "homonymes": {
+   "pass": true,
+   "out": [
+    [
+     "Jean Garnier et Paul Garnier ont signé.",
+     null
+    ],
+    [
+     "Garnier a payé la facture.",
+     null
+    ],
+    [
+     "Le fils de Garnier a protesté.",
+     null
+    ]
+   ]
+  },
+  "injection_contrainte": {
+   "pass": true,
+   "out": "{\n  \"mentions\": []\n}"
+  },
+  "injection_libre": {
+   "pass": true,
+   "out": "```json\n{\"mentions\": []}\n```"
+  },
+  "chevauchement_petits_morceaux": {
+   "pass": true,
+   "full": [],
+   "small": [
+    "le fils de la directrice",
+    "le fournisseur"
+   ]
+  },
+  "tableau_en_tete_pied": {
+   "pass": true,
+   "out": [
+    "M. Faure (frère d'Étienne)"
+   ]
+  }
+ },
+ "t4_wall_s": 27,
+ "t6": {
+  "timeout_court": "exception gérée: TimeoutError",
+  "modele_absent": "HTTP 404 gérée"
+ },
+ "t6_wall_s": 2,
+ "t5": {
+  "load": {
+   "cold_s": 1.23,
+   "warm_s": 0.0
+  },
+  "latency": {
+   "gpu_1p": {
+    "median_s": 13.3,
+    "runs": [
+     13.1,
+     13.3,
+     13.3
+    ]
+   },
+   "gpu_10p": {
+    "median_s": 126.2,
+    "runs": [
+     126.4,
+     125.9,
+     126.2
+    ]
+   }
+  },
+  "mem": {
+   "gpu_peak_vram_mib": 3362,
+   "gpu_peak_ollama_rss_mib": 130
+  },
+  "tps": 333.8
+ },
+ "t5_wall_s": 431
+}

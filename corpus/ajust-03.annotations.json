@@ -1,0 +1,161 @@
+{
+ "document": "ajust-03.txt",
+ "entities": [
+  {
+   "id": "E1",
+   "category": "PERSONNE",
+   "canonical": "Étienne Faure",
+   "mentions": [
+    {
+     "text": "Étienne Faure",
+     "kind": "direct"
+    },
+    {
+     "text": "M. Étienne Faure",
+     "kind": "direct"
+    },
+    {
+     "text": "Le propriétaire",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E2",
+   "category": "PERSONNE",
+   "canonical": "Léa Faure",
+   "mentions": [
+    {
+     "text": "Léa Faure",
+     "kind": "direct"
+    },
+    {
+     "text": "épouse du propriétaire",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E3",
+   "category": "TELEPHONE",
+   "canonical": "07 61 22 90 14",
+   "mentions": [
+    {
+     "text": "07 61 22 90 14",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E4",
+   "category": "EMAIL",
+   "canonical": "l.faure@mail-prive.fr",
+   "mentions": [
+    {
+     "text": "l.faure@mail-prive.fr",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E5",
+   "category": "PERSONNE",
+   "canonical": "Karim Haddad",
+   "mentions": [
+    {
+     "text": "Karim Haddad",
+     "kind": "direct"
+    },
+    {
+     "text": "Haddad",
+     "kind": "direct"
+    },
+    {
+     "text": "le locataire du second étage",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E6",
+   "category": "ADRESSE",
+   "canonical": "3 impasse des Lilas",
+   "mentions": [
+    {
+     "text": "3 impasse des Lilas, 38000 Grenoble",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E7",
+   "category": "PERSONNE",
+   "canonical": "belle-mère de Karim Haddad",
+   "mentions": [
+    {
+     "text": "La belle-mère de M. Haddad",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E8",
+   "category": "ORGANISATION",
+   "canonical": "IMMOLUX SCI",
+   "mentions": [
+    {
+     "text": "IMMOLUX SCI",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E9",
+   "category": "ORGANISATION",
+   "canonical": "Cabinet Rolland et Associés",
+   "mentions": [
+    {
+     "text": "Cabinet Rolland et Associés",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E10",
+   "category": "ADRESSE",
+   "canonical": "22 boulevard Gambetta",
+   "mentions": [
+    {
+     "text": "22 boulevard Gambetta, 38000 Grenoble",
+     "kind": "direct"
+    }
+   ]
+  },
+  {
+   "id": "E11",
+   "category": "PERSONNE",
+   "canonical": "M. Faure (syndic)",
+   "mentions": [
+    {
+     "text": "Le syndic, M. Faure",
+     "kind": "indirect"
+    },
+    {
+     "text": "frère d'Étienne",
+     "kind": "indirect"
+    }
+   ]
+  },
+  {
+   "id": "E12",
+   "category": "NUM_DOSSIER",
+   "canonical": "EXP-2024-0502",
+   "mentions": [
+    {
+     "text": "EXP-2024-0502",
+     "kind": "direct"
+    }
+   ]
+  }
+ ]
+}
