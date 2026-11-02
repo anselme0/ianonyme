@@ -47,6 +47,7 @@ import { log, logError } from './log.js';
 import { SYSTEM_PROMPT } from './prompts.js';
 import type { AssistantProvider } from './providers/types.js';
 import { composeMessage } from '../shared/compose.js';
+import { sanitizeFileName } from './filename.js';
 import { LeakBlockedError, preparePayload, secureStream } from './secure-send.js';
 
 interface StoredMessage {
@@ -293,16 +294,18 @@ export class ChatService {
     const c = this.get(convId);
     try {
       const extracted = await extractFile(name, bytes, this.deps.config.limits.maxFileBytes);
-      const { maskedName, readableName } = protectFileName(c.state, name);
+      const { maskedName } = protectFileName(c.state, name);
+      // Le nom envoyé est le nom masqué, dont tout mot inconnu est remplacé (voir filename.ts).
+      const sendable = sanitizeFileName(maskedName);
       const chip: FileChip = {
         id: `f${++this.seq}`,
         name,
-        readableName,
-        maskedName,
+        readableName: sendable,
+        maskedName: sendable,
         warnings: extracted.warnings,
         characters: extracted.text.length,
       };
-      c.files.set(chip.id, { chip, text: extracted.text, readableName });
+      c.files.set(chip.id, { chip, text: extracted.text, readableName: sendable });
       log('service', 'file_imported', { chars: extracted.text.length, warnings: extracted.warnings.length });
       return { ok: true, file: chip, text: extracted.text };
     } catch (e) {

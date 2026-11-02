@@ -107,6 +107,16 @@ describe('extraction PDF', () => {
     expect(warnings).toEqual([{ code: 'pdf_pages_without_text', pages: [2] }]);
   });
 
+  it('recolle un mot coupé en fin de ligne', async () => {
+    const doc = await PDFDocument.create();
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const page = doc.addPage();
+    page.drawText('Le signataire est M. Jean Gar-', { x: 50, y: 700, size: 12, font });
+    page.drawText('nier, expert.', { x: 50, y: 686, size: 12, font });
+    const { text } = await extractFile('a.pdf', await doc.save(), MAX);
+    expect(text).toContain('Garnier');
+  });
+
   it('bloque un PDF sans aucune couche de texte', async () => {
     await expect(extractFile('scan.pdf', await pdf([null, null]), MAX)).rejects.toMatchObject({ code: 'file_scanned_pdf' });
   });

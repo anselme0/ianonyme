@@ -287,3 +287,22 @@ describe('conversations et réglages', () => {
     expect(() => h.service.decide({ convId: conv.id, action: 'accept', mention: { text: 'x' } as never })).toThrow('internal');
   });
 });
+
+describe('nom de fichier', () => {
+  it('un nom que les règles ne connaissent pas ne part pas en clair', async () => {
+    const h = new Harness();
+    const conv = h.service.create();
+    const file = await h.service.importFile(conv.id, 'rapport garnier_v2.txt', new TextEncoder().encode('Contenu banal.'));
+    expect(file.file?.maskedName).toBe('rapport … v2.txt');
+    await h.send(conv.id, 'Résume.', [file.file!.id]);
+    expect(JSON.stringify(h.spy.calls[0])).not.toMatch(/garnier/i);
+    expect(h.spy.calls[0]?.messages[0]?.content).toContain('Document « rapport … v2.txt »');
+  });
+
+  it('les mots courants et les numéros sont conservés, les valeurs protégées sont masquées', async () => {
+    const h = new Harness();
+    const conv = h.service.create();
+    const file = await h.service.importFile(conv.id, 'Compte rendu réunion M. Jean Garnier 2025.txt', new TextEncoder().encode('Contenu.'));
+    expect(file.file?.maskedName).toMatch(/^Compte rendu réunion \[PERSONNE_\d+\] 2025\.txt$/);
+  });
+});

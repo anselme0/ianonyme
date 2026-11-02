@@ -81,6 +81,13 @@ export function parseName(canonical: string): ParsedName {
       break;
     }
   }
+  if (split === 0) {
+    // Premier jeton inconnu : forme inversée (« Garnier Jean ») si le dernier est un prénom connu,
+    // sinon prénom inconnu suivi du nom de famille (« Dimitri Kowal »).
+    const last = tokens[tokens.length - 1] as string;
+    if (isFirstName(last)) return { firstNames: [last], family: tokens.slice(0, -1) };
+    split = tokens.length - 1;
+  }
   // Remonte devant les particules (ex. « Marie de La Fontaine »).
   while (split > 1 && PARTICLES.has(normalizeValue(tokens[split - 1] as string))) split--;
   return { firstNames: tokens.slice(0, split), family: tokens.slice(split) };

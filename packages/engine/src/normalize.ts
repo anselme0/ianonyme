@@ -5,9 +5,17 @@
 /** Caractère « invisible » : accent combinant, trait d'union conditionnel, espace de largeur nulle… */
 export const INVISIBLE = '\u0001';
 
-const INVISIBLE_RE = /[\p{M}­​-‏⁠﻿‪-‮]/u;
+const INVISIBLE_RE = /[\p{M}­᠎​-‏⁠-⁤⁦-⁩﻿‪-‮]/u;
 const DASH_RE = /[-‐-―−]/;
 const APOS_RE = /['‘’‛ʼ`´]/;
+
+/** Lettres cyrilliques et grecques qui ressemblent à une lettre latine : ramenées à celle-ci. */
+const CONFUSABLES: Record<string, string> = {
+  'а': 'a', 'в': 'b', 'е': 'e', 'к': 'k', 'м': 'm', 'н': 'h', 'о': 'o',
+  'р': 'p', 'с': 'c', 'т': 't', 'у': 'y', 'х': 'x', 'і': 'i', 'ј': 'j',
+  'ѕ': 's', 'ԁ': 'd', 'ɡ': 'g', 'ο': 'o', 'α': 'a', 'ν': 'v', 'ρ': 'p',
+  'κ': 'k', 'ι': 'i', 'υ': 'u', 'τ': 't', 'χ': 'x', 'β': 'b', 'ε': 'e',
+};
 
 export function normalizeChar(c: string): string {
   if (INVISIBLE_RE.test(c)) return INVISIBLE;
@@ -15,7 +23,8 @@ export function normalizeChar(c: string): string {
   if (DASH_RE.test(c) || c === '_') return ' ';
   if (APOS_RE.test(c)) return "'";
   const base = c.normalize('NFKD')[0] ?? c;
-  return base.toLowerCase()[0] ?? base;
+  const lower = base.toLowerCase()[0] ?? base;
+  return CONFUSABLES[lower] ?? lower;
 }
 
 export function normalizeText(text: string): string {
@@ -86,4 +95,22 @@ export function findOccurrences(normalizedText: string, value: string): Occurren
     out.push({ start, end });
   }
   return out;
+}
+
+/** Plages déjà retenues : vérification de chevauchement en temps proportionnel à la taille de la plage. */
+export class Coverage {
+  private readonly flags: Uint8Array;
+
+  constructor(length: number) {
+    this.flags = new Uint8Array(length + 1);
+  }
+
+  overlaps(start: number, end: number): boolean {
+    for (let i = start; i < end; i++) if (this.flags[i]) return true;
+    return false;
+  }
+
+  add(start: number, end: number): void {
+    this.flags.fill(1, start, end);
+  }
 }

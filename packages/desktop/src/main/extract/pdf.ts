@@ -16,7 +16,13 @@ export async function extractPdf(bytes: Uint8Array): Promise<Extracted> {
   } catch {
     throw new ExtractError('file_unreadable');
   }
-  const clean = pages.map((p) => p.replace(/[ \t]+\n/g, '\n').trim());
+  // Un mot coupé en fin de ligne (« Gar-⏎nier ») est recollé : sinon sa valeur ne serait plus reconnue.
+  const clean = pages.map((p) =>
+    p
+      .replace(/(\p{L})-[ \t]*\n[ \t]*(\p{Ll})/gu, '$1$2')
+      .replace(/[ \t]+\n/g, '\n')
+      .trim(),
+  );
   const withText = clean.filter((p) => p.length > 0);
   if (withText.length === 0) throw new ExtractError('file_scanned_pdf');
   const warnings: FileWarning[] = [];

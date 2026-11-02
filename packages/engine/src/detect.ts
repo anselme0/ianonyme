@@ -1,7 +1,7 @@
 // Détection déterministe : règles + variantes des entités connues
 // (docs/DOCUMENTATION.md, annexe A.3 et B).
 
-import { normalizeText, normalizeValue, findOccurrences, placeholderRanges } from './normalize.js';
+import { Coverage, normalizeText, normalizeValue, findOccurrences, placeholderRanges } from './normalize.js';
 import { runRules } from './rules.js';
 import type { Category, Conflict, ConversationState, Mention } from './types.js';
 import { canonicalFor, entityValues } from './state.js';
@@ -80,7 +80,12 @@ export function detect(
       a.start - b.start,
   );
   const picked: Candidate[] = [];
-  for (const c of all) if (!picked.some((p) => overlaps(p, c))) picked.push(c);
+  const covered = new Coverage(text.length);
+  for (const c of all) {
+    if (covered.overlaps(c.start, c.end)) continue;
+    covered.add(c.start, c.end);
+    picked.push(c);
+  }
   picked.sort((a, b) => a.start - b.start);
 
   const mentions: Mention[] = [];

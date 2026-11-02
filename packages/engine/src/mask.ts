@@ -1,6 +1,6 @@
 // Masquage et contrôle anti-fuite (docs/DOCUMENTATION.md, annexe A.4).
 
-import { findOccurrences, normalizeText, normalizeValue, placeholderRanges } from './normalize.js';
+import { Coverage, findOccurrences, normalizeText, normalizeValue, placeholderRanges } from './normalize.js';
 import { runStructuredRules } from './rules.js';
 import { entityValues } from './state.js';
 import type { ConversationState, LeakReport, LeakItem, Replacement } from './types.js';
@@ -56,7 +56,12 @@ export function mask(
   }
   matches.sort((a, b) => b.end - b.start - (a.end - a.start) || a.start - b.start);
   const picked: Match[] = [];
-  for (const m of matches) if (!picked.some((p) => overlaps(p, m))) picked.push(m);
+  const covered = new Coverage(text.length);
+  for (const m of matches) {
+    if (covered.overlaps(m.start, m.end)) continue;
+    covered.add(m.start, m.end);
+    picked.push(m);
+  }
   picked.sort((a, b) => a.start - b.start);
 
   let masked = '';

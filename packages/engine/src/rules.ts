@@ -21,7 +21,7 @@ export interface RuleHit {
   priority: number;
 }
 
-const SP = String.raw`[   ]`;
+const SP = String.raw`[^\S\r\n]`;
 const CAP = String.raw`[A-ZÀ-ÖØ-Þ][\p{L}'’\-]*`;
 const MONTHS = 'janvier|février|fevrier|mars|avril|mai|juin|juillet|août|aout|septembre|octobre|novembre|décembre|decembre';
 
@@ -72,7 +72,7 @@ function emails(text: string, out: RuleHit[]): void {
 }
 
 function phones(text: string, out: RuleHit[]): void {
-  const sep = String.raw`[   .\-]?`;
+  const sep = String.raw`[\s.\-]?`;
   const fr = new RegExp(
     String.raw`(?<![\d])(?:(?:\+|00)33${sep}\(?0?\)?${sep}[1-9](?:${sep}\d{2}){4}|0[1-9](?:${sep}\d{2}){4})(?![\d])`,
     'gu',
@@ -83,7 +83,7 @@ function phones(text: string, out: RuleHit[]): void {
 }
 
 function ibans(text: string, out: RuleHit[]): void {
-  const re = /(?<![A-Za-z0-9])[A-Z]{2}\d{2}(?:[  ]?[A-Z0-9]{4}){2,7}(?:[  ]?[A-Z0-9]{1,4})?(?![A-Za-z0-9])/gu;
+  const re = /(?<![A-Za-z0-9])[A-Z]{2}\d{2}(?:\s?[A-Z0-9]{4}){2,7}(?:\s?[A-Z0-9]{1,4})?(?![A-Za-z0-9])/giu;
   for (const m of text.matchAll(re)) {
     let cand = m[0];
     // Retire des groupes de fin tant que la clé n'est pas valide.
