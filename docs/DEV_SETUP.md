@@ -98,27 +98,25 @@ Le premier commit contient uniquement les documents, le corpus et les scripts ex
 
 ## 4. Structure et outils
 
-Structure cible (voir `DOCUMENTATION.md`, §5) :
+Structure (état de la nuit du 2 au 3 novembre 2026) :
 
 ```
 ianonyme/
 ├── packages/
-│   ├── engine/          # détection, masquage, restauration, anti-fuite (TypeScript pur)
-│   ├── desktop/         # Electron (main, preload) + interface Vite + React
+│   ├── engine/          # détection, masquage, restitution, anti-fuite (TypeScript pur) + scripts/measure.ts
+│   ├── desktop/         # Electron : src/main, src/preload, src/renderer, src/shared ; e2e/ ; scripts/ ; electron-builder.yml
 │   └── server/          # STUB, ignoré pour la démo
 ├── config/
 │   ├── local.config.example.json   # versionné, sans secret
 │   └── local.config.json           # hors dépôt (clé API)
-├── corpus/              # documents fictifs + annotations
-├── scripts/             # mesure et banc d'essai
-├── DOCUMENTATION.md
-├── UI_UX.md
-├── MODELE_LOCAL_TESTS.md
-├── DEV_SETUP.md
-├── CLAUDE.md
-├── package.json
-├── pnpm-workspace.yaml
-└── tsconfig.base.json
+├── corpus/              # documents fictifs + annotations (ne pas modifier pendant les tests de modèle)
+├── scripts/             # banc d'essai Python du modèle local
+├── demo/                # rapport d'expertise fictif .docx et PDF de la démonstration
+├── reports/             # mesure.json produit par `pnpm measure`
+├── assets/logo/         # logos d'origine, jamais modifiés
+├── docs/                # DOCUMENTATION, UI_UX, DEV_SETUP, MODELE_LOCAL_TESTS, PROMPTS, DEMO_SCRIPT, NIGHT_RUN
+├── CLAUDE.md  PROGRESS.md  DECISIONS.md  README.md
+├── package.json  pnpm-workspace.yaml  tsconfig.base.json  eslint.config.js
 ```
 
 Outils : ce qui est décidé, et ce qui reste à choisir.

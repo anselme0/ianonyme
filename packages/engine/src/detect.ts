@@ -1,9 +1,10 @@
 // Détection déterministe : règles + variantes des entités connues
 // (docs/DOCUMENTATION.md, annexe A.3 et B).
 
-import { Coverage, normalizeText, normalizeValue, findOccurrences, placeholderRanges } from './normalize.js';
+import { Coverage, makeHaystack, normalizeValue, findOccurrences, placeholderRanges } from './normalize.js';
 import { runRules } from './rules.js';
 import type { Category, Conflict, ConversationState, Mention } from './types.js';
+import type { Haystack } from './normalize.js';
 import { canonicalFor, entityValues } from './state.js';
 import { parseName } from './names.js';
 
@@ -25,7 +26,7 @@ export function mentionId(start: number, end: number): string {
 }
 
 /** Candidats issus des entités connues : toutes leurs formes, dans tout le texte. */
-function entityCandidates(nt: string, state: ConversationState): Candidate[] {
+function entityCandidates(nt: Haystack, state: ConversationState): Candidate[] {
   const bySpan = new Map<string, Candidate>();
   for (const entity of Object.values(state.entities)) {
     for (const value of entityValues(entity)) {
@@ -54,7 +55,7 @@ export function detect(
   text: string,
   state: ConversationState,
 ): { mentions: Mention[]; conflicts: Conflict[] } {
-  const nt = normalizeText(text);
+  const nt = makeHaystack(text);
   const blocked = placeholderRanges(text).map(([start, end]) => ({ start, end }));
   const free = <T extends { start: number; end: number }>(c: T): boolean =>
     !blocked.some((b) => overlaps(b, c));

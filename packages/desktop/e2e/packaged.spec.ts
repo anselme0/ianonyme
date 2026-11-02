@@ -26,12 +26,10 @@ test('l’application empaquetée démarre, charge le module natif et déroule u
     args: [`--user-data-dir=${join(dir, 'data')}`],
     env: { ...process.env, IANONYME_CONFIG: config, IANONYME_PROBE: '1' },
   });
-  const logs: string[] = [];
-  app.process().stderr?.on('data', (d: Buffer) => logs.push(String(d)));
   const page = await app.firstWindow();
   await page.setViewportSize({ width: 1400, height: 900 });
   await page.waitForSelector('[data-testid="composer-input"]');
-  await expect.poll(() => logs.join('')).toContain('native_probe ok=true');
+  await expect.poll(() => app.evaluate(() => (globalThis as { ianonymeProbe?: boolean }).ianonymeProbe)).toBe(true);
   expect(await app.evaluate(({ app: a }) => a.isPackaged)).toBe(true);
 
   await page.getByTestId('file-input').setInputFiles(resolve(DEMO, 'rapport-expertise-fictif.pdf'));

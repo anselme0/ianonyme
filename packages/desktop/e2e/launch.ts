@@ -16,14 +16,16 @@ export interface Launched {
 }
 
 /** Lance l'application construite avec une configuration d'essai : faux assistant, faux LLM local. */
-export async function launch(options: { localEngine?: 'fake' | 'none'; fakeDelay?: boolean } = {}): Promise<Launched> {
+export async function launch(
+  options: { localEngine?: 'fake' | 'none'; localModel?: Record<string, unknown> } = {},
+): Promise<Launched> {
   const dir = mkdtempSync(join(tmpdir(), 'ianonyme-e2e-'));
   const config = join(dir, 'config.json');
   writeFileSync(
     config,
     JSON.stringify({
       assistant: { default: 'demo-fake', providers: [{ id: 'demo-fake', label: 'Assistant de démonstration (hors ligne)', type: 'fake' }] },
-      localModel: { engine: options.localEngine ?? 'fake', active: '', registry: [] },
+      localModel: options.localModel ?? { engine: options.localEngine ?? 'fake', active: '', registry: [] },
     }),
   );
   mkdirSync(SHOTS, { recursive: true });

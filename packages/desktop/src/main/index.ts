@@ -103,7 +103,10 @@ void app.whenReady().then(() => {
   registerIpc(service, (sender) => mainWindow !== null && sender === mainWindow.webContents);
   llm.warmUp();
   log('main', 'ready', { providers: providers.size, packaged: app.isPackaged });
-  if (process.env.IANONYME_PROBE) void probeNativeRuntime().then((ok) => log('localllm', 'native_probe', { ok }));
+  if (process.env.IANONYME_PROBE) void probeNativeRuntime().then((ok) => {
+      log('localllm', 'native_probe', { ok });
+      (globalThis as { ianonymeProbe?: boolean }).ianonymeProbe = ok;
+    });
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) mainWindow = createWindow();

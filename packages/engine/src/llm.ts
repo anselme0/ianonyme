@@ -2,7 +2,7 @@
 // (docs/DOCUMENTATION.md, annexe C). Le LLM ne fait que proposer ; le code vérifie.
 
 import { detect, mentionId } from './detect.js';
-import { findOccurrences, normalizeText, normalizeValue } from './normalize.js';
+import { findOccurrences, makeHaystack, normalizeValue } from './normalize.js';
 import { entityValues } from './state.js';
 import type {
   Category,
@@ -129,7 +129,7 @@ export function mergeLlmMentions(
   const stats = emptyStats();
   stats.invalidJson = options.invalidJson ?? 0;
   const max = options.maxMentions && options.maxMentions > 0 ? options.maxMentions : 20;
-  const nt = normalizeText(text);
+  const nt = makeHaystack(text);
   const covered = detect(text, state).mentions.filter((m) => m.status === 'accepted');
   const mentions: Mention[] = [];
   const conflicts: Conflict[] = [];

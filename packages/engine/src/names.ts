@@ -108,6 +108,7 @@ export function personVariants(canonical: string): string[] {
   out.push(familyStr);
   for (const civ of CIVILITY_VARIANTS) out.push(`${civ} ${familyStr}`);
   const initials = firstNames.map((f) => `${f[0]?.toUpperCase() ?? ''}.`);
+  out.push(`${firstNames.join(' ')} ${familyStr}`);
   out.push(`${initials[0]} ${familyStr}`);
   if (initials.length > 1) out.push(`${initials.join(' ')} ${familyStr}`);
   out.push(`${familyStr} ${firstNames.join(' ')}`);

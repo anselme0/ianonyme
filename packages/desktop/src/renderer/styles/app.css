@@ -1123,3 +1123,81 @@ h3 {
 .back {
   padding-left: 0;
 }
+
+/* ---- Revue en ligne, démarrage, à propos ---- */
+.inline-review {
+  margin-bottom: var(--space-2);
+  padding: 10px 12px;
+  border: 1px solid var(--amber-border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.inline-review h3 {
+  margin-bottom: 6px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.inline-review ul {
+  list-style: none;
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.inline-review .verify-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.inline-review .verify-source {
+  margin: 0;
+  flex: 1;
+}
+.startup {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  background: var(--bg);
+  text-align: center;
+}
+.startup h1 {
+  font-size: 20px;
+}
+.startup-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 200px;
+}
+.line {
+  height: 8px;
+  border-radius: 4px;
+}
+.line-grey {
+  background: var(--border-strong);
+}
+.line-green {
+  background: var(--accent);
+}
+.startup-help {
+  max-width: 440px;
+}
+.about {
+  width: min(520px, 92vw);
+}
+.about-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+}

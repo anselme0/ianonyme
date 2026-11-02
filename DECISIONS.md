@@ -55,3 +55,15 @@ Première passe : la revue plein écran sert aussi aux messages courts avec sugg
 
 ## D18. Envoi bloqué par ambiguïté
 La démonstration du blocage repose sur deux personnes de même nom de famille : la valeur ambiguë n'est pas masquée, donc bloquante, jusqu'au choix de l'utilisateur.
+
+## D19. Nom de fichier : refus par défaut
+Après détection et masquage, tout mot du nom qui n'est ni un repère, ni un nombre, ni un mot courant de dossier (`packages/desktop/src/main/filename.ts`) est remplacé par « … ». Raison : « rapport garnier.docx » ne contient aucun prénom, les règles ne le reconnaissent pas, et il partirait en clair. Le nom affiché dans la pastille est celui qui est envoyé. Coût : un nom informatif perd ses mots rares.
+
+## D20. Revue courte en ligne
+Un message court (sans fichier) avec une ou deux suggestions ou conflits ouvre la revue dans le fil, sous la zone de saisie. Au-delà, ou avec un fichier, la revue plein écran. Le même état de revue et les mêmes décisions servent aux deux.
+
+## D21. Prénoms inconnus
+Si le premier mot d'un nom de personne n'est pas dans la liste de prénoms, on suppose « prénom puis nom de famille » (le dernier mot est le nom), sauf si le dernier mot est un prénom connu (forme inversée). Raison : sans cela « Dimitri Kowal » ne propageait pas « Kowal » et la valeur seule partait en clair (trouvé à l'audit).
+
+## D22. Confusables et caractères invisibles
+La normalisation ramène à leur équivalent latin les lettres cyrilliques et grecques identiques à l'œil, et ignore les caractères invisibles (largeur nulle, sens d'écriture, trait d'union conditionnel, accents combinants). Un nom écrit avec un « а » cyrillique est donc masqué. Limites assumées : lettres espacées (`J e a n`), encodage de pourcentage, ligatures `œ` et `æ` : non traités (testés comme « limites connues »).

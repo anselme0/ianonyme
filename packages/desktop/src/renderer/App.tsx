@@ -15,8 +15,10 @@ import type {
 } from '../shared/api.js';
 import { composeMessage } from '../shared/compose.js';
 import { api } from './api.js';
+import { About } from './components/About.js';
 import { Composer } from './components/Composer.js';
 import type { ComposerFile } from './components/Composer.js';
+import { InlineReview } from './components/InlineReview.js';
 import { PreviewDialog, ProtectedText } from './components/PreviewDialog.js';
 import { ProtectionPanel } from './components/ProtectionPanel.js';
 import { Reliability } from './components/Reliability.js';
@@ -24,6 +26,7 @@ import { Review } from './components/Review.js';
 import { Settings } from './components/Settings.js';
 import type { ThemeChoice } from './components/Settings.js';
 import { Sidebar } from './components/Sidebar.js';
+import { Startup } from './components/Startup.js';
 import { Thread } from './components/Thread.js';
 import { marksFrom } from './marks.js';
 import { t } from './messages.js';
@@ -38,6 +41,8 @@ interface ReviewState {
   total: number;
   degraded: 'absent' | 'timeout' | 'error' | null;
   fileId: string | null;
+  /** Revue courte dans le fil (message court avec une ou deux suggestions). */
+  inline: boolean;
 }
 
 type UiError = { kind: 'blocked'; leaks: LeakItem[] } | { kind: 'code'; code: ErrorCode | 'unknown' } | null;
@@ -86,6 +91,8 @@ export function App() {
   const [screen, setScreen] = useState<'chat' | 'reliability'>('chat');
   const [measure, setMeasure] = useState<MeasureReport | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [startupDone, setStartupDone] = useState(false);
   const [theme, setTheme] = useState<ThemeChoice>(readTheme);
   const [systemDark, setSystemDark] = useState(() => window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -136,6 +143,15 @@ export function App() {
       }
     })();
   }, []);
+
+  // Tant que l'analyse approfondie se prépare, on interroge régulièrement son état.
+  useEffect(() => {
+    if (info?.localAnalysis !== 'loading') return;
+    const timer = setInterval(() => {
+      void api.app.info().then(setInfo);
+    }, 1500);
+    return () => clearInterval(timer);
+  }, [info?.localAnalysis]);
 
   const refreshList = useCallback(async () => setConvs(await api.conversations.list()), []);
 
@@ -289,7 +305,7 @@ export function App() {
     const { suggestions, degraded } = deep ? await runDeep(target) : { suggestions: [], degraded: info?.localAnalysis === 'ready' ? null : ('absent' as const) };
     const a = await api.detect.run(conv.id, target, true);
     setConv(await api.conversations.get(conv.id));
-    setReview({ title, text: target, analysis: a, suggestions, total: suggestions.length + a.conflicts.length, degraded, fileId });
+    setReview({ title, text: target, analysis: a, suggestions, total: suggestions.length + a.conflicts.length, degraded, fileId, inline: false });
   };
 
   // ---- Fichiers ----
@@ -379,7 +395,8 @@ export function App() {
     if (pv.requiresReview) {
       const a = await api.detect.run(conv.id, text, true);
       setConv(await api.conversations.get(conv.id));
-      setReview({ title: '', text, analysis: a, suggestions: pending, total: pending.length + a.conflicts.length, degraded: info.localAnalysis === 'ready' ? null : 'absent', fileId: null });
+      const count = pending.length + a.conflicts.length;
+      setReview({ title: '', text, analysis: a, suggestions: pending, total: count, degraded: info.localAnalysis === 'ready' ? null : 'absent', fileId: null, inline: readyFiles.length === 0 && count > 0 && count <= 2 });
       return;
     }
     setBrief({ preview: pv, left: BRIEF_SECONDS });
@@ -398,6 +415,10 @@ export function App() {
     }
     if (!isFile && text.trim().length === 0) return;
     if (isFile && text.trim().length === 0 && ids.length === 0) return;
+    if (ids.length === 0) {
+      setBrief({ preview: pv, left: BRIEF_SECONDS });
+      return;
+    }
     setDialog({ preview: pv, original: originalOf(text, files.map((f) => (f.chip?.id === review.fileId ? { ...f, reviewed: true } : f))) });
   };
 
@@ -405,7 +426,7 @@ export function App() {
     if (!conv) return;
     const a = await api.detect.run(conv.id, text, true);
     setConv(await api.conversations.get(conv.id));
-    setReview({ title: '', text, analysis: a, suggestions: [], total: a.conflicts.length, degraded: null, fileId: null });
+    setReview({ title: '', text, analysis: a, suggestions: [], total: a.conflicts.length, degraded: null, fileId: null, inline: false });
   };
 
   const onProtectLeak = async (): Promise<void> => {
@@ -449,6 +470,7 @@ export function App() {
         onRename={(id, title) => void toolAfter(api.conversations.rename(id, title))}
         onRemove={(id) => void toolAfter(api.conversations.remove(id), id)}
         onOpenSettings={() => setSettingsOpen(true)}
+        onOpenAbout={() => setAboutOpen(true)}
         onOpenReliability={() => {
           void api.app.measure().then(setMeasure);
           setScreen('reliability');
@@ -527,6 +549,18 @@ export function App() {
                 )}
               </div>
             )}
+            {review?.inline && (
+              <InlineReview
+                analysis={review.analysis}
+                suggestions={review.suggestions}
+                entities={conv.entities}
+                onProtect={(m, entityId) => void decide({ action: 'accept', mention: m, entityId }).then(() => refreshReview(undefined, m))}
+                onIgnore={(m) => void decide({ action: 'reject', mention: m }).then(() => refreshReview(undefined, m))}
+                onLink={(m, entityId) => void decide({ action: 'link', mention: m, entityId }).then(() => refreshReview(undefined, m))}
+                onCancel={closeReview}
+                onContinue={() => void afterReview()}
+              />
+            )}
             {brief && (
               <div className="brief" role="status" data-testid="brief">
                 <div className="brief-head">
@@ -589,7 +623,7 @@ export function App() {
         onToggleDeep={(v) => void api.settings.update({ convId: conv.id, deepAnalysisOnMessages: v }).then(setConv)}
       />
 
-      {review && (
+      {review && !review.inline && (
         <Review
           title={review.title || t.conversation.youLabel}
           text={review.text}
@@ -618,6 +652,10 @@ export function App() {
           onSend={() => void doSend()}
         />
       )}
+
+      {info.localAnalysis === 'loading' && !startupDone && <Startup dark={dark} onContinueBasic={() => setStartupDone(true)} />}
+
+      {aboutOpen && <About dark={dark} onClose={() => setAboutOpen(false)} />}
 
       {settingsOpen && (
         <Settings

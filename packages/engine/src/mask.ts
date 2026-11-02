@@ -1,6 +1,6 @@
 // Masquage et contrôle anti-fuite (docs/DOCUMENTATION.md, annexe A.4).
 
-import { Coverage, findOccurrences, normalizeText, normalizeValue, placeholderRanges } from './normalize.js';
+import { Coverage, findOccurrences, makeHaystack, normalizeValue, placeholderRanges } from './normalize.js';
 import { runStructuredRules } from './rules.js';
 import { entityValues } from './state.js';
 import type { ConversationState, LeakReport, LeakItem, Replacement } from './types.js';
@@ -39,7 +39,7 @@ export function mask(
   text: string,
   state: ConversationState,
 ): { masked: string; replacements: Replacement[] } {
-  const nt = normalizeText(text);
+  const hay = makeHaystack(text);
   const blocked = placeholderRanges(text).map(([start, end]) => ({ start, end }));
   const matches: Match[] = [];
   for (const [nv, { value, ids }] of valueIndex(state)) {
@@ -50,7 +50,7 @@ export function mask(
       if (chosen && ids.includes(chosen)) entityId = chosen;
     }
     if (!entityId) continue;
-    for (const occ of findOccurrences(nt, value)) {
+    for (const occ of findOccurrences(hay, value)) {
       if (!blocked.some((b) => overlaps(b, occ))) matches.push({ ...occ, entityId });
     }
   }
@@ -88,12 +88,12 @@ export function mask(
  * (e-mail, téléphone, IBAN, numéros…) relancés sur le texte masqué ne doivent rien trouver.
  */
 export function checkLeak(masked: string, state: ConversationState): LeakReport {
-  const nt = normalizeText(masked);
+  const hay = makeHaystack(masked);
   const blocked = placeholderRanges(masked).map(([start, end]) => ({ start, end }));
   const leaks: LeakItem[] = [];
   const seen = new Set<string>();
   for (const [nv, { value, ids }] of valueIndex(state)) {
-    for (const occ of findOccurrences(nt, value)) {
+    for (const occ of findOccurrences(hay, value)) {
       if (blocked.some((b) => overlaps(b, occ))) continue;
       const key = `${nv}`;
       if (seen.has(key)) continue;

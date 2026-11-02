@@ -4,9 +4,15 @@
 
 ## Résumé pour le matin
 
-_(à compléter à la fin)_
+- **État** : le périmètre de `docs/NIGHT_RUN.md` §5 est fait (niveaux 0 à 6, passe finale, deuxième passe), sur la branche `dev/nuit` (aucun envoi vers `origin`). Tags `checkpoint-0` à `checkpoint-6`.
+- **Ce qui marche, vérifié** : moteur (149 tests), application Electron (105 tests + 13 tests de bout en bout avec captures regardées), parcours de démonstration complet avec l'assistant de démonstration hors ligne, application empaquetée et contenu de l'installeur qui démarrent, module natif `node-llama-cpp` qui se charge.
+- **Ce qui est simulé** : l'assistant (« Assistant de démonstration (hors ligne) ») et l'analyse approfondie (« simulée ») : voir `docs/DEMO_SCRIPT.md` §1 pour ce qu'il faut dire au jury.
+- **Ce qui n'est pas vérifié** : appel réel à Claude (pas de clé), vrai modèle local (Ollama et GPU laissés à vos tests), installation de l'installeur sur un poste propre.
+- **Lancer** : `corepack pnpm install`, puis `corepack pnpm dev` (développement) ou l'installeur `packages/desktop/release/IAnonyme Setup 0.1.0.exe`.
+- **À regarder en premier** : (1) lancer le parcours de `docs/DEMO_SCRIPT.md` ; (2) installer l'installeur sur un profil propre ; (3) lire « Questions pour le matin » ci-dessous ; (4) `reports/measure.json` : les mentions indirectes sont à 0 % sans modèle, c'est normal et affiché tel quel.
+- **Mesure** : sur 6 documents fictifs, 95 % des valeurs directes repérées sur les documents d'ajustement, 88 % sur ceux d'évaluation (ORGANISATION : 40 % en évaluation, non ajusté, règle 5). Corpus minuscule : aucun pourcentage n'est représentatif.
+- **Plages de charge** à écarter de vos mesures de latence : voir « Environnement » (builds et tests de bout en bout, un à deux processus à la fois).
 
-- Statut : niveaux 0 à 5 faits et vérifiés ; niveau 6 en cours (documents de démonstration, installeur construit).
 
 ## Prochaine action
 
@@ -47,7 +53,7 @@ Niveau 6 : écrire `docs/PROMPTS.md` et `docs/DEMO_SCRIPT.md`, puis passe finale
 ### Niveau 2 : mesure
 - [x] `pnpm measure` sur le moteur TypeScript
 - [x] Sortie JSON pour l'écran « Fiabilité de la détection »
-- [ ] Corpus complété (`.docx`, PDF réalistes) si utile
+- [ ] Corpus complété (`.docx`, PDF réalistes) : reporté volontairement (D7), les documents sont dans `demo/
 
 ### Niveau 3 : Electron et services
 - [x] Processus principal, état des conversations, IPC (A.6)
@@ -72,23 +78,23 @@ Niveau 6 : écrire `docs/PROMPTS.md` et `docs/DEMO_SCRIPT.md`, puis passe finale
 - [x] Cinq tours avec placeholders cohérents
 
 ### Niveau 6 : démonstration et empaquetage
-- [ ] `PROMPTS.md`
-- [ ] `DEMO_SCRIPT.md`
-- [ ] Rapport d'expertise fictif `.docx` et PDF
+- [x] `PROMPTS.md`
+- [x] `DEMO_SCRIPT.md`
+- [x] Rapport d'expertise fictif `.docx` et PDF
 - [x] Installeur Windows construit et lancé
 
 ### Passe finale
-- [ ] Réorganisation finale du code et du dossier, chemins et documents à jour
-- [ ] Audit adverse de la protection (chaque fuite trouvée devient un test)
-- [ ] `git status` propre : aucun secret, modèle ni journal
-- [ ] Documents à jour, « Résumé pour le matin » écrit
+- [x] Réorganisation finale du code et du dossier, chemins et documents à jour
+- [x] Audit adverse de la protection (chaque fuite trouvée devient un test)
+- [x] `git status` propre : aucun secret, modèle ni journal
+- [x] Documents à jour, « Résumé pour le matin » écrit
 
 ### Deuxième passe (après tout le reste)
-- [ ] Revue courte en ligne
-- [ ] Modèles de tâches dans l'interface
-- [ ] Renommage et suppression de conversations
-- [ ] Écran de démarrage
-- [ ] Paramètres complets
+- [x] Revue courte en ligne
+- [x] Modèles de tâches dans l'interface
+- [x] Renommage et suppression de conversations
+- [x] Écran de démarrage
+- [x] Paramètres complets
 
 ## Environnement
 
@@ -117,10 +123,10 @@ Construction de l'installeur (plages à écarter des mesures de latence d'Anselm
 Commandes lancées dans la nuit du 2 au 3 novembre 2026 et résultat obtenu :
 
 - `pnpm typecheck`, `pnpm lint` : passent.
-- `pnpm --filter engine test` : 100 tests (masquage, cohérence, historique, anti-fuite, restitution et flux coupé à chaque position, une et deux coupures, conflits, mentions du LLM, erreurs sans valeur, corpus d'ajustement).
-- `pnpm --filter desktop test` : 98 tests (service de conversation avec faux fournisseur, cinq tours, envoi bloqué sans appel du fournisseur, extraction `.txt`/`.docx`/PDF, fournisseurs `anthropic` et `openai-compatible` contre un faux serveur local, journal sans texte, rendu des réponses restituées, vocabulaire, source unique des textes, contrastes AA des deux thèmes).
+- `pnpm --filter engine test` : 149 tests (masquage, cohérence, historique, anti-fuite, restitution et flux coupé à chaque position, une et deux coupures, conflits, mentions du LLM, erreurs sans valeur, corpus d'ajustement, audit adverse : casse, accents, espaces et caractères invisibles Unicode, lettres cyrilliques identiques, formats de téléphone et d'IBAN, performance sur de longs textes).
+- `pnpm --filter desktop test` : 105 tests (service de conversation avec faux fournisseur, cinq tours, envoi bloqué sans appel du fournisseur, extraction `.txt`/`.docx`/PDF, fournisseurs `anthropic` et `openai-compatible` contre un faux serveur local, journal sans texte, rendu des réponses restituées, vocabulaire, source unique des textes, contrastes AA des deux thèmes).
 - `pnpm measure` : écrit `reports/measure.json` (règles et variantes seules).
-- `pnpm --filter desktop test:e2e` : 9 tests Electron passent (parcours de démonstration complet, sécurité de la fenêtre, journaux sans valeur, analyse de base, fichiers refusés, thème sombre, conversations, application empaquetée). Les captures de `packages/desktop/e2e/screenshots/` ont été regardées (revue, comparaison, réponse restituée, envoi bloqué, fiabilité, analyse de base, thème sombre).
+- `pnpm --filter desktop test:e2e` : 13 tests Electron passent (parcours de démonstration complet, sécurité de la fenêtre, journaux sans valeur, analyse de base, fichiers refusés, thème sombre, conversations, application empaquetée, revue en ligne, écran de démarrage, à propos). Les captures de `packages/desktop/e2e/screenshots/` ont été regardées (revue, comparaison, réponse restituée, envoi bloqué, fiabilité, analyse de base, thème sombre).
 - Application empaquetée (`release/win-unpacked`) et contenu extrait de l'installeur NSIS : démarrent, le module natif de `node-llama-cpp` se charge (CPU seul), un envoi complet passe, les outils de développement sont inactifs.
 - `pnpm dev` (electron-vite) : démarre sans erreur.
 
@@ -134,8 +140,28 @@ Commandes lancées dans la nuit du 2 au 3 novembre 2026 et résultat obtenu :
 
 ## Problèmes connus
 
-_(ce qui a été essayé, ce qui reste)_
+- **`makensis` : `ENOTCONN`** quand `electron-builder` est lancé depuis les outils de la session (essayé : Bash, PowerShell, entrée standard redirigée, `Start-Process` avec redirections ; contourné par `cmd /c` dans une fenêtre masquée). À relancer dans un terminal ordinaire.
+- **Organisations en évaluation : 40 %** (2 sur 5). Non ajusté : les documents `eval-*` ne servent qu'à mesurer (règle 5). À reprendre avec de nouveaux documents d'ajustement si l'équipe le souhaite.
+- **Mentions indirectes : 0 %** sans analyse approfondie ; l'indicateur de gain n'est pas mesuré tant que le modèle n'est pas choisi.
+- **Limites de la détection (testées comme telles)** : lettres espacées (`J e a n`), encodage de pourcentage, ligatures `œ` et `æ`, noms de lieux (LIEU : LLM seulement, annexe B.1), personnes sans civilité ni prénom connu (ex. « garnier » seul dans une phrase, tant qu'aucune entité ne le porte).
+- **PDF** : l'ordre du texte de pdf.js peut mélanger des colonnes ; les images intégrées d'un PDF ne sont pas détectées (le `.docx` le fait). Un PDF mal construit peut sortir sans avertissement.
+- **Revue des messages** : l'avertissement « repère altéré » est au niveau du message, pas du passage.
+- **Pastille de fichier** : le nom affiché est le nom envoyé (mots rares remplacés par « … ») ; l'utilisateur ne peut pas le modifier.
+- **Tests de bout en bout** : lancés à une taille de fenêtre (1400 x 900) ; pas de test petit écran ni mise à l'échelle Windows.
+- **Journaux** : le processus principal écrit sur la sortie d'erreur (codes et nombres seulement, test à l'appui) ; aucun fichier de journal n'est créé.
+- **`pnpm corepack enable`** exige l'administrateur sous Windows : utiliser `corepack pnpm …`.
 
 ## Questions pour le matin
 
-_(points qui demandent l'équipe ; la session a continué avec un choix par défaut)_
+1. **Modèle local et modèle de l'assistant** : non choisis (règle 7). Le moteur `node-llama-cpp` est branché par configuration (`localModel`), mais jamais essayé avec un vrai modèle : à tester dès que les résultats Ollama sont arrêtés.
+2. **Liste de prénoms** (`packages/engine/src/names.ts`, environ 400) : écrite à la main, sans source ; à relire ou à remplacer par une source citée.
+3. **« Analyse approfondie simulée »** : accepter que la démonstration hors ligne affiche cette mention (c'est la lecture prudente de la règle 8), ou prévoir la configuration réelle (clé + modèle) avant le jury ?
+4. **Compte maquette** : aucune mention « maquette » à l'écran (`docs/UI_UX.md` §12, choisi au départ). Le dire à l'oral, avec le schéma « prototype vs produit ».
+5. **Corpus** : aucun document ajouté dans `corpus/` pendant la nuit (vos tests le parcourent). Les documents de démonstration sont dans `demo/` ; à intégrer au corpus après vos tests si utile (formats `.docx` et PDF avec annotations).
+6. **Taille maximale de fichier** : 10 Mo par défaut (`limits.maxFileBytes`), à fixer après les tests.
+7. **Mots-clés d'organisation** : « tribunal » figure dans `docs/DOCUMENTATION.md` B.1 mais les juridictions publiques ne sont pas masquées (B.3) ; j'ai suivi B.3 (voir `DECISIONS.md`). Confirmer.
+
+## Réorganisations (suite)
+
+- Fin du niveau 1, 3 et 4 : relues, pas de déplacement nécessaire (moteur et application déjà séparés ; scripts rangés dans `packages/*/scripts`).
+- Passe finale : suppression d'un script de debug ; `README.md` et `docs/DEV_SETUP.md` §4 mis à jour avec l'arborescence réelle.

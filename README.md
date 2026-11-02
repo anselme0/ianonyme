@@ -17,6 +17,9 @@ Application desktop de conversation avec une IA qui masque les informations sens
 | Application Electron + interface | `packages/desktop` |
 | Serveur (stub, ignoré) | `packages/server` |
 | Corpus fictif annoté | `corpus/` |
+| Documents de la démonstration (fictifs) | `demo/` |
+| Mesure du rappel (sortie de `pnpm measure`) | `reports/` |
+| Consignes de l'assistant, script de démonstration | `docs/PROMPTS.md`, `docs/DEMO_SCRIPT.md` |
 | Banc d'essai du modèle local (Python) | `scripts/` |
 | Configuration (exemple sans secret) | `config/` |
 | Logos d'origine | `assets/logo/` |

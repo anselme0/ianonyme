@@ -13,6 +13,7 @@ export const t = {
     newConversation: 'Nouvelle conversation',
     today: "Aujourd'hui",
     settings: 'Paramètres',
+    about: 'À propos',
     collapse: 'Replier la barre latérale',
     expand: 'Déplier la barre latérale',
     rename: 'Renommer',

@@ -1,6 +1,7 @@
 export * from './types.js';
 export { EngineError } from './errors.js';
-export { normalizeText, normalizeValue, findOccurrences, INVISIBLE } from './normalize.js';
+export { normalizeText, normalizeValue, findOccurrences, makeHaystack, INVISIBLE } from './normalize.js';
+export type { Haystack } from './normalize.js';
 export {
   createState,
   acceptMention,

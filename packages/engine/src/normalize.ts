@@ -81,17 +81,35 @@ export interface Occurrence {
   end: number;
 }
 
-/** Occurrences de `value` dans `normalizedText` (déjà normalisé), frontières de mot respectées. */
-export function findOccurrences(normalizedText: string, value: string): Occurrence[] {
+/** Texte normalisé, avec sa version sans caractères invisibles (pré-filtre rapide). */
+export interface Haystack {
+  nt: string;
+  stripped: string;
+}
+
+export function makeHaystack(text: string): Haystack {
+  const nt = normalizeText(text);
+  return { nt, stripped: nt.replaceAll(INVISIBLE, '') };
+}
+
+/**
+ * Occurrences de `value` dans un texte déjà normalisé, frontières de mot respectées.
+ * Un pré-filtre écarte aussitôt les valeurs dont le mot le plus long est absent du texte :
+ * c'est ce qui garde le masquage rapide avec des centaines d'entités.
+ */
+export function findOccurrences(haystack: string | Haystack, value: string): Occurrence[] {
   const nv = normalizeValue(value);
   if (nv.length === 0) return [];
+  const hay = typeof haystack === 'string' ? { nt: haystack, stripped: haystack.replaceAll(INVISIBLE, '') } : haystack;
+  const longest = nv.split(' ').reduce((a, b) => (b.length > a.length ? b : a), '');
+  if (longest.length >= 2 && !hay.stripped.includes(longest)) return [];
   const re = valueRegex(nv);
   const out: Occurrence[] = [];
-  for (const m of normalizedText.matchAll(re)) {
+  for (const m of hay.nt.matchAll(re)) {
     if (m[0].length === 0) continue;
     const start = m.index;
     let end = m.index + m[0].length;
-    while (end > start && normalizedText[end - 1] === INVISIBLE) end--;
+    while (end > start && hay.nt[end - 1] === INVISIBLE) end--;
     out.push({ start, end });
   }
   return out;
