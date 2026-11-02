@@ -1,0 +1,40 @@
+# Empaquetage Windows (docs/DEV_SETUP.md, §13).
+# Le moteur et l'interface sont compilés dans `out/` ; seules `fflate`, `unpdf` et `node-llama-cpp`
+# restent des dépendances d'exécution. node-llama-cpp : variantes CPU et Vulkan seulement (CUDA exclu pour la taille).
+appId: fr.ianonyme.demo
+electronVersion: 45.2.1
+productName: IAnonyme
+copyright: Équipe 59 - prototype de démonstration
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**
+  - package.json
+  - '!node_modules/@node-llama-cpp/win-x64-cuda'
+  - '!node_modules/@node-llama-cpp/win-x64-cuda/**'
+  - '!node_modules/@node-llama-cpp/win-x64-cuda-ext'
+  - '!node_modules/@node-llama-cpp/win-x64-cuda-ext/**'
+  - '!node_modules/@node-llama-cpp/win-arm64'
+  - '!node_modules/@node-llama-cpp/win-arm64/**'
+asarUnpack:
+  - node_modules/node-llama-cpp/**
+  - node_modules/@node-llama-cpp/**
+extraResources:
+  - from: resources/icon.png
+    to: icon.png
+  - from: ../../reports/measure.json
+    to: measure.json
+npmRebuild: false
+nodeGypRebuild: false
+win:
+  target:
+    - target: dir
+    - target: nsis
+      arch: x64
+  icon: build/icon.ico
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false

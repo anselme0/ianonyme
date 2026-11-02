@@ -514,13 +514,14 @@ Canaux IPC minimaux :
 
 | Canal | Entrée | Sortie |
 |---|---|---|
-| `files:import` | chemin ou contenu du fichier | `{ text, maskedFileName, warnings[], blocked?: { reason } }` |
-| `detect:run` | `{ convId, text }` | `{ mentions, conflicts }` |
+| `files:import` | `{ convId, name, bytes }` | `{ ok, file: { id, name, readableName, maskedName, warnings[] }, text, blocked?: { reason } }` ; `files:discard` retire un fichier joint |
+| `detect:run` | `{ convId, text, commit? }` | `{ mentions, conflicts, maskedText, protectedInText, leak }` ; sans `commit`, rien n'est enregistré (une frappe ne crée pas d'entité durable) |
 | `llm:status` | — | `'ready' \| 'loading' \| 'absent' \| 'error'` |
-| `llm:propose` | `{ convId, text }` | `{ mentions, conflicts, stats }` ou erreur (passage en mode dégradé) |
+| `llm:propose` | `{ convId, text }` | `{ mentions, conflicts, stats, degraded, degradedReason? }` ; tout échec (absent, délai, erreur) renvoie `degraded: true` |
+| `llm:skip` | `{ convId }` | — (abandonne l'analyse en cours : « Passer en analyse de base ») |
 | `mentions:decide` | `{ convId, action, mentionId, entityId? }` | nouvel état de la conversation |
-| `chat:preview` | `{ convId, userText }` | `{ maskedPayload, leak, requiresReview }` |
-| `chat:send` | `{ convId, userText }` | événements `chat:chunk` (`Segment[]`), `chat:done`, `chat:error` |
+| `chat:preview` | `{ convId, userText, fileIds, pendingSuggestions }` | `{ maskedPayload, maskedCurrent, leak, requiresReview, mentions, conflicts, … }` |
+| `chat:send` | `{ convId, userText, fileIds, regenerate? }` | `{ requestId }` puis événements `chat:chunk` (`Segment[]`), `chat:done`, `chat:error` (codes d'erreur fixes, jamais de texte) |
 | `chat:stop` | `{ convId }` | — |
 | `conversation:*` | création, renommage, suppression | état de la liste |
 | `settings:update` | `{ convId, assistantId?, deepAnalysisOnMessages? }` | réglages de la conversation |
@@ -533,16 +534,19 @@ Rien de spécifique à un modèle n'est écrit dans le code : tout passe par deu
 interface AssistantProvider {
   id: string;        // ex. "claude", "demo-local"
   label: string;     // libellé affiché dans l'interface
+  simulated: boolean; // vrai pour le faux assistant hors ligne : l'interface le dit
   stream(
     messages: { role: 'user' | 'assistant'; content: string }[],
-    signal: AbortSignal
+    signal: AbortSignal,
+    options?: { system?: string } // consigne système de l'application (docs/PROMPTS.md)
   ): AsyncIterable<string>;
 }
 ```
 
 - Un fournisseur ne reçoit **que** la charge utile produite par `buildApiPayload`, après la vérification de sécurité finale.
 - Un modèle auto-hébergé sur le poste de démonstration emprunte **exactement le même chemin** que Claude (masquage, vérification, restauration). La protection n'est jamais contournée sous prétexte que le modèle est local : la démo reste représentative du produit.
-- Types de fournisseur prévus : `anthropic` (Claude) et `openai-compatible` (modèle servi localement par Ollama ou `llama-server`, qui exposent une API de ce type ; à confirmer pendant le spike).
+- Types de fournisseur : `anthropic` (Claude), `openai-compatible` (modèle servi localement par Ollama ou `llama-server`) et `fake` (assistant scripté hors ligne, pour les tests et la démonstration sans réseau ; l'interface l'affiche comme « Assistant de démonstration (hors ligne) »). Les deux premiers sont testés contre un faux serveur local ; aucun test réel n'a été fait (pas de clé).
+- Le point de passage unique vers un fournisseur est `secureStream` (`packages/desktop/src/main/secure-send.ts`) : il masque tout l'historique, lance la vérification de sécurité, et n'appelle le fournisseur qu'ensuite.
 
 Fichier `config/local.config.json` (hors dépôt, avec la clé API) ; un exemple sans secret, `config/local.config.example.json`, est versionné :
 
@@ -558,7 +562,7 @@ Fichier `config/local.config.json` (hors dépôt, avec la clé API) ; un exemple
     ]
   },
   "localModel": {
-    "engine": "node-llama-cpp",
+    "engine": "node-llama-cpp", // ou "fake" (scripté, tests) ou "none" (analyse de base)
     "active": "À DÉCIDER",
     "registry": [
       { "id": "…", "file": "…", "downloadUrl": "…", "sha256": "…",

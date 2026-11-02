@@ -1,4 +1,5 @@
 import { _electron as electron } from '@playwright/test';
+import { expect } from '@playwright/test';
 import type { ElectronApplication, Page } from '@playwright/test';
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -35,4 +36,18 @@ export async function launch(options: { localEngine?: 'fake' | 'none'; fakeDelay
   await page.setViewportSize({ width: 1400, height: 900 });
   await page.waitForSelector('[data-testid="composer-input"]');
   return { app, page, userData: dir };
+}
+
+/** Traite tous les points à vérifier d'une revue : protège les suggestions, tranche les conflits. */
+export async function protectAll(page: Page): Promise<void> {
+  const items = page.getByTestId('verify-item');
+  while ((await items.count()) > 0) {
+    const first = items.first();
+    const before = await items.count();
+    const protect = first.getByTestId('protect');
+    if (await protect.count()) await protect.click();
+    else await first.getByTestId('choose-candidate').first().click();
+    // Protéger une valeur protège toutes ses occurrences : plusieurs lignes peuvent disparaître.
+    await expect.poll(async () => items.count()).toBeLessThan(before);
+  }
 }

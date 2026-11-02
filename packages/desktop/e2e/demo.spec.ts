@@ -1,23 +1,9 @@
 // Parcours de démonstration (docs/DOCUMENTATION.md, §13), de bout en bout, avec le faux assistant.
 import { expect, test } from '@playwright/test';
-import type { Page } from '@playwright/test';
 import { resolve } from 'node:path';
-import { DEMO, SHOTS, launch } from './launch.js';
+import { DEMO, SHOTS, launch, protectAll } from './launch.js';
 
 const REAL_NAMES = ['Louis Cordier', 'Étienne Vasseur', 'Odile Marchand', 'Hélène Barraud', 'Paul-Henri Delmas', 'Claire Perrin'];
-
-async function protectAll(page: Page): Promise<void> {
-  const items = page.getByTestId('verify-item');
-  while ((await items.count()) > 0) {
-    const first = items.first();
-    const before = await items.count();
-    const protect = first.getByTestId('protect');
-    if (await protect.count()) await protect.click();
-    else await first.getByTestId('choose-candidate').first().click();
-    // Protéger une valeur protège toutes ses occurrences : plusieurs lignes peuvent disparaître.
-    await expect.poll(async () => items.count()).toBeLessThan(before);
-  }
-}
 
 test.describe.configure({ mode: 'serial' });
 

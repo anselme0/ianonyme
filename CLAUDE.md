@@ -54,7 +54,7 @@ En cas de contradiction entre deux documents, ou entre le code et un document : 
 
 ## Commandes
 
-À créer avec le squelette (voir `DEV_SETUP.md`, §5) : `pnpm install`, `pnpm dev`, `pnpm test`, `pnpm --filter engine test`, `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm package`, `pnpm measure`.
+Elles existent (voir `docs/DEV_SETUP.md`, §5) : `pnpm install`, `pnpm dev`, `pnpm test`, `pnpm --filter engine test`, `pnpm --filter desktop test:e2e`, `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm package`, `pnpm measure`. Sous Windows sans droits administrateur : `corepack pnpm …`.
 
 ## Environnements : ce que tu peux et ne peux pas faire
 

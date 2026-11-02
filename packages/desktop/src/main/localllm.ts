@@ -175,3 +175,18 @@ export function createLocalLlm(cfg: AppConfig, modelsDir: string): LocalLlm {
       return new AbsentLlm();
   }
 }
+
+/**
+ * Vérifie que le module natif se charge (CPU seul, sans GPU ni modèle). Utilisé par l'auto-test de
+ * l'application empaquetée : IANONYME_PROBE=1.
+ */
+export async function probeNativeRuntime(): Promise<boolean> {
+  try {
+    const lib = await import('node-llama-cpp');
+    const llama = await lib.getLlama({ gpu: false, build: 'never' });
+    return typeof llama.systemInfo === 'string';
+  } catch (e) {
+    logError('localllm', 'probe_failed', e);
+    return false;
+  }
+}

@@ -119,7 +119,10 @@ export function App() {
   }, []);
 
   // ---- Démarrage ----
+  const started = useRef(false);
   useEffect(() => {
+    if (started.current) return;
+    started.current = true;
     void (async () => {
       const [i, list] = await Promise.all([api.app.info(), api.conversations.list()]);
       setInfo(i);

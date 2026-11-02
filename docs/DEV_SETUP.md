@@ -44,7 +44,7 @@ Conséquences :
 | Outil | Version | Remarque |
 |---|---|---|
 | Node.js | Version LTS, **fixée dans `.nvmrc` et dans `engines` de `package.json`** | À figer à la création du squelette. Le shell Linux de Claude fournit actuellement Node 22. |
-| pnpm | Via Corepack (`corepack enable`), version fixée dans `packageManager` | Absent du shell Linux de Claude à ce jour : à installer (réseau à vérifier) |
+| pnpm | Via Corepack (`corepack enable`, qui demande les droits administrateur sous Windows ; à défaut `corepack pnpm …` ou `npm i -g pnpm`), version fixée dans `packageManager` | pnpm 12 bloque les scripts d'installation : ils sont autorisés dans `pnpm-workspace.yaml` (`allowBuilds`). Les modules sont installés à plat (`nodeLinker: hoisted`), nécessaire à l'empaquetage. |
 | Git | Récent | Fin de ligne : voir §3 |
 | Python 3 | 3.10 ou plus | Uniquement pour `scripts/*.py` (banc d'essai provisoire du modèle local) |
 | Ollama | Récent | Développement et comparaison du LLM local ; pas nécessaire pour l'application |
@@ -131,16 +131,16 @@ Outils : ce qui est décidé, et ce qui reste à choisir.
 | Interface | Décidé | Vite + React |
 | Tests | Proposé | Vitest (déjà dans l'écosystème Vite) |
 | Qualité du code | Proposé | ESLint et Prettier, configuration partagée à la racine |
-| Intégration Electron et Vite | À choisir au squelette | Un outil existant du type `electron-vite`, à comparer à une configuration manuelle |
-| Empaquetage Windows | À choisir pendant le spike 1 | `electron-builder` ou Electron Forge : retenir celui qui empaquette `node-llama-cpp` sans difficulté |
-| Extraction PDF et `.docx` | À choisir pendant les spikes | Bibliothèques à comparer sur des documents réalistes |
-| Bibliothèque de composants et d'icônes | À choisir avec l'interface | `UI_UX.md`, §2.5 : icônes en trait fin (Lucide ou Phosphor) |
+| Intégration Electron et Vite | Choisi | `electron-vite` 6 (voir `DECISIONS.md`) |
+| Empaquetage Windows | Choisi | `electron-builder` 26 : `node-llama-cpp` se charge dans l'application empaquetée (vérifié). Cibles `dir` et `nsis`. |
+| Extraction PDF et `.docx` | Choisi | PDF : `unpdf` (pdf.js). `.docx` : `fflate` + lecture du XML (corps, tableaux, en-têtes, pieds, notes). |
+| Bibliothèque de composants et d'icônes | Choisi | Composants maison ; icônes Lucide (trait fin) ; Markdown : `react-markdown` + `remark-gfm` |
 
 Règle de dépendances : `engine` n'importe ni `electron` ni `react` ni module Node spécifique à la plateforme (système de fichiers, réseau). Il reçoit et renvoie des données. Les accès au système (fichiers, LLM, API) sont dans `desktop` (processus principal).
 
 ## 5. Commandes
 
-À créer avec le squelette. Noms visés :
+Créées au niveau 0 (sous Windows, remplacer `pnpm` par `corepack pnpm` si besoin) :
 
 | Commande | Rôle |
 |---|---|
@@ -151,7 +151,8 @@ Règle de dépendances : `engine` n'importe ni `electron` ni `react` ni module N
 | `pnpm typecheck` | Vérification des types, tous paquets |
 | `pnpm lint` | ESLint |
 | `pnpm build` | Compilation |
-| `pnpm package` | Installeur Windows |
+| `pnpm package` | Installeur Windows (`packages/desktop/release/`). À lancer dans un terminal ordinaire : depuis certains outils sans console, `makensis` échoue avec `ENOTCONN`. |
+| `pnpm --filter desktop test:e2e` | Tests de bout en bout Electron (après `pnpm build` ; l'empaquetage est testé s'il existe) |
 | `pnpm measure` | Script de mesure du rappel sur le corpus (réutilise `engine`) |
 
 ## 6. Configuration et secrets

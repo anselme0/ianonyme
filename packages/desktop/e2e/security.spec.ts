@@ -1,7 +1,7 @@
 // Sécurité de l'application Electron (docs/DEV_SETUP.md, §7) et journaux sans texte en clair (§8).
 import { expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
-import { DEMO, launch } from './launch.js';
+import { DEMO, launch, protectAll } from './launch.js';
 
 const SECRETS = ['Louis Cordier', 'Cordier', 'Vasseur', 'Barraud', 'Marchand', 'Delmas', '01 99 00', 'batiravel', 'FR76', '732 829 320'];
 
@@ -51,9 +51,7 @@ test('aucune valeur du document dans les journaux du processus principal', async
   app.process().stdout?.on('data', (d: Buffer) => out.push(String(d)));
   await page.getByTestId('file-input').setInputFiles(resolve(DEMO, 'rapport-expertise-fictif.docx'));
   await expect(page.getByTestId('review')).toBeVisible();
-  while ((await page.getByTestId('verify-item').count()) > 0) {
-    await page.getByTestId('verify-item').first().getByTestId('protect').click();
-  }
+  await protectAll(page);
   await page.getByTestId('review-continue').click();
   await page.getByTestId('preview-send').click();
   await expect(page.getByTestId('assistant-text')).toHaveCount(1, { timeout: 30_000 });

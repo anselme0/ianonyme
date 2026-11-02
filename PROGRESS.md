@@ -4,13 +4,13 @@
 
 ## Résumé pour le matin
 
-_(à remplir à la fin ; en attendant, état en 10 lignes maximum)_
+_(à compléter à la fin)_
 
-- Statut : niveaux 0 à 2 faits (squelette, moteur, mesure). Niveau 3 en cours.
+- Statut : niveaux 0 à 5 faits et vérifiés ; niveau 6 en cours (documents de démonstration, installeur construit).
 
 ## Prochaine action
 
-Niveau 3 : créer `packages/desktop` (electron-vite), processus principal, IPC, fournisseurs, extraction.
+Niveau 6 : écrire `docs/PROMPTS.md` et `docs/DEMO_SCRIPT.md`, puis passe finale (audit adverse), puis deuxième passe.
 
 ## Décisions de départ (réponses à la phase 0)
 
@@ -50,32 +50,32 @@ Niveau 3 : créer `packages/desktop` (electron-vite), processus principal, IPC, 
 - [ ] Corpus complété (`.docx`, PDF réalistes) si utile
 
 ### Niveau 3 : Electron et services
-- [ ] Processus principal, état des conversations, IPC (A.6)
-- [ ] Sécurité Electron (`DEV_SETUP.md` §7), journaux sans texte en clair
-- [ ] Extraction `.txt`, `.docx`, PDF et cas de blocage
-- [ ] Fournisseurs : `anthropic`, `openai-compatible`, faux fournisseur
-- [ ] Streaming avec restauration
-- [ ] LLM local derrière `proposeMentions`, mode dégradé
+- [x] Processus principal, état des conversations, IPC (A.6)
+- [x] Sécurité Electron (`DEV_SETUP.md` §7), journaux sans texte en clair
+- [x] Extraction `.txt`, `.docx`, PDF et cas de blocage
+- [x] Fournisseurs : `anthropic`, `openai-compatible`, faux fournisseur
+- [x] Streaming avec restauration
+- [x] LLM local derrière `proposeMentions`, mode dégradé
 
 ### Niveau 4 : interface, première passe
-- [ ] Tokens de couleur et de typographie (clair, sombre)
-- [ ] Écran principal : conversation, saisie avec surlignage, volet Protection
-- [ ] « Ce que l'IA va recevoir »
-- [ ] Revue plein écran
-- [ ] Restitution visible dans les réponses
-- [ ] Envoi bloqué
-- [ ] Écran « Fiabilité de la détection »
+- [x] Tokens de couleur et de typographie (clair, sombre)
+- [x] Écran principal : conversation, saisie avec surlignage, volet Protection
+- [x] « Ce que l'IA va recevoir »
+- [x] Revue plein écran
+- [x] Restitution visible dans les réponses
+- [x] Envoi bloqué
+- [x] Écran « Fiabilité de la détection »
 
 ### Niveau 5 : vérification de bout en bout
-- [ ] Tests de bout en bout Electron avec captures regardées
-- [ ] Parcours de démonstration complet avec le faux fournisseur
-- [ ] Cinq tours avec placeholders cohérents
+- [x] Tests de bout en bout Electron avec captures regardées
+- [x] Parcours de démonstration complet avec le faux fournisseur
+- [x] Cinq tours avec placeholders cohérents
 
 ### Niveau 6 : démonstration et empaquetage
 - [ ] `PROMPTS.md`
 - [ ] `DEMO_SCRIPT.md`
 - [ ] Rapport d'expertise fictif `.docx` et PDF
-- [ ] Installeur Windows construit et lancé
+- [x] Installeur Windows construit et lancé
 
 ### Passe finale
 - [ ] Réorganisation finale du code et du dossier, chemins et documents à jour
@@ -103,7 +103,10 @@ Marche (dans un espace jetable) :
 
 Ne marche pas :
 - Cible NSIS : `Error: read ENOTCONN` au lancement de `makensis`, depuis les outils de la session (Bash et PowerShell, entrée standard redirigée ou non). Probablement lié à la gestion des tubes par l'environnement de la session. À essayer dans un terminal ordinaire : `pnpm package`.
-- Contournement : cible `dir` (`win-unpacked`) et archive zip.
+- Contournement : cible `dir` (`win-unpacked`), puis NSIS via une console masquée (voir ci-dessous).
+Construction de l'installeur (plages à écarter des mesures de latence d'Anselme) : essais de build vers 23 h 50 à 23 h 56 (spike, dossier jetable), build de l'application vers 00 h 41 à 00 h 43 (heure locale, nuit du 2 au 3 nov.).
+`pnpm package` depuis les outils de la session échoue sur `makensis` (`ENOTCONN`) ; contourné en lançant `cmd /c` dans une fenêtre masquée (console réelle). Dans un terminal ordinaire, la commande normale devrait marcher.
+
 
 ## Réorganisations
 
@@ -111,13 +114,23 @@ Ne marche pas :
 
 ## Vérifié
 
-- `pnpm install`, `pnpm typecheck`, `pnpm lint`, `pnpm test` (moteur : 98 tests, 7 fichiers) : passent (2 nov. 2026, 00 h 11).
-- `pnpm measure` : produit `reports/measure.json` (règles et variantes seules ; analyse approfondie non mesurée).
-- Spike Electron + Playwright + `node-llama-cpp` + `electron-builder --dir` dans un dossier jetable : voir « Environnement ».
+Commandes lancées dans la nuit du 2 au 3 novembre 2026 et résultat obtenu :
+
+- `pnpm typecheck`, `pnpm lint` : passent.
+- `pnpm --filter engine test` : 100 tests (masquage, cohérence, historique, anti-fuite, restitution et flux coupé à chaque position, une et deux coupures, conflits, mentions du LLM, erreurs sans valeur, corpus d'ajustement).
+- `pnpm --filter desktop test` : 98 tests (service de conversation avec faux fournisseur, cinq tours, envoi bloqué sans appel du fournisseur, extraction `.txt`/`.docx`/PDF, fournisseurs `anthropic` et `openai-compatible` contre un faux serveur local, journal sans texte, rendu des réponses restituées, vocabulaire, source unique des textes, contrastes AA des deux thèmes).
+- `pnpm measure` : écrit `reports/measure.json` (règles et variantes seules).
+- `pnpm --filter desktop test:e2e` : 9 tests Electron passent (parcours de démonstration complet, sécurité de la fenêtre, journaux sans valeur, analyse de base, fichiers refusés, thème sombre, conversations, application empaquetée). Les captures de `packages/desktop/e2e/screenshots/` ont été regardées (revue, comparaison, réponse restituée, envoi bloqué, fiabilité, analyse de base, thème sombre).
+- Application empaquetée (`release/win-unpacked`) et contenu extrait de l'installeur NSIS : démarrent, le module natif de `node-llama-cpp` se charge (CPU seul), un envoi complet passe, les outils de développement sont inactifs.
+- `pnpm dev` (electron-vite) : démarre sans erreur.
 
 ## Écrit mais non vérifié
 
-- Cible d'installeur NSIS (`ENOTCONN` depuis les outils de la session).
+- Fournisseur `anthropic` contre le vrai service : aucune clé cette nuit (testé contre un faux serveur seulement).
+- `node-llama-cpp` avec un vrai modèle : chargement, grammaire JSON, téléchargement avec empreinte (`downloadModel`) écrits, jamais exécutés (Ollama et GPU réservés aux tests d'Anselme, aucun modèle téléchargé).
+- Installeur NSIS : construit (180 Mo) mais pas installé sur le poste (écrit dans le registre) ; seul son contenu extrait a été lancé. À essayer par Anselme : `packages/desktop/release/IAnonyme Setup 0.1.0.exe`.
+- Latences de l'analyse approfondie réelle : non mesurées.
+- Rendu visuel de l'interface seulement dans Chromium d'Electron sur cet écran (1400 x 900) ; pas testé sur petit écran, ni avec une mise à l'échelle Windows.
 
 ## Problèmes connus
 

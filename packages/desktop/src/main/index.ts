@@ -6,7 +6,7 @@ import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { loadConfig } from './config.js';
 import { registerIpc } from './ipc.js';
-import { createLocalLlm } from './localllm.js';
+import { createLocalLlm, probeNativeRuntime } from './localllm.js';
 import { log } from './log.js';
 import { createProviders } from './providers/registry.js';
 import { ChatService } from './service.js';
@@ -102,7 +102,8 @@ void app.whenReady().then(() => {
   mainWindow = createWindow();
   registerIpc(service, (sender) => mainWindow !== null && sender === mainWindow.webContents);
   llm.warmUp();
-  log('main', 'ready', { providers: providers.size });
+  log('main', 'ready', { providers: providers.size, packaged: app.isPackaged });
+  if (process.env.IANONYME_PROBE) void probeNativeRuntime().then((ok) => log('localllm', 'native_probe', { ok }));
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) mainWindow = createWindow();
