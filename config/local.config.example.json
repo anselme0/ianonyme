@@ -1,0 +1,18 @@
+{
+  "assistant": {
+    "default": "demo-fake",
+    "providers": [
+      { "id": "claude", "label": "Claude (service en ligne)", "type": "anthropic", "model": "À DÉCIDER", "apiKey": "À RENSEIGNER (jamais versionné)" },
+      { "id": "demo-local", "label": "Modèle hébergé sur le poste de démonstration", "type": "openai-compatible", "baseUrl": "http://localhost:11434/v1", "model": "À DÉCIDER" },
+      { "id": "demo-fake", "label": "Assistant de démonstration (hors ligne)", "type": "fake" }
+    ]
+  },
+  "localModel": {
+    "engine": "node-llama-cpp",
+    "active": "À DÉCIDER",
+    "registry": [
+      { "id": "…", "file": "…", "downloadUrl": "…", "sha256": "…", "contextSize": 0, "chunkChars": 2000, "timeoutMs": 0 }
+    ]
+  },
+  "limits": { "maxFileBytes": 0, "maxMentionsPerChunk": 0 }
+}

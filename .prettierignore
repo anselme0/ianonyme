@@ -1,0 +1,6 @@
+corpus/
+scripts/
+assets/
+docs/
+*.md
+pnpm-lock.yaml
