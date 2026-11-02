@@ -18,3 +18,8 @@ models/
 
 # Résultats temporaires du banc d'essai
 scripts/results/*.log
+
+# Captures des tests de bout en bout
+packages/desktop/e2e/screenshots/
+packages/desktop/out/
+packages/desktop/test-results/

@@ -46,12 +46,15 @@ import type { LocalLlm } from './localllm.js';
 import { log, logError } from './log.js';
 import { SYSTEM_PROMPT } from './prompts.js';
 import type { AssistantProvider } from './providers/types.js';
+import { composeMessage } from '../shared/compose.js';
 import { LeakBlockedError, preparePayload, secureStream } from './secure-send.js';
 
 interface StoredMessage {
   id: string;
   role: 'user' | 'assistant';
   clear: string;
+  /** Ce que l'utilisateur a saisi (sans le texte des documents joints) : affiché dans le fil. */
+  shown?: string;
   segments?: Segment[];
   anomalyCount?: number;
   files?: { name: string }[];
@@ -199,7 +202,7 @@ export class ChatService {
   }
 
   private messageView(m: StoredMessage): MessageView {
-    const view: MessageView = { id: m.id, role: m.role, text: m.clear };
+    const view: MessageView = { id: m.id, role: m.role, text: m.shown ?? m.clear };
     if (m.segments) view.segments = m.segments;
     if (m.anomalyCount) view.anomalyCount = m.anomalyCount;
     if (m.files) view.files = m.files;
@@ -294,6 +297,7 @@ export class ChatService {
       const chip: FileChip = {
         id: `f${++this.seq}`,
         name,
+        readableName,
         maskedName,
         warnings: extracted.warnings,
         characters: extracted.text.length,
@@ -418,8 +422,7 @@ export class ChatService {
 
   private compose(c: Conv, userText: string, fileIds: string[]): { text: string; files: DraftFile[] } {
     const files = fileIds.map((id) => c.files.get(id)).filter((f): f is DraftFile => f !== undefined);
-    const parts = [userText.trim(), ...files.map((f) => `Document « ${f.readableName} » :\n${f.text}`)];
-    return { text: parts.filter((p) => p.length > 0).join('\n\n'), files };
+    return { text: composeMessage(userText, files), files };
   }
 
   /** Ce que l'assistant recevrait, historique compris, sans rien envoyer ni enregistrer. */
@@ -496,6 +499,7 @@ export class ChatService {
         id: `m${++this.seq}`,
         role: 'user',
         clear: text,
+        shown: input.userText.trim(),
         files: files.map((f) => ({ name: f.chip.name })),
       };
       messages = [...messages, pendingUser];

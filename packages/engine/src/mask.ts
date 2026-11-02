@@ -95,6 +95,8 @@ export function checkLeak(masked: string, state: ConversationState): LeakReport 
       seen.add(key);
       const item: LeakItem = { value: masked.slice(occ.start, occ.end), kind: 'exact' };
       if (ids.length === 1 && ids[0]) item.entityId = ids[0];
+      const owner = ids[0] ? state.entities[ids[0]] : undefined;
+      if (owner) item.category = owner.category;
       leaks.push(item);
     }
   }
@@ -107,7 +109,7 @@ export function checkLeak(masked: string, state: ConversationState): LeakReport 
     const nv = normalizeValue(h.text);
     if (state.rejectedValues.includes(nv) || seen.has(nv)) continue;
     seen.add(nv);
-    leaks.push({ value: h.text, kind: 'regex' });
+    leaks.push({ value: h.text, kind: 'regex', category: h.category });
   }
   return { ok: leaks.length === 0, leaks };
 }

@@ -116,6 +116,7 @@ export interface LeakItem {
   /** Valeur trouvée (ne jamais journaliser). */
   value: string;
   entityId?: string;
+  category?: Category;
   kind: 'exact' | 'regex';
   /** Index du message de l'historique concerné, si connu. */
   messageIndex?: number;

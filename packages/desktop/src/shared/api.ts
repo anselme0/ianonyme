@@ -67,6 +67,8 @@ export interface FileChip {
   id: string;
   /** Nom d'origine, affiché à l'utilisateur seulement. */
   name: string;
+  /** Nom ouvert (séparateurs en espaces), tel qu'il figure dans le message. */
+  readableName: string;
   maskedName: string;
   warnings: FileWarning[];
   characters: number;

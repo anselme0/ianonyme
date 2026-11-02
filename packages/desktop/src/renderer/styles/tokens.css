@@ -1,0 +1,128 @@
+/* Jetons de couleur, de typographie et d'espacement (docs/UI_UX.md, §2).
+   Tout est défini en variables pour les deux thèmes. */
+
+@import '@fontsource/ibm-plex-sans/latin-400.css';
+@import '@fontsource/ibm-plex-sans/latin-500.css';
+@import '@fontsource/ibm-plex-sans/latin-600.css';
+@import '@fontsource/ibm-plex-sans/latin-ext-400.css';
+@import '@fontsource/ibm-plex-mono/latin-400.css';
+@import '@fontsource/ibm-plex-mono/latin-ext-400.css';
+
+:root {
+  --font-sans: 'IBM Plex Sans', system-ui, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --radius: 6px;
+  --radius-pill: 4px;
+
+  --bg: #f8f7f4;
+  --panel: #eff1f4;
+  --surface: #ffffff;
+  --border: #d3d9e1;
+  --border-strong: #b6bfcc;
+  --text: #1b2a41;
+  --text-2: #4a586b;
+  --accent: #2e7d6b;
+  --accent-hover: #276b5b;
+  --on-accent: #ffffff;
+  --accent-soft: #dcefe9;
+  --accent-text: #1f5f50;
+
+  --amber-bg: #f8ebc9;
+  --amber-fg: #6d4a00;
+  --amber-border: #d9b867;
+  --red-bg: #f7e1df;
+  --red-fg: #8f2f2a;
+  --red-border: #d99a95;
+
+  --fam-personnes-bg: #dbe6f4;
+  --fam-personnes-fg: #213f66;
+  --fam-organisations-bg: #e6e0f0;
+  --fam-organisations-fg: #45386a;
+  --fam-lieux-bg: #f0e4c4;
+  --fam-lieux-fg: #5e4408;
+  --fam-coordonnees-bg: #f2dcd4;
+  --fam-coordonnees-fg: #722f22;
+  --fam-numeros-bg: #d8e0e7;
+  --fam-numeros-fg: #2a3f52;
+
+  --shadow-pop: 0 2px 10px rgb(27 42 65 / 18%);
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #0f1824;
+  --panel: #172334;
+  --surface: #1b2a41;
+  --border: #2d3e57;
+  --border-strong: #425774;
+  --text: #e8ecf2;
+  --text-2: #a9b4c4;
+  --accent: #52b59e;
+  --accent-hover: #67c4ae;
+  --on-accent: #0b1520;
+  --accent-soft: #1c3d3a;
+  --accent-text: #8fd6c3;
+
+  --amber-bg: #44371a;
+  --amber-fg: #f0d58f;
+  --amber-border: #7a6a3a;
+  --red-bg: #4a2523;
+  --red-fg: #f2b5b0;
+  --red-border: #85504c;
+
+  --fam-personnes-bg: #263a55;
+  --fam-personnes-fg: #c3d6f2;
+  --fam-organisations-bg: #3a3352;
+  --fam-organisations-fg: #d6cdee;
+  --fam-lieux-bg: #4a3e1f;
+  --fam-lieux-fg: #ecd89f;
+  --fam-coordonnees-bg: #4d2c26;
+  --fam-coordonnees-fg: #f0bfb4;
+  --fam-numeros-bg: #2c3b49;
+  --fam-numeros-fg: #c4d4e0;
+
+  --shadow-pop: 0 2px 12px rgb(0 0 0 / 45%);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    --bg: #0f1824;
+    --panel: #172334;
+    --surface: #1b2a41;
+    --border: #2d3e57;
+    --border-strong: #425774;
+    --text: #e8ecf2;
+    --text-2: #a9b4c4;
+    --accent: #52b59e;
+    --accent-hover: #67c4ae;
+    --on-accent: #0b1520;
+    --accent-soft: #1c3d3a;
+    --accent-text: #8fd6c3;
+    --amber-bg: #44371a;
+    --amber-fg: #f0d58f;
+    --amber-border: #7a6a3a;
+    --red-bg: #4a2523;
+    --red-fg: #f2b5b0;
+    --red-border: #85504c;
+    --fam-personnes-bg: #263a55;
+    --fam-personnes-fg: #c3d6f2;
+    --fam-organisations-bg: #3a3352;
+    --fam-organisations-fg: #d6cdee;
+    --fam-lieux-bg: #4a3e1f;
+    --fam-lieux-fg: #ecd89f;
+    --fam-coordonnees-bg: #4d2c26;
+    --fam-coordonnees-fg: #f0bfb4;
+    --fam-numeros-bg: #2c3b49;
+    --fam-numeros-fg: #c4d4e0;
+    --shadow-pop: 0 2px 12px rgb(0 0 0 / 45%);
+    color-scheme: dark;
+  }
+}

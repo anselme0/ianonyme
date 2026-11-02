@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 112" width="512" height="512" role="img" aria-label="IAnonyme"><title>IAnonyme</title>
+<rect x="0" y="0" width="112" height="112" rx="28" fill="#1B2A41"/>
+<path d="M30 14 H66 L82 30 V98 H30 Z" fill="#FFFFFF"/>
+<path d="M66 14 V30 H82 Z" fill="#C9D1DC"/>
+<g transform="translate(20 32) scale(0.6)">
+<path d="M6 22 C6 10 20 6 34 8 C46 10 52 16 60 16 C68 16 74 10 86 8 C100 6 114 10 114 22 C114 38 102 50 86 50 C74 50 66 40 60 40 C54 40 46 50 34 50 C18 50 6 38 6 22 Z" fill="#1B2A41" stroke="#FFFFFF" stroke-width="6" stroke-linejoin="round"/>
+<ellipse cx="34" cy="27" rx="13" ry="8" fill="#FFFFFF"/>
+<ellipse cx="86" cy="27" rx="13" ry="8" fill="#FFFFFF"/>
+</g>
+<rect x="38" y="68" width="36" height="5" rx="2.5" fill="#A9B4C4"/>
+<rect x="38" y="77" width="30" height="8" rx="2" fill="#2E7D6B"/>
+<rect x="38" y="89" width="28" height="5" rx="2.5" fill="#A9B4C4"/>
+</svg>
