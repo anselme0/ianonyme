@@ -573,6 +573,21 @@ Fichier `config/local.config.json` (hors dépôt, avec la clé API) ; un exemple
 - `chunkChars: 2000` reprend la valeur de départ du banc d'essai (`scripts/harness.py`). Les valeurs à `0` sont à fixer après les tests.
 - Si le fournisseur choisi n'est pas configuré, il n'apparaît pas dans la liste de l'interface. La clé n'est jamais affichée.
 
+### A.8 Compléments apportés par l'implémentation du moteur
+
+Ajouts au contrat ci-dessus, faits au niveau 1 du développement (aucun n'en change les décisions) :
+
+- `ConversationState` gagne deux champs : `entityCounter` (identifiants d'entités `E1`, `E2`… jamais réutilisés) et `preferred` (valeur normalisée partagée par plusieurs entités -> entité choisie par l'utilisateur, ce qui lève un conflit). `rejectedValues` contient des valeurs sous forme normalisée.
+- `ingestText(state, text)` : détecte, accepte automatiquement ce que les règles et les variantes ont repéré (répété jusqu'à stabilité), renvoie l'état, les mentions et les conflits. Les suggestions du LLM et les conflits restent à traiter par l'utilisateur.
+- `protectFileName(state, name)` : le nom du fichier passe par la détection et le masquage.
+- Une valeur partagée par plusieurs entités et non tranchée **n'est pas masquée** : `checkLeak` la signale, donc l'envoi est bloqué jusqu'à ce que l'utilisateur choisisse (`linkMention`).
+- Rejeter la forme de référence d'une entité (`rejectMention`) supprime l'entité ; rejeter une variante ne retire que cette variante.
+- La normalisation conserve les décalages (une unité normalisée par unité du texte) ; accents combinants, traits d'union conditionnels et espaces de largeur nulle sont ignorés à la comparaison.
+- Les repères déjà présents dans un texte (`[PERSONNE_1]`) ne sont jamais retouchés par le masquage.
+- Les civilités sont propagées en variantes (`M.`, `Mme`, `Me`…) : un nom masqué avec sa civilité est restitué sous sa forme de référence, sans civilité.
+- Liste de prénoms : écrite à la main (environ 400 prénoms courants), sans source externe ; à relire.
+- Les juridictions publiques (« tribunal judiciaire de Dijon ») ne sont pas masquées par défaut (B.3), bien que « tribunal » figure dans les mots-clés d'organisation de B.1.
+
 ---
 
 ## Annexe B — Catalogue de détection
