@@ -14,7 +14,14 @@ Lire `CLAUDE.md`, `NIGHT_RUN.md`, puis poser les questions de la phase 0.
 
 ## Décisions de départ (réponses à la phase 0)
 
-_(à remplir)_
+- Clé API Claude : non. Faux fournisseur pour tout ; fournisseur Claude testé contre un faux serveur seulement.
+- Ollama et GPU : ne rien toucher ; `proposeMentions` testé avec un faux LLM.
+- Installations dans le projet autorisées. Empaquetage Windows tenté après le niveau 3.
+- Polices : IBM Plex via `@fontsource` (embarquées).
+- Git : branche `dev/nuit` depuis `main`, aucun push.
+- Périmètre : niveaux 0 à 6, passe finale, puis deuxième passe. Pas d'heure limite. Pas de notification.
+- Aucune autre zone protégée que le §6 de `docs/NIGHT_RUN.md`. Projet hors OneDrive, emplacement inchangé.
+- Compte maquette : défauts fictifs, aucune mention « maquette » à l'écran (suit `docs/UI_UX.md` §12).
 
 ## Backlog
 
@@ -85,7 +92,18 @@ _(à remplir)_
 
 ## Environnement
 
-_(à remplir à l'étape 0.A : outils, versions, ce qui marche, ce qui ne marche pas, contournements)_
+Mesuré le 2 nov. 2026 (Windows 11, Node 24.18.0, npm 11.16.0, git 2.45.1, Python 3.12.10, 466 Go libres, projet hors OneDrive).
+
+Marche (dans un espace jetable) :
+- pnpm via `corepack pnpm` (pnpm 12.16.1). `corepack enable` échoue (EPERM, droits administrateur) : utiliser `corepack pnpm ...` ou `npm i -g pnpm`.
+- pnpm 12 bloque les scripts d'installation : à autoriser explicitement (`onlyBuiltDependencies`). Le binaire d'Electron se télécharge au premier lancement.
+- Electron 45.2.1 : fenêtre lancée. Playwright 1.64 en mode Electron : titre lu, capture produite (sans navigateurs Playwright).
+- `node-llama-cpp` 3.22.2 : module natif chargé (CPU seul, `build: 'never'`).
+- electron-builder 26.18 : construit `win-unpacked`. Le paquet `node-llama-cpp` embarque tous les binaires (CUDA, Vulkan) : l'archive de l'installeur fait ~400 Mo avant élagage.
+
+Ne marche pas :
+- Cible NSIS : `Error: read ENOTCONN` au lancement de `makensis`, depuis les outils de la session (Bash et PowerShell, entrée standard redirigée ou non). Probablement lié à la gestion des tubes par l'environnement de la session. À essayer dans un terminal ordinaire : `pnpm package`.
+- Contournement : cible `dir` (`win-unpacked`) et archive zip.
 
 ## Réorganisations
 

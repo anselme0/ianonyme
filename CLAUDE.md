@@ -67,7 +67,7 @@ Dans tous les cas, ne déclare jamais « testé » ce que tu n'as pas pu exécut
 
 - Modifie les fichiers du dossier **en place** ; ne les recopie pas ailleurs. Avant d'écraser un fichier qu'un autre a pu modifier, vérifie son état.
 - Pas de suppression de fichiers sans raison forte notée dans `DECISIONS.md`.
-- Pour une session autonome longue, suis `NIGHT_RUN.md` et tiens `PROGRESS.md` et `DECISIONS.md` à jour.
+- Pour une session autonome longue, suis `docs/NIGHT_RUN.md` et tiens `PROGRESS.md` et `DECISIONS.md` à jour.
 
 ## Façon de travailler
 
