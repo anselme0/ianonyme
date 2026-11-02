@@ -19,3 +19,9 @@ Civilités, prénoms connus et initiales créent des personnes automatiquement a
 
 ## D6. Restaurateur en flux
 Un fragment commençant par `[` est retenu seulement s'il peut encore devenir un repère (lettres, chiffres, `_`, espace, tiret, 41 caractères au plus). Un crochet ordinaire (lien Markdown) est donc libéré dès qu'un caractère impossible arrive. Testé en coupant le texte à chaque position, une et deux coupures.
+
+## D7. Corpus : aucun ajout dans `corpus/` pendant la nuit
+Les tests Ollama d'Anselme parcourent `corpus/`. Ajouter des documents y fausserait leurs mesures. Les documents de démonstration (rapport fictif en `.docx` et PDF) vont dans `demo/`. À reporter dans `corpus/` après les tests de modèle si l'équipe le souhaite.
+
+## D8. Commits : jamais `git add -A`
+Les résultats des tests de modèle (`scripts/results/`) changent pendant la nuit sans que je les touche. Chaque commit liste ses chemins.

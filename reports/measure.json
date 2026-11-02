@@ -1,0 +1,705 @@
+{
+  "generatedBy": "pnpm measure",
+  "mode": "regles_variantes_seules",
+  "note": "Corpus fictif de très petite taille : aucun pourcentage n'est représentatif d'un usage réel. Le gain de l'analyse approfondie n'est pas mesuré tant qu'aucun modèle local n'est choisi.",
+  "corpusDocuments": 6,
+  "sets": {
+    "ajust": {
+      "documents": 3,
+      "table": {
+        "PERSONNE": {
+          "direct": {
+            "total": 21,
+            "detected": 20,
+            "bySource": {
+              "regex": 20,
+              "variant": 0,
+              "llm": 0
+            }
+          },
+          "indirect": {
+            "total": 15,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          }
+        },
+        "ADRESSE": {
+          "direct": {
+            "total": 4,
+            "detected": 4,
+            "bySource": {
+              "regex": 4,
+              "variant": 0,
+              "llm": 0
+            }
+          },
+          "indirect": {
+            "total": 0,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          }
+        },
+        "TELEPHONE": {
+          "direct": {
+            "total": 3,
+            "detected": 3,
+            "bySource": {
+              "regex": 3,
+              "variant": 0,
+              "llm": 0
+            }
+          },
+          "indirect": {
+            "total": 0,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          }
+        },
+        "EMAIL": {
+          "direct": {
+            "total": 3,
+            "detected": 3,
+            "bySource": {
+              "regex": 3,
+              "variant": 0,
+              "llm": 0
+            }
+          },
+          "indirect": {
+            "total": 0,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          }
+        },
+        "ORGANISATION": {
+          "direct": {
+            "total": 5,
+            "detected": 5,
+            "bySource": {
+              "regex": 5,
+              "variant": 0,
+              "llm": 0
+            }
+          },
+          "indirect": {
+            "total": 0,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          }
+        },
+        "IBAN": {
+          "direct": {
+            "total": 1,
+            "detected": 1,
+            "bySource": {
+              "regex": 1,
+              "variant": 0,
+              "llm": 0
+            }
+          },
+          "indirect": {
+            "total": 0,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          }
+        },
+        "NUM_DOSSIER": {
+          "direct": {
+            "total": 4,
+            "detected": 4,
+            "bySource": {
+              "regex": 4,
+              "variant": 0,
+              "llm": 0
+            }
+          },
+          "indirect": {
+            "total": 0,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          }
+        },
+        "LIEU": {
+          "direct": {
+            "total": 1,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          },
+          "indirect": {
+            "total": 0,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          }
+        },
+        "DATE_NAISSANCE": {
+          "direct": {
+            "total": 1,
+            "detected": 1,
+            "bySource": {
+              "regex": 1,
+              "variant": 0,
+              "llm": 0
+            }
+          },
+          "indirect": {
+            "total": 0,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          }
+        }
+      },
+      "total": {
+        "direct": {
+          "total": 43,
+          "detected": 41,
+          "bySource": {
+            "regex": 41,
+            "variant": 0,
+            "llm": 0
+          }
+        },
+        "indirect": {
+          "total": 15,
+          "detected": 0,
+          "bySource": {
+            "regex": 0,
+            "variant": 0,
+            "llm": 0
+          }
+        }
+      },
+      "directValues": 43,
+      "directValuesLeft": 2,
+      "falseAutomaticPerDocument": 0,
+      "falseSuggestionsPerDocument": 0,
+      "conflictsPerDocument": 1
+    },
+    "eval": {
+      "documents": 3,
+      "table": {
+        "PERSONNE": {
+          "direct": {
+            "total": 20,
+            "detected": 20,
+            "bySource": {
+              "regex": 19,
+              "variant": 1,
+              "llm": 0
+            }
+          },
+          "indirect": {
+            "total": 18,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          }
+        },
+        "ADRESSE": {
+          "direct": {
+            "total": 3,
+            "detected": 3,
+            "bySource": {
+              "regex": 3,
+              "variant": 0,
+              "llm": 0
+            }
+          },
+          "indirect": {
+            "total": 0,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          }
+        },
+        "TELEPHONE": {
+          "direct": {
+            "total": 3,
+            "detected": 3,
+            "bySource": {
+              "regex": 3,
+              "variant": 0,
+              "llm": 0
+            }
+          },
+          "indirect": {
+            "total": 0,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          }
+        },
+        "EMAIL": {
+          "direct": {
+            "total": 3,
+            "detected": 3,
+            "bySource": {
+              "regex": 3,
+              "variant": 0,
+              "llm": 0
+            }
+          },
+          "indirect": {
+            "total": 0,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          }
+        },
+        "ORGANISATION": {
+          "direct": {
+            "total": 5,
+            "detected": 2,
+            "bySource": {
+              "regex": 2,
+              "variant": 0,
+              "llm": 0
+            }
+          },
+          "indirect": {
+            "total": 0,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          }
+        },
+        "IBAN": {
+          "direct": {
+            "total": 1,
+            "detected": 1,
+            "bySource": {
+              "regex": 1,
+              "variant": 0,
+              "llm": 0
+            }
+          },
+          "indirect": {
+            "total": 0,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          }
+        },
+        "LIEU": {
+          "direct": {
+            "total": 2,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          },
+          "indirect": {
+            "total": 0,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          }
+        },
+        "NUM_DOSSIER": {
+          "direct": {
+            "total": 4,
+            "detected": 4,
+            "bySource": {
+              "regex": 4,
+              "variant": 0,
+              "llm": 0
+            }
+          },
+          "indirect": {
+            "total": 0,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          }
+        },
+        "DATE_NAISSANCE": {
+          "direct": {
+            "total": 1,
+            "detected": 1,
+            "bySource": {
+              "regex": 1,
+              "variant": 0,
+              "llm": 0
+            }
+          },
+          "indirect": {
+            "total": 0,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          }
+        },
+        "IDENTIFIANT": {
+          "direct": {
+            "total": 1,
+            "detected": 1,
+            "bySource": {
+              "regex": 1,
+              "variant": 0,
+              "llm": 0
+            }
+          },
+          "indirect": {
+            "total": 0,
+            "detected": 0,
+            "bySource": {
+              "regex": 0,
+              "variant": 0,
+              "llm": 0
+            }
+          }
+        }
+      },
+      "total": {
+        "direct": {
+          "total": 43,
+          "detected": 38,
+          "bySource": {
+            "regex": 37,
+            "variant": 1,
+            "llm": 0
+          }
+        },
+        "indirect": {
+          "total": 18,
+          "detected": 0,
+          "bySource": {
+            "regex": 0,
+            "variant": 0,
+            "llm": 0
+          }
+        }
+      },
+      "directValues": 43,
+      "directValuesLeft": 3,
+      "falseAutomaticPerDocument": 0,
+      "falseSuggestionsPerDocument": 0,
+      "conflictsPerDocument": 1
+    }
+  },
+  "all": {
+    "documents": 6,
+    "table": {
+      "PERSONNE": {
+        "direct": {
+          "total": 41,
+          "detected": 40,
+          "bySource": {
+            "regex": 39,
+            "variant": 1,
+            "llm": 0
+          }
+        },
+        "indirect": {
+          "total": 33,
+          "detected": 0,
+          "bySource": {
+            "regex": 0,
+            "variant": 0,
+            "llm": 0
+          }
+        }
+      },
+      "ADRESSE": {
+        "direct": {
+          "total": 7,
+          "detected": 7,
+          "bySource": {
+            "regex": 7,
+            "variant": 0,
+            "llm": 0
+          }
+        },
+        "indirect": {
+          "total": 0,
+          "detected": 0,
+          "bySource": {
+            "regex": 0,
+            "variant": 0,
+            "llm": 0
+          }
+        }
+      },
+      "TELEPHONE": {
+        "direct": {
+          "total": 6,
+          "detected": 6,
+          "bySource": {
+            "regex": 6,
+            "variant": 0,
+            "llm": 0
+          }
+        },
+        "indirect": {
+          "total": 0,
+          "detected": 0,
+          "bySource": {
+            "regex": 0,
+            "variant": 0,
+            "llm": 0
+          }
+        }
+      },
+      "EMAIL": {
+        "direct": {
+          "total": 6,
+          "detected": 6,
+          "bySource": {
+            "regex": 6,
+            "variant": 0,
+            "llm": 0
+          }
+        },
+        "indirect": {
+          "total": 0,
+          "detected": 0,
+          "bySource": {
+            "regex": 0,
+            "variant": 0,
+            "llm": 0
+          }
+        }
+      },
+      "ORGANISATION": {
+        "direct": {
+          "total": 10,
+          "detected": 7,
+          "bySource": {
+            "regex": 7,
+            "variant": 0,
+            "llm": 0
+          }
+        },
+        "indirect": {
+          "total": 0,
+          "detected": 0,
+          "bySource": {
+            "regex": 0,
+            "variant": 0,
+            "llm": 0
+          }
+        }
+      },
+      "IBAN": {
+        "direct": {
+          "total": 2,
+          "detected": 2,
+          "bySource": {
+            "regex": 2,
+            "variant": 0,
+            "llm": 0
+          }
+        },
+        "indirect": {
+          "total": 0,
+          "detected": 0,
+          "bySource": {
+            "regex": 0,
+            "variant": 0,
+            "llm": 0
+          }
+        }
+      },
+      "NUM_DOSSIER": {
+        "direct": {
+          "total": 8,
+          "detected": 8,
+          "bySource": {
+            "regex": 8,
+            "variant": 0,
+            "llm": 0
+          }
+        },
+        "indirect": {
+          "total": 0,
+          "detected": 0,
+          "bySource": {
+            "regex": 0,
+            "variant": 0,
+            "llm": 0
+          }
+        }
+      },
+      "LIEU": {
+        "direct": {
+          "total": 3,
+          "detected": 0,
+          "bySource": {
+            "regex": 0,
+            "variant": 0,
+            "llm": 0
+          }
+        },
+        "indirect": {
+          "total": 0,
+          "detected": 0,
+          "bySource": {
+            "regex": 0,
+            "variant": 0,
+            "llm": 0
+          }
+        }
+      },
+      "DATE_NAISSANCE": {
+        "direct": {
+          "total": 2,
+          "detected": 2,
+          "bySource": {
+            "regex": 2,
+            "variant": 0,
+            "llm": 0
+          }
+        },
+        "indirect": {
+          "total": 0,
+          "detected": 0,
+          "bySource": {
+            "regex": 0,
+            "variant": 0,
+            "llm": 0
+          }
+        }
+      },
+      "IDENTIFIANT": {
+        "direct": {
+          "total": 1,
+          "detected": 1,
+          "bySource": {
+            "regex": 1,
+            "variant": 0,
+            "llm": 0
+          }
+        },
+        "indirect": {
+          "total": 0,
+          "detected": 0,
+          "bySource": {
+            "regex": 0,
+            "variant": 0,
+            "llm": 0
+          }
+        }
+      }
+    },
+    "total": {
+      "direct": {
+        "total": 86,
+        "detected": 79,
+        "bySource": {
+          "regex": 78,
+          "variant": 1,
+          "llm": 0
+        }
+      },
+      "indirect": {
+        "total": 33,
+        "detected": 0,
+        "bySource": {
+          "regex": 0,
+          "variant": 0,
+          "llm": 0
+        }
+      }
+    },
+    "directValues": 86,
+    "directValuesLeft": 5,
+    "falseAutomaticPerDocument": 0,
+    "falseSuggestionsPerDocument": 0,
+    "conflictsPerDocument": 1
+  },
+  "perDocument": [
+    {
+      "document": "ajust-01",
+      "characters": 999,
+      "directValues": 16,
+      "directValuesLeft": 1,
+      "falseAutomatic": 0,
+      "conflicts": 0
+    },
+    {
+      "document": "ajust-02",
+      "characters": 796,
+      "directValues": 15,
+      "directValuesLeft": 1,
+      "falseAutomatic": 0,
+      "conflicts": 2
+    },
+    {
+      "document": "ajust-03",
+      "characters": 665,
+      "directValues": 12,
+      "directValuesLeft": 0,
+      "falseAutomatic": 0,
+      "conflicts": 1
+    }
+  ],
+  "llm": null
+}

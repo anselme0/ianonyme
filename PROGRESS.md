@@ -6,11 +6,11 @@
 
 _(à remplir à la fin ; en attendant, état en 10 lignes maximum)_
 
-- Statut : pas démarré.
+- Statut : niveaux 0 à 2 faits (squelette, moteur, mesure). Niveau 3 en cours.
 
 ## Prochaine action
 
-Lire `CLAUDE.md`, `NIGHT_RUN.md`, puis poser les questions de la phase 0.
+Niveau 3 : créer `packages/desktop` (electron-vite), processus principal, IPC, fournisseurs, extraction.
 
 ## Décisions de départ (réponses à la phase 0)
 
@@ -26,27 +26,27 @@ Lire `CLAUDE.md`, `NIGHT_RUN.md`, puis poser les questions de la phase 0.
 ## Backlog
 
 ### Niveau 0 : environnement, organisation, squelette
-- [ ] 0.A Vérification de l'installation (Node, pnpm, Electron, Playwright, `node-llama-cpp`, build d'installeur) ; section « Environnement » remplie
-- [ ] 0.B Réorganisation du dossier (documents, logos, `README.md`), chemins mis à jour
-- [ ] Dépôt git : vérifier `.gitignore`, `.gitattributes`, `.editorconfig` et commiter les documents
-- [ ] Monorepo pnpm (`engine`, `desktop`, `server` stub), TypeScript strict
-- [ ] Vitest, ESLint, Prettier ; `typecheck`, `lint`, `test` passent
-- [ ] `config/local.config.example.json`
+- [x] 0.A Vérification de l'installation (Node, pnpm, Electron, Playwright, `node-llama-cpp`, build d'installeur) ; section « Environnement » remplie
+- [x] 0.B Réorganisation du dossier (documents, logos, `README.md`), chemins mis à jour
+- [x] Dépôt git : vérifier `.gitignore`, `.gitattributes`, `.editorconfig` et commiter les documents
+- [x] Monorepo pnpm (`engine`, `desktop`, `server` stub), TypeScript strict
+- [x] Vitest, ESLint, Prettier ; `typecheck`, `lint`, `test` passent
+- [x] `config/local.config.example.json`
 
 ### Niveau 1 : moteur
-- [ ] Types et contrat (annexe A.1, A.2)
-- [ ] Masquage (A.4), déterminisme, normalisation
-- [ ] Détection déterministe (annexe B.1) et propagation des variantes (B.2), conflits
-- [ ] Décisions utilisateur (accepter, rejeter, relier, ajouter)
-- [ ] `checkLeak`
-- [ ] `restore` et restaurateur en flux (test à chaque position de coupure)
-- [ ] `buildApiPayload` (re-masquage de l'historique) et `requiresReview`
-- [ ] `mergeLlmMentions` (annexe C.5) avec faux LLM
-- [ ] Tests de `DEV_SETUP.md` §10 (y compris : aucune valeur dans les erreurs)
+- [x] Types et contrat (annexe A.1, A.2)
+- [x] Masquage (A.4), déterminisme, normalisation
+- [x] Détection déterministe (annexe B.1) et propagation des variantes (B.2), conflits
+- [x] Décisions utilisateur (accepter, rejeter, relier, ajouter)
+- [x] `checkLeak`
+- [x] `restore` et restaurateur en flux (test à chaque position de coupure)
+- [x] `buildApiPayload` (re-masquage de l'historique) et `requiresReview`
+- [x] `mergeLlmMentions` (annexe C.5) avec faux LLM
+- [x] Tests de `DEV_SETUP.md` §10 (y compris : aucune valeur dans les erreurs)
 
 ### Niveau 2 : mesure
-- [ ] `pnpm measure` sur le moteur TypeScript
-- [ ] Sortie JSON pour l'écran « Fiabilité de la détection »
+- [x] `pnpm measure` sur le moteur TypeScript
+- [x] Sortie JSON pour l'écran « Fiabilité de la détection »
 - [ ] Corpus complété (`.docx`, PDF réalistes) si utile
 
 ### Niveau 3 : Electron et services
@@ -107,15 +107,17 @@ Ne marche pas :
 
 ## Réorganisations
 
-_(date, ce qui a bougé, commit)_
+- 3 nov. 2026 (début de session) : documents -> `docs/`, logos -> `assets/logo/`, `README.md` créé. Fait avec `git mv`.
 
 ## Vérifié
 
-_(commande lancée → résultat obtenu)_
+- `pnpm install`, `pnpm typecheck`, `pnpm lint`, `pnpm test` (moteur : 98 tests, 7 fichiers) : passent (2 nov. 2026, 00 h 11).
+- `pnpm measure` : produit `reports/measure.json` (règles et variantes seules ; analyse approfondie non mesurée).
+- Spike Electron + Playwright + `node-llama-cpp` + `electron-builder --dir` dans un dossier jetable : voir « Environnement ».
 
 ## Écrit mais non vérifié
 
-_(ce que je n'ai pas pu exécuter ou regarder, et pourquoi)_
+- Cible d'installeur NSIS (`ENOTCONN` depuis les outils de la session).
 
 ## Problèmes connus
 
