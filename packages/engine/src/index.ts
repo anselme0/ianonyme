@@ -16,6 +16,7 @@ export { detect } from './detect.js';
 export { mask, checkLeak } from './mask.js';
 export { restore, createStreamRestorer } from './restore.js';
 export {
+  applyLlmMentions,
   mergeLlmMentions,
   parseLlmOutput,
   buildLlmPrompt,

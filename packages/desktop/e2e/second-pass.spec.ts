@@ -1,22 +1,19 @@
 // Deuxième passe (docs/UI_UX.md, §11) : revue courte en ligne, écran de démarrage, « À propos ».
 import { expect, test } from '@playwright/test';
 import { createServer } from 'node:http';
+import { resolve } from 'node:path';
 import type { AddressInfo } from 'node:net';
-import { SHOTS, launch } from './launch.js';
+import { DEMO, SHOTS, launch } from './launch.js';
 
-test('revue courte en ligne pour un message court avec une suggestion', async () => {
+test('« Vérifier » ouvre le volet avec ce que l’analyse a protégé d’office', async () => {
   const { app, page } = await launch();
   await page.getByTestId('composer-input').fill('Le maire de la commune a signé hier.');
   await page.getByTestId('send').click();
-  const inline = page.getByTestId('inline-review');
-  await expect(inline).toBeVisible();
-  await expect(page.getByTestId('review')).toHaveCount(0);
-  await expect(page.getByTestId('inline-item')).toHaveCount(1);
-  await expect(page.getByTestId('inline-continue')).toBeDisabled();
+  await expect(page.getByTestId('review')).toBeVisible();
+  await expect(page.getByTestId('verify-item')).toHaveCount(0);
+  await expect(page.getByTestId('unprotect')).toHaveCount(1);
   await page.screenshot({ path: `${SHOTS}/15-revue-en-ligne.png` });
-  await page.getByTestId('protect').click();
-  await expect(page.getByTestId('inline-continue')).toBeEnabled();
-  await page.getByTestId('inline-continue').click();
+  await page.getByTestId('review-continue').click();
   const brief = page.getByTestId('brief');
   await expect(brief).toContainText('[FONCTION_1]');
   await expect(brief).not.toContainText('maire');
@@ -25,12 +22,23 @@ test('revue courte en ligne pour un message court avec une suggestion', async ()
   await app.close();
 });
 
-test('« Ignorer » laisse la mention en clair, comme l’utilisateur l’a choisi', async () => {
+test('aucun volet avant « Vérifier », même après l’analyse d’un document', async () => {
+  const { app, page } = await launch();
+  await page.getByTestId('composer-input').fill('Je rédige mon message');
+  await page.getByTestId('file-input').setInputFiles(resolve(DEMO, 'rapport-expertise-fictif.docx'));
+  await expect(page.locator('.file-chip.file-ready')).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId('review')).toHaveCount(0);
+  await expect(page.getByTestId('inline-review')).toHaveCount(0);
+  await expect(page.getByTestId('composer-input')).toHaveValue('Je rédige mon message');
+  await app.close();
+});
+
+test('« Ne plus protéger » laisse la mention en clair, comme l’utilisateur l’a choisi', async () => {
   const { app, page } = await launch();
   await page.getByTestId('composer-input').fill('Le maire de la commune a signé hier.');
   await page.getByTestId('send').click();
-  await page.getByTestId('ignore').click();
-  await page.getByTestId('inline-continue').click();
+  await page.getByTestId('unprotect').click();
+  await page.getByTestId('review-continue').click();
   await expect(page.getByTestId('brief')).toContainText('Le maire de la commune a signé hier.');
   await page.getByTestId('brief-cancel').click();
   await app.close();

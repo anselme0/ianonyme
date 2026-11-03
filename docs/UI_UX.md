@@ -193,8 +193,8 @@ Titre sobre (« Par quoi commençons-nous ? »), zone de saisie, zone de dépôt
 
 1. L'expert tape ou colle du texte. Les informations sensibles sont surlignées en direct.
 2. Un compteur indique combien d'éléments seront protégés.
-3. Au clic sur Envoyer, l'analyse approfondie s'exécute (indicateur de progression). Si rien n'est à vérifier, un **aperçu bref** (quelques secondes, annulable) montre le message tel que l'IA le recevra, puis le message part.
-4. Si quelque chose est à vérifier, la revue s'ouvre en version courte, en ligne dans le fil, sans quitter la conversation.
+3. Au clic sur **Vérifier**, l'analyse approfondie s'exécute (indicateur de progression) et **décide elle-même** ce qui est protégé : un métier générique (« l'architecte ») reste lisible par l'IA, « le maire de Saint-Cloud » est protégé, et les liens entre mentions sont proposés par l'analyse. Rien n'interrompt la rédaction avant ce clic.
+4. Si des éléments sont protégés ou ambigus, le volet de vérification s'ouvre : l'utilisateur peut tout corriger (**Ne plus protéger**, protéger une sélection, trancher un cas ambigu). Sinon, un **aperçu bref** (quelques secondes, annulable) montre le message tel que l'IA le recevra, puis le message part.
 
 Cette voie correspond au mode de validation hybride décidé (`DOCUMENTATION.md`, §9). L'utilisateur peut vérifier ce qui part à chaque envoi. Un mode invisible (sans aperçu) pourra être envisagé plus tard ; il n'est pas prévu dans la démo.
 
@@ -205,7 +205,7 @@ Cette voie correspond au mode de validation hybride décidé (`DOCUMENTATION.md`
 3. Les avertissements éventuels s'affichent ici : commentaires non lus, images ignorées, pages sans texte.
 4. Un PDF scanné ou une image est **refusé avec un message clair** (voir 8.2), jamais ignoré en silence.
 5. Le nom du fichier est traité comme du texte sensible : il n'apparaît jamais en clair dans ce que reçoit l'IA.
-6. La **revue plein écran** s'ouvre automatiquement (section 5).
+6. L'analyse approfondie protège d'office ce qu'elle juge identifiant, en arrière-plan. La **revue plein écran** ne s'ouvre qu'au clic sur **Vérifier** (section 5), jamais d'elle-même pendant que l'utilisateur rédige.
 
 ### 4.5 Aperçu avant envoi
 
@@ -284,7 +284,7 @@ Il s'ouvre en **plein écran**, au-dessus de la conversation. C'est l'écran le 
     - « Repéré automatiquement »
     - « Variante de M. Garnier »
     - « Suggéré par l'analyse approfondie »
-  - **Protégé automatiquement** : éléments déjà acceptés, groupés par famille, dépliables.
+  - **Protégé automatiquement** : éléments déjà acceptés (par les règles ou par l'analyse approfondie), groupés par famille, dépliés, chacun avec **Ne plus protéger**.
 - **Actions sur chaque ligne à vérifier** : **Protéger**, **Ignorer**, **Relier à…** (rattacher à un élément existant). Pour ajouter à la main : sélectionner un texte dans le document, puis un petit menu propose **Protéger cet élément**.
 - **Conflits** (deux personnes de même nom de famille, par exemple) : signalés en ambre avec la phrase « Plusieurs personnes peuvent correspondre. Choisissez. » Ils ne sont **jamais fusionnés automatiquement**.
 - **Compteur** en haut : « 3 sur 5 vérifiés ». Le bouton **Continuer** reste inactif tant qu'il reste des points à traiter, avec une info-bulle qui explique pourquoi.

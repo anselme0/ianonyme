@@ -646,7 +646,7 @@ L'utilisateur peut toujours ajouter une mention à la main. Le risque de ré-ide
 
 ## Annexe C — LLM local : prompt, schéma et validation
 
-Le LLM n'a qu'un rôle : **proposer des mentions** au format JSON. Il ne réécrit jamais le texte et n'a aucun pouvoir de décision. Le modèle précis est **à décider plus tard** (voir `MODELE_LOCAL_TESTS.md`) ; cette annexe doit fonctionner pour n'importe quel modèle retenu.
+Le LLM n'a qu'un rôle : **proposer des mentions** au format JSON, en décidant lui-même ce qui mérite d'être protégé (un métier générique comme « l'architecte » est laissé à l'assistant, « le maire de Saint-Cloud » est protégé) et quelles mentions désignent la même entité. Il ne réécrit jamais le texte. Le code valide chaque proposition (C.5) puis l'applique d'office, sauf les cas ambigus ; l'utilisateur peut tout corriger au moment de « Vérifier ». Le modèle précis est **à décider plus tard** (voir `MODELE_LOCAL_TESTS.md`) ; cette annexe doit fonctionner pour n'importe quel modèle retenu.
 
 ### C.1 Entrée
 
@@ -660,25 +660,29 @@ Le LLM tourne en local : le texte en clair ne quitte pas la machine à cette ét
 ### C.2 Prompt (version de départ, à ajuster sur le corpus)
 
 ```
-Tu aides à repérer des informations permettant d'identifier des personnes dans un document
-juridique ou d'expertise. Tu ne réécris jamais le texte.
+Tu aides à protéger l'identité des personnes dans un document juridique ou d'expertise avant qu'il soit
+confié à un assistant. Tu décides toi-même quoi protéger. Tu ne réécris jamais le texte.
 
-Repère les mentions qui n'ont PAS déjà été repérées par des règles simples :
-- fonctions ou rôles qui désignent une personne précise (ex. « le maire de la commune ») ;
-- liens de parenté ou de proximité (ex. « son beau-frère ») ;
-- noms de lieux, d'organisations ou de personnes oubliés ;
+À PROTÉGER (à renvoyer) : ce qui permet d'identifier une personne, un lieu ou une organisation précis :
+- noms de personnes, de lieux, d'organisations oubliés ;
+- fonction qui désigne une personne précise parce qu'elle est rattachée à un lieu ou une structure (ex. « le maire de Saint-Cloud », « le gérant de la société X ») ;
+- lien de parenté ou de proximité avec une personne (ex. « son beau-frère », « la voisine du 3e ») ;
 - toute formulation qui désigne indirectement une personne ou une entité connue.
 
-Pour chaque mention :
+À LAISSER (ne pas renvoyer) : le contexte utile à l'assistant, qui n'identifie personne :
+- métiers et qualités génériques (ex. « l'architecte », « l'expert », « le propriétaire », « le locataire » seuls, sans lieu ni nom) ;
+- notions, lois, termes techniques, dates sans rapport avec une identité.
+
+Pour chaque mention à protéger :
 - "text" : la chaîne EXACTE, copiée telle qu'elle apparaît dans le texte, sans modification ;
 - "category" : une des valeurs PERSONNE, ORGANISATION, LIEU, ADRESSE, FONCTION, LIEN_PARENTE, IDENTIFIANT ;
-- "linkedTo" : le nom de référence d'une entité connue de la liste si la mention la désigne, sinon null.
+- "linkedTo" : si la mention désigne la même personne ou entité qu'une autre, le nom de cette autre : soit une entité connue de la liste, soit le "text" d'une autre mention de ta réponse (ex. « le maire de Saint-Cloud » relié à « Jean Dupont » si le texte les identifie l'un à l'autre) ; sinon null.
 
-Entités déjà connues : {{liste}}
+Entités déjà connues (déjà protégées, ne les renvoie pas) : {{liste}}
 
 Texte : {{texte}}
 
-Réponds uniquement avec un objet JSON conforme au schéma. Si rien à signaler, renvoie {"mentions": []}.
+Réponds uniquement avec un objet JSON conforme au schéma. Si rien à protéger, renvoie {"mentions": []}.
 ```
 
 ### C.3 Sortie attendue (schéma JSON)

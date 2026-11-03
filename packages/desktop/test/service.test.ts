@@ -159,17 +159,13 @@ describe('aperçu et détection', () => {
 });
 
 describe('analyse approfondie', () => {
-  it('propose des mentions indirectes et les masque une fois acceptées', async () => {
+  it('protège d’office les mentions indirectes proposées', async () => {
     const h = new Harness();
     const conv = h.service.create();
     const r = await h.service.propose(conv.id, REPORT);
     expect(r.degraded).toBe(false);
-    const texts = r.mentions.map((m) => m.text.toLowerCase());
-    expect(texts).toContain('le maire de la commune');
-    expect(texts).toContain('son beau-frère');
-    const maire = r.mentions.find((m) => m.text.toLowerCase() === 'le maire de la commune')!;
-    expect(maire.entityId).toBeDefined();
-    h.service.decide({ convId: conv.id, action: 'accept', mention: maire });
+    // L'analyse protège d'office : rien ne reste à vérifier hors cas ambigus.
+    expect(r.mentions).toEqual([]);
     const a = h.service.analyze(conv.id, 'Le maire de la commune a signé.');
     expect(a.maskedText).toMatch(/^\[PERSONNE_\d\] a signé\.$/);
   });

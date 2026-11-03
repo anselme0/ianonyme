@@ -121,7 +121,7 @@ export function Review(p: ReviewProps) {
 
   const autoGroups = useMemo(() => {
     const seen = new Set<string>();
-    const groups = new Map<FamilyId, { text: string; label: string }[]>();
+    const groups = new Map<FamilyId, { text: string; label: string; mention: Mention }[]>();
     for (const m of p.analysis?.mentions ?? []) {
       if (m.status !== 'accepted') continue;
       const key = m.text.toLowerCase();
@@ -131,7 +131,7 @@ export function Review(p: ReviewProps) {
       const owner = p.entities.find((e) => e.id === m.entityId);
       const label =
         m.source === 'variant' && owner ? t.review.sourceVariant(owner.canonical) : m.source === 'regex' ? t.review.sourceRegex : t.review.sourceVariantGeneric;
-      groups.set(f, [...(groups.get(f) ?? []), { text: m.text, label }]);
+      groups.set(f, [...(groups.get(f) ?? []), { text: m.text, label, mention: m }]);
     }
     return groups;
   }, [p.analysis, p.entities]);
@@ -273,7 +273,7 @@ export function Review(p: ReviewProps) {
           </h3>
           {FAMILY_ORDER.filter((f) => autoGroups.has(f)).map((f) => {
             const list = autoGroups.get(f) ?? [];
-            const open = openGroups[f] ?? false;
+            const open = openGroups[f] ?? true;
             return (
               <div key={f} className="auto-group">
                 <button type="button" className="group-toggle" aria-expanded={open} onClick={() => setOpenGroups({ ...openGroups, [f]: !open })}>
@@ -284,7 +284,10 @@ export function Review(p: ReviewProps) {
                   <ul className="auto-list">
                     {list.map((a) => (
                       <li key={a.text}>
-                        <span>{a.text}</span> <span className="text-2 small">{a.label}</span>
+                        <span>{a.text}</span> <span className="text-2 small">{a.label}</span>{' '}
+                        <button type="button" className="btn btn-secondary btn-sm" onClick={() => p.onIgnore(a.mention)} data-testid="unprotect">
+                          {t.review.unprotect}
+                        </button>
                       </li>
                     ))}
                   </ul>

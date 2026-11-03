@@ -46,7 +46,7 @@ export const t = {
   composer: {
     placeholder: 'Écrivez votre message',
     attach: 'Joindre un fichier',
-    send: 'Envoyer',
+    send: 'Vérifier',
     sending: 'Envoi en cours…',
     willProtect: (n: number) =>
       n === 0
@@ -150,6 +150,7 @@ export const t = {
     continueDisabled: 'Traitez d’abord les points à vérifier pour continuer.',
     cancel: 'Annuler',
     seeReceived: 'Voir ce que l’IA va recevoir',
+    unprotect: 'Ne plus protéger',
     nothingToVerify: 'Aucun point à vérifier.',
     basicNotice:
       'Analyse de base : aucune suggestion de l’analyse approfondie. Relisez le document pour repérer d’éventuelles mentions indirectes.',

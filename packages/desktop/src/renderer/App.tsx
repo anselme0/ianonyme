@@ -31,7 +31,14 @@ import { Thread } from './components/Thread.js';
 import { marksFrom } from './marks.js';
 import { t } from './messages.js';
 
-type UiFile = ComposerFile & { uid: string; reviewed: boolean; text: string };
+type UiFile = ComposerFile & {
+  uid: string;
+  reviewed: boolean;
+  text: string;
+  /** Cas ambigus laissés par l'analyse approfondie, à traiter à la vérification. */
+  suggestions: Mention[];
+  degraded: ReviewState['degraded'];
+};
 
 interface ReviewState {
   title: string;
@@ -300,22 +307,24 @@ export function App() {
     }
   };
 
-  const openReview = async (title: string, target: string, fileId: string | null, deep: boolean): Promise<void> => {
+  const openReview = async (title: string, target: string, fileId: string | null, found: { suggestions: Mention[]; degraded: ReviewState['degraded'] }): Promise<void> => {
     if (!conv) return;
-    const { suggestions, degraded } = deep ? await runDeep(target) : { suggestions: [], degraded: info?.localAnalysis === 'ready' ? null : ('absent' as const) };
+    const { suggestions, degraded } = found;
     const a = await api.detect.run(conv.id, target, true);
     setConv(await api.conversations.get(conv.id));
     setReview({ title, text: target, analysis: a, suggestions, total: suggestions.length + a.conflicts.length, degraded, fileId, inline: false });
   };
 
   // ---- Fichiers ----
-  const processNext = async (): Promise<void> => {
+  // L'import et l'analyse des fichiers se font en arrière-plan : aucun volet ne s'ouvre avant « Vérifier ».
+  const processing = useRef(false);
+  const processOne = async (): Promise<void> => {
     const current = convRef.current;
     const file = queue.current.shift();
     if (!current || !file) return;
     setError(null);
     const uid = `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-    const entry: UiFile = { uid, chip: null, name: file.name, stage: 'reading', reviewed: false, text: '' };
+    const entry: UiFile = { uid, chip: null, name: file.name, stage: 'reading', reviewed: false, text: '', suggestions: [], degraded: null };
     setFiles((f) => [...f, entry]);
     const patch = (p: Partial<UiFile>): void => setFiles((list) => list.map((x) => (x.uid === uid ? { ...x, ...p } : x)));
     const res = await api.files.import(current.id, file.name, await file.arrayBuffer());
@@ -323,28 +332,35 @@ export function App() {
       const reason = res.blocked?.reason ?? 'file_unreadable';
       patch({ stage: 'failed', error: t.file.refused(reason) });
       setError({ kind: 'code', code: reason });
-      void processNextRef.current();
       return;
     }
-    const chip = res.file;
-    patch({ chip, stage: 'detecting', text: res.text });
+    patch({ chip: res.file, stage: 'detecting', text: res.text });
     const deepOn = info?.localAnalysis === 'ready';
     if (deepOn) patch({ stage: 'deep' });
-    await openReview(chip.maskedName, res.text, chip.id, deepOn);
-    patch({ stage: 'ready' });
+    const found = deepOn ? await runDeep(res.text) : { suggestions: [], degraded: 'absent' as const };
+    setConv(await api.conversations.get(current.id));
+    patch({ stage: 'ready', suggestions: found.suggestions, degraded: found.degraded });
+  };
+  const drainQueue = async (): Promise<void> => {
+    if (processing.current) return;
+    processing.current = true;
+    try {
+      while (queue.current.length > 0) await processOneRef.current();
+    } finally {
+      processing.current = false;
+    }
   };
   // Les gestionnaires asynchrones doivent toujours voir l'état le plus récent.
-  const processNextRef = useRef(processNext);
-  processNextRef.current = processNext;
+  const processOneRef = useRef(processOne);
+  processOneRef.current = processOne;
 
   const pickFiles = (picked: File[]): void => {
     queue.current.push(...picked);
-    if (!review) void processNextRef.current();
+    void drainQueue();
   };
 
   const closeReview = (): void => {
     setReview(null);
-    if (queue.current.length > 0) void processNextRef.current();
   };
 
   // ---- Envoi ----
@@ -375,7 +391,7 @@ export function App() {
     const readyFiles = files.filter((f) => f.chip && f.stage === 'ready');
     const unreviewed = readyFiles.find((f) => !f.reviewed);
     if (unreviewed && unreviewed.chip) {
-      await openReview(unreviewed.chip.maskedName, unreviewed.text, unreviewed.chip.id, true);
+      await openReview(unreviewed.chip.maskedName, unreviewed.text, unreviewed.chip.id, { suggestions: unreviewed.suggestions, degraded: unreviewed.degraded });
       return;
     }
     let pending: Mention[] = [];
@@ -392,7 +408,9 @@ export function App() {
       setDialog({ preview: pv, original: originalOf(text, files) });
       return;
     }
-    if (pv.requiresReview) {
+    // Le volet de vérification s'ouvre ici, sur « Vérifier » : s'il y a quelque chose à traiter ou à relire.
+    const current = await api.detect.run(conv.id, text);
+    if (pv.requiresReview || current.protectedInText > 0) {
       const a = await api.detect.run(conv.id, text, true);
       setConv(await api.conversations.get(conv.id));
       const count = pending.length + a.conflicts.length;
@@ -409,8 +427,9 @@ export function App() {
     const ids = readyFileIds;
     const pv = await api.chat.preview(conv.id, text, ids, 0);
     setReview(null);
-    if (queue.current.length > 0) {
-      void processNextRef.current();
+    const nextFile = files.find((f) => f.chip && f.stage === 'ready' && !f.reviewed && f.chip.id !== review.fileId);
+    if (nextFile?.chip) {
+      await openReview(nextFile.chip.maskedName, nextFile.text, nextFile.chip.id, { suggestions: nextFile.suggestions, degraded: nextFile.degraded });
       return;
     }
     if (!isFile && text.trim().length === 0) return;

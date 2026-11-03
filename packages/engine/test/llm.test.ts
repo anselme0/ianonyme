@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   acceptMention,
+  applyLlmMentions,
   buildLlmPrompt,
   chunkText,
   createState,
@@ -127,5 +128,27 @@ describe('consigne et découpage', () => {
     expect(chunks.length).toBeGreaterThan(1);
     expect(chunks.join('\n')).toContain('d'.repeat(30));
     expect(chunks[1]?.startsWith(chunks[0]!.split('\n').slice(-1)[0]!)).toBe(true);
+  });
+});
+
+describe('application d’office des propositions', () => {
+  it('protège les mentions, relie une mention à une autre proposée, laisse les cas ambigus', () => {
+    const text = 'Paul Martin est architecte. Le maire de Saint-Cloud a parlé. Son voisin du dessus a contredit.';
+    const r = mergeLlmMentions(
+      [
+        { text: 'Le maire de Saint-Cloud', category: 'FONCTION', linkedTo: 'Son voisin du dessus' },
+        { text: 'Son voisin du dessus', category: 'LIEN_PARENTE', linkedTo: null },
+      ],
+      text,
+      createState(),
+    );
+    expect(r.peerLinks).toEqual({ 'le maire de saint cloud': 'son voisin du dessus' });
+    const applied = applyLlmMentions(createState(), r.mentions, r.conflicts, r.peerLinks);
+    expect(applied.remaining).toEqual([]);
+    expect(Object.keys(applied.state.entities)).toHaveLength(1);
+    const { masked } = mask(text, applied.state);
+    expect(masked).not.toContain('voisin');
+    expect(masked).not.toContain('Saint-Cloud');
+    expect(masked).toContain('architecte');
   });
 });

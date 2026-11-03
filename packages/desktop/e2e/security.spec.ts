@@ -50,6 +50,8 @@ test('aucune valeur du document dans les journaux du processus principal', async
   app.process().stderr?.on('data', (d: Buffer) => out.push(String(d)));
   app.process().stdout?.on('data', (d: Buffer) => out.push(String(d)));
   await page.getByTestId('file-input').setInputFiles(resolve(DEMO, 'rapport-expertise-fictif.docx'));
+  await expect(page.locator('.file-chip.file-ready')).toBeVisible({ timeout: 30_000 });
+  await page.getByTestId('send').click();
   await expect(page.getByTestId('review')).toBeVisible();
   await protectAll(page);
   await page.getByTestId('review-continue').click();
@@ -57,6 +59,7 @@ test('aucune valeur du document dans les journaux du processus principal', async
   await expect(page.getByTestId('assistant-text')).toHaveCount(1, { timeout: 30_000 });
   await page.getByTestId('composer-input').fill('Simule une panne pour M. Louis Cordier.');
   await page.getByTestId('send').click();
+  await page.getByTestId('review-continue').click();
   await page.getByTestId('brief-send').click();
   await expect(page.getByTestId('banner')).toBeVisible();
   const logs = out.join('');

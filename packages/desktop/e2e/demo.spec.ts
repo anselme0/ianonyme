@@ -10,20 +10,18 @@ test.describe.configure({ mode: 'serial' });
 test('parcours complet : import, revue, envoi masqué, restitution, tour suivant, blocage, fiabilité', async () => {
   const { app, page } = await launch();
 
-  // 1. Import d'un rapport fictif (.docx) : la revue plein écran s'ouvre.
+  // 1. Import d'un rapport fictif (.docx) : l'analyse se fait en arrière-plan, aucun volet ne s'ouvre.
   await page.getByTestId('file-input').setInputFiles(resolve(DEMO, 'rapport-expertise-fictif.docx'));
+  await expect(page.locator('.file-chip.file-ready')).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId('review')).toHaveCount(0);
+
+  // 2. « Vérifier » ouvre le volet : l'analyse a déjà tout protégé, l'utilisateur peut corriger.
+  await page.getByTestId('send').click();
   await expect(page.getByTestId('review')).toBeVisible();
   await expect(page.getByTestId('review-doc')).toContainText('Louis Cordier');
-  await page.screenshot({ path: `${SHOTS}/02-revue.png` });
-
-  // 2. Le bouton Continuer est inactif tant qu'il reste des points à vérifier ; traitement des suggestions.
-  const suggestions = await page.getByTestId('verify-item').count();
-  expect(suggestions).toBeGreaterThan(0);
-  await expect(page.getByTestId('review-continue')).toBeDisabled();
-  await expect(page.getByTestId('review-progress')).toContainText(`0 sur ${suggestions}`);
+  await expect(page.getByTestId('unprotect').first()).toBeVisible();
   await protectAll(page);
   await expect(page.getByTestId('review-continue')).toBeEnabled();
-  await expect(page.getByTestId('review-progress')).toContainText(`${suggestions} sur ${suggestions}`);
   await page.screenshot({ path: `${SHOTS}/03-revue-terminee.png` });
 
   // 3. « Ce que l'IA va recevoir » : aucune valeur réelle, repères visibles.
@@ -72,6 +70,7 @@ test('parcours complet : import, revue, envoi masqué, restitution, tour suivant
   await page.getByTestId('tab-received').click();
   await expect(page.getByTestId('received-text')).toContainText(`Que dit M. ${placeholder} ?`.replace('M. ', ''));
   await page.getByTestId('send').click();
+  await page.getByTestId('review-continue').click();
   const brief = page.getByTestId('brief');
   await expect(brief).toBeVisible();
   await expect(brief).toContainText(placeholder);
@@ -82,6 +81,7 @@ test('parcours complet : import, revue, envoi masqué, restitution, tour suivant
   // 8. Envoi bloqué : deux personnes de même nom, une occurrence ambiguë.
   await page.getByTestId('composer-input').fill('Pierre Dupuis et Jacques Dupuis sont frères.');
   await page.getByTestId('send').click();
+  await page.getByTestId('review-continue').click();
   await page.getByTestId('brief-send').click();
   await expect(page.getByTestId('assistant-text')).toHaveCount(3, { timeout: 30_000 });
   await page.getByTestId('composer-input').fill('Dupuis a signé hier.');

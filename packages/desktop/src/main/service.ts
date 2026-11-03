@@ -11,6 +11,7 @@ import {
   ingestText,
   linkMention,
   mask,
+  applyLlmMentions,
   mergeLlmMentions,
   parseLlmOutput,
   protectFileName,
@@ -376,9 +377,13 @@ export class ChatService {
       }
       const maxMentions = this.deps.config.limits.maxMentionsPerChunk * Math.max(1, chunks.length);
       const merged = mergeLlmMentions(raw, text, state, { maxMentions, invalidJson });
+      // L'analyse décide : tout est protégé d'office, sauf les cas ambigus laissés à l'utilisateur.
+      const applied = applyLlmMentions(state, merged.mentions, merged.conflicts, merged.peerLinks);
+      c.state = applied.state;
+      merged.mentions = applied.remaining;
       merged.stats.durationMs = Date.now() - started;
       log('service', 'llm_done', { proposed: merged.stats.proposed, retained: merged.stats.retained, ms: merged.stats.durationMs });
-      return { ...merged, degraded: false };
+      return { mentions: merged.mentions, conflicts: merged.conflicts, stats: merged.stats, degraded: false };
     } catch (e) {
       logError('service', 'llm_failed', e);
       const timedOut = e instanceof Error && e.message === 'timeout';
