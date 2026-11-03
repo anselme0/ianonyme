@@ -133,6 +133,8 @@ export const t = {
     continueDisabled: 'Traitez d’abord les points à vérifier pour continuer.',
     cancel: 'Annuler',
     unprotect: 'Ne plus protéger',
+    seeReceived: 'Voir ce que l’IA va recevoir',
+    backToDocument: 'Revenir au document',
     nothingToVerify: 'Aucun point à vérifier.',
     basicNotice:
       'Analyse de base : aucune suggestion de l’analyse approfondie. Relisez le document pour repérer d’éventuelles mentions indirectes.',

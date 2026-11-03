@@ -53,6 +53,7 @@ export function Review(p: ReviewProps) {
   const [selection, setSelection] = useState<{ text: string; x: number; y: number } | null>(null);
   const [family, setFamily] = useState<FamilyId>('personnes');
   const [selectionLink, setSelectionLink] = useState('');
+  const [showSent, setShowSent] = useState(false);
   const doc = useRef<HTMLDivElement>(null);
 
   const items: Item[] = useMemo(() => {
@@ -188,7 +189,20 @@ export function Review(p: ReviewProps) {
 
       <div className="review-body">
         <section className="review-doc" aria-label={t.review.document}>
-          <div className="doc-text" ref={doc} onMouseUp={onMouseUp} data-testid="review-doc">
+          {showSent && (
+            <pre className="received-text" data-testid="review-sent">
+              {(analysis?.maskedText ?? '').split(/(\[[A-Z][A-Z_]*_\d+\])/g).map((part, i) =>
+                /^\[[A-Z][A-Z_]*_\d+\]$/.test(part) ? (
+                  <code key={i} className="placeholder">
+                    {part}
+                  </code>
+                ) : (
+                  <span key={i}>{part}</span>
+                ),
+              )}
+            </pre>
+          )}
+          <div className="doc-text" ref={doc} onMouseUp={onMouseUp} data-testid="review-doc" hidden={showSent}>
             <Marked
               text={text}
               marks={marks}
@@ -346,6 +360,9 @@ export function Review(p: ReviewProps) {
         </button>
         <span className="text-2 small keys">{t.review.keys}</span>
         <span className="spacer" />
+        <button type="button" className="btn btn-secondary" aria-pressed={showSent} onClick={() => setShowSent(!showSent)} data-testid="review-see-sent">
+          {showSent ? t.review.backToDocument : t.review.seeReceived}
+        </button>
         <button
           type="button"
           className="btn btn-primary"

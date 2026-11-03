@@ -22,6 +22,15 @@ test('parcours complet : import, vérification, envoi masqué, restitution, tour
   await page.getByTestId('review-tab').nth(1).click();
   await expect(page.getByTestId('review-doc')).toContainText('Louis Cordier');
   await expect(page.getByTestId('unprotect').first()).toBeVisible();
+  // Le petit bouton montre ce que l'IA reçoit : des repères, aucune valeur réelle.
+  await page.getByTestId('review-see-sent').click();
+  const sent = page.getByTestId('review-sent');
+  await expect(sent).toBeVisible();
+  await expect(sent).toContainText('[NOM_');
+  expect(await sent.innerText()).not.toContain('Louis Cordier');
+  await page.screenshot({ path: `${SHOTS}/04-comparaison.png` });
+  await page.getByTestId('review-see-sent').click();
+  await expect(page.getByTestId('review-doc')).toBeVisible();
   await protectAll(page);
   await page.screenshot({ path: `${SHOTS}/03-revue-terminee.png` });
 

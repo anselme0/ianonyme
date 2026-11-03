@@ -490,7 +490,7 @@ Le prototype est attendu mercredi 4 novembre. Le temps est court : on construit 
 
 - **Deux boutons d'envoi.** « Vérifier » ouvre le volet de vérification avant l'envoi. « Envoyer » fait les mêmes vérifications sans les afficher ; le volet ne s'ouvre que s'il reste un doute (point de vigilance).
 - **Analyse approfondie en continu.** Elle tourne en arrière-plan pendant la frappe et à l'import, et le surlignage suit. Les boutons restent cliquables pendant l'analyse. « Passer en analyse de base » n'est proposé qu'après un clic sur « Vérifier » ou « Envoyer ».
-- **Plus de « Ce que l'IA va recevoir »** (aperçu bref, fenêtre de comparaison, onglet du volet Protection). Le surlignage et le volet de vérification suffisent ; la vérification de sécurité finale est inchangée.
+- **« Ce que l'IA va recevoir »** : plus d'aperçu bref, de fenêtre de comparaison ni d'onglet dans le volet Protection. Seul reste, dans le volet de vérification, un petit bouton « Voir ce que l'IA va recevoir » qui affiche le texte protégé de l'onglet courant, repères compris. La vérification de sécurité finale est inchangée.
 - **Plus de réglage « Analyser aussi les messages »** : tout est analysé. Plus d'entrée « Fiabilité de la détection » dans le menu : les statistiques se présentent à l'oral.
 - **Volet de vérification à onglets** : un onglet pour le message, un par document. « Envoyer » s'active quand plus aucun point n'est à traiter. À la sélection d'un texte, on peut le relier à un élément existant.
 - **Documents en tuiles** (nom entier, deux lignes au plus), dans la zone de saisie et dans le message envoyé.
