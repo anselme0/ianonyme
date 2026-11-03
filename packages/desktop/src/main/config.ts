@@ -16,11 +16,17 @@ export interface LocalModelEntry {
   contextSize: number;
   chunkChars: number;
   timeoutMs: number;
+  /** Moteur `openai-compatible` : serveur déjà lancé (LM Studio, Ollama…) et identifiant du modèle qu'il sert. */
+  baseUrl?: string;
+  model?: string;
+  apiKey?: string;
+  /** Niveau de réflexion demandé au serveur (`none` pour une détection rapide). */
+  reasoningEffort?: string;
 }
 
 export interface AppConfig {
   assistant: { default: string; providers: ProviderConfig[] };
-  localModel: { engine: 'node-llama-cpp' | 'fake' | 'none'; active: string; registry: LocalModelEntry[] };
+  localModel: { engine: 'node-llama-cpp' | 'openai-compatible' | 'fake' | 'none'; active: string; registry: LocalModelEntry[] };
   limits: { maxFileBytes: number; maxMentionsPerChunk: number };
   user: { name: string; firm: string; email: string };
 }
@@ -64,7 +70,7 @@ export function parseConfig(raw: unknown): AppConfig {
   }
   if (isRecord(raw.localModel)) {
     const lm = raw.localModel;
-    const engine = lm.engine === 'node-llama-cpp' || lm.engine === 'fake' || lm.engine === 'none' ? lm.engine : 'none';
+    const engine = lm.engine === 'node-llama-cpp' || lm.engine === 'openai-compatible' || lm.engine === 'fake' || lm.engine === 'none' ? lm.engine : 'none';
     out.localModel = {
       engine,
       active: typeof lm.active === 'string' ? lm.active : '',

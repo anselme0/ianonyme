@@ -1,6 +1,6 @@
 // LLM local derrière `proposeMentions` (docs/DOCUMENTATION.md, annexe C).
 // Le moteur d'inférence et le modèle se choisissent par configuration : rien n'est écrit en dur ici.
-// Trois moteurs : `none` (absent, mode dégradé), `fake` (scripté, pour les tests et la démonstration
+// Quatre moteurs : `none` (absent, mode dégradé), `openai-compatible` (serveur local déjà lancé), `fake` (scripté, pour les tests et la démonstration
 // de l'interface, jamais présenté comme une vraie analyse) et `node-llama-cpp`.
 
 import { createHash } from 'node:crypto';
@@ -163,6 +163,69 @@ export class NodeLlamaLlm implements LocalLlm {
   }
 }
 
+/**
+ * Détection par un serveur compatible OpenAI déjà lancé (LM Studio, Ollama) : le même modèle peut servir
+ * l'analyse et l'assistant, avec une seule copie en mémoire graphique. Le texte envoyé est celui du poste
+ * (jamais vers un service en ligne) : l'adresse doit rester locale, c'est à la configuration de le garantir.
+ */
+export class OpenAiCompatibleLlm implements LocalLlm {
+  simulated = false;
+  private state: LocalAnalysisStatus = 'loading';
+  private readonly base: string;
+
+  constructor(private readonly entry: LocalModelEntry) {
+    this.base = (entry.baseUrl ?? '').replace(/\/$/, '');
+  }
+
+  status(): LocalAnalysisStatus {
+    return this.state;
+  }
+
+  private headers(): Record<string, string> {
+    return { 'content-type': 'application/json', ...(this.entry.apiKey ? { authorization: `Bearer ${this.entry.apiKey}` } : {}) };
+  }
+
+  warmUp(): void {
+    fetch(`${this.base}/models`, { headers: this.headers(), signal: AbortSignal.timeout(5000) })
+      .then((r) => {
+        this.state = r.ok ? 'ready' : 'error';
+      })
+      .catch((e: unknown) => {
+        this.state = 'error';
+        logError('localllm', 'server_unreachable', e);
+      });
+  }
+
+  private async call(prompt: string, signal: AbortSignal, structured: boolean): Promise<Response> {
+    return fetch(`${this.base}/chat/completions`, {
+      method: 'POST',
+      signal,
+      headers: this.headers(),
+      body: JSON.stringify({
+        model: this.entry.model,
+        stream: false,
+        temperature: 0,
+        ...(this.entry.reasoningEffort ? { reasoning_effort: this.entry.reasoningEffort } : {}),
+        messages: [{ role: 'user', content: prompt }],
+        ...(structured
+          ? { response_format: { type: 'json_schema', json_schema: { name: 'mentions', strict: true, schema: SCHEMA } } }
+          : {}),
+      }),
+    });
+  }
+
+  async propose(chunk: string, state: ConversationState, signal: AbortSignal): Promise<string> {
+    const prompt = buildLlmPrompt(chunk, state);
+    let response = await this.call(prompt, signal, true);
+    // Serveur sans sortie structurée : on retente sans, la validation du moteur reste la même.
+    if (response.status === 400) response = await this.call(prompt, signal, false);
+    if (!response.ok) throw new Error('server_error');
+    const body = (await response.json()) as { choices?: { message?: { content?: string } }[] };
+    this.state = 'ready';
+    return body.choices?.[0]?.message?.content ?? '';
+  }
+}
+
 export function createLocalLlm(cfg: AppConfig, modelsDir: string): LocalLlm {
   switch (cfg.localModel.engine) {
     case 'fake':
@@ -170,6 +233,10 @@ export function createLocalLlm(cfg: AppConfig, modelsDir: string): LocalLlm {
     case 'node-llama-cpp': {
       const entry = activeLocalModel(cfg);
       return entry ? new NodeLlamaLlm(entry, modelsDir) : new AbsentLlm();
+    }
+    case 'openai-compatible': {
+      const entry = activeLocalModel(cfg);
+      return entry?.baseUrl && entry.model ? new OpenAiCompatibleLlm(entry) : new AbsentLlm();
     }
     default:
       return new AbsentLlm();
