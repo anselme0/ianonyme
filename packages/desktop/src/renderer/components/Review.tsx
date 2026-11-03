@@ -145,20 +145,36 @@ export function Review(p: ReviewProps) {
     return out;
   }, [analysis]);
 
+  // Arborescence comme dans le volet Protection : l'élément principal, puis ses autres formes présentes dans ce texte.
   const autoGroups = useMemo(() => {
-    const seen = new Set<string>();
-    const groups = new Map<FamilyId, { text: string; label: string; mention: Mention }[]>();
+    interface Node {
+      key: string;
+      name: string;
+      mention: Mention;
+      forms: { text: string; mention: Mention }[];
+    }
+    const nodes = new Map<string, { family: FamilyId; node: Node }>();
     for (const m of analysis?.mentions ?? []) {
       if (m.status !== 'accepted') continue;
-      const key = m.text.toLowerCase();
-      if (seen.has(key)) continue;
-      seen.add(key);
-      const f = familyOf(m.category);
       const owner = p.entities.find((e) => e.id === m.entityId);
-      const label =
-        m.source === 'variant' && owner ? t.review.sourceVariant(owner.canonical) : m.source === 'regex' ? t.review.sourceRegex : t.review.sourceVariantGeneric;
-      groups.set(f, [...(groups.get(f) ?? []), { text: m.text, label, mention: m }]);
+      if (!owner) {
+        const key = `m-${m.text.toLowerCase()}`;
+        if (!nodes.has(key)) nodes.set(key, { family: familyOf(m.category), node: { key, name: m.text, mention: m, forms: [] } });
+        continue;
+      }
+      const key = `e-${owner.id}`;
+      let slot = nodes.get(key);
+      if (!slot) {
+        // Retirer la forme de référence retire tout l'élément.
+        const whole: Mention = { id: key, text: owner.canonical, span: { start: 0, end: 0 }, category: owner.category, source: 'variant', status: 'accepted', entityId: owner.id };
+        slot = { family: familyOf(owner.category), node: { key, name: owner.canonical, mention: whole, forms: [] } };
+        nodes.set(key, slot);
+      }
+      const lower = m.text.toLowerCase();
+      if (lower !== owner.canonical.toLowerCase() && !slot.node.forms.some((x) => x.text.toLowerCase() === lower)) slot.node.forms.push({ text: m.text, mention: m });
     }
+    const groups = new Map<FamilyId, Node[]>();
+    for (const { family, node } of nodes.values()) groups.set(family, [...(groups.get(family) ?? []), node]);
     return groups;
   }, [analysis, p.entities]);
 
@@ -346,14 +362,26 @@ export function Review(p: ReviewProps) {
                 </button>
                 {open && (
                   <ul className="auto-list">
-                    {list.map((a) => (
-                      <li key={a.text}>
-                        <span className="auto-text">
-                          {a.text} <span className="text-2 small">{a.label}</span>
-                        </span>
-                        <button type="button" className="icon-btn auto-x" aria-label={t.review.unprotect} title={t.review.unprotect} onClick={() => p.onIgnore(a.mention)} data-testid="unprotect">
-                          <X size={14} aria-hidden />
-                        </button>
+                    {list.map((n) => (
+                      <li key={n.key}>
+                        <div className="auto-row">
+                          <span className="auto-text">{n.name}</span>
+                          <button type="button" className="icon-btn auto-x" aria-label={t.review.unprotect} title={t.review.unprotect} onClick={() => p.onIgnore(n.mention)} data-testid="unprotect">
+                            <X size={14} aria-hidden />
+                          </button>
+                        </div>
+                        {n.forms.length > 0 && (
+                          <ul className="auto-sub" data-testid="auto-sub">
+                            {n.forms.map((x) => (
+                              <li key={x.text} className="auto-row">
+                                <span className="auto-text text-2">{x.text}</span>
+                                <button type="button" className="icon-btn auto-x" aria-label={t.review.unprotect} title={t.review.unprotect} onClick={() => p.onIgnore(x.mention)} data-testid="unprotect-form">
+                                  <X size={12} aria-hidden />
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </li>
                     ))}
                   </ul>

@@ -719,11 +719,18 @@ h3 {
   color: var(--red-fg);
   border-color: var(--red-border);
 }
-.auto-list li {
+.auto-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+}
+.auto-sub {
+  list-style: none;
+  margin: 0 0 4px 14px;
+  padding: 0 0 0 8px;
+  border-left: 1px solid var(--border);
+  font-size: 12.5px;
 }
 .auto-x {
   flex: none;
