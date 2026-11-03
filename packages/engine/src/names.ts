@@ -43,7 +43,7 @@ export const CIVILITIES = ['Monsieur', 'Madame', 'Mademoiselle', 'Maître', 'Mll
 export const CIVILITY_SOURCE = String.raw`(?:Monsieur|Madame|Mademoiselle|Maître|Mlle|Mme|Me|Dr|Pr|M)\.?`;
 
 /** Variantes de civilité ajoutées devant le nom de famille. */
-const CIVILITY_VARIANTS = ['M.', 'Monsieur', 'Mme', 'Madame', 'Mlle', 'Me', 'Maître', 'Dr', 'Pr'];
+export const CIVILITY_VARIANTS = ['M.', 'Monsieur', 'Mme', 'Madame', 'Mlle', 'Me', 'Maître', 'Dr', 'Pr'];
 
 /** Mots capitalisés qui ne font jamais partie d'un nom (début de phrase, articles…). */
 export const NAME_STOPWORDS = new Set(

@@ -53,21 +53,15 @@ test('parcours complet : import, vérification, envoi masqué, restitution, tour
   await expect(page.getByTestId('review')).toHaveCount(0);
   await page.screenshot({ path: `${SHOTS}/06-tour-suivant.png` });
 
-  // 6. Envoi bloqué : deux personnes de même nom, une occurrence ambiguë.
-  await page.getByTestId('composer-input').fill('Pierre Dupuis et Jacques Dupuis sont frères.');
+  // 6. Deux personnes qui se confondent (même initiale) : « Envoyer » ouvre le volet, point de vigilance.
+  await page.getByTestId('composer-input').fill('Jean Dupuis et Jacques Dupuis sont frères.');
   await page.getByTestId('send').click();
   await expect(page.getByTestId('assistant-text')).toHaveCount(3, { timeout: 30_000 });
-  await page.getByTestId('composer-input').fill('Dupuis a signé hier.');
+  await page.getByTestId('composer-input').fill('J. Dupuis a signé hier.');
   await page.getByTestId('send').click();
-  const banner = page.getByTestId('banner');
-  await expect(banner).toBeVisible();
-  await expect(banner).toContainText('Envoi bloqué : le nom Dupuis apparaît encore dans le message.');
-  await expect(page.getByTestId('composer-input')).toHaveValue('Dupuis a signé hier.');
-  await page.screenshot({ path: `${SHOTS}/07-envoi-bloque.png` });
-
-  // 7. « Protéger » ouvre le volet ; le conflit se tranche explicitement.
-  await page.getByTestId('blocked-protect').click();
   await expect(page.getByTestId('review')).toBeVisible();
+  await expect(page.getByTestId('verify-item')).toHaveCount(1);
+  await expect(page.getByTestId('review-continue')).toBeDisabled();
   await page.screenshot({ path: `${SHOTS}/08-conflit.png` });
   await page.getByTestId('choose-candidate').first().click();
   await expect(page.getByTestId('review-continue')).toBeEnabled();

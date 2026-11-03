@@ -446,6 +446,7 @@ export interface Conversation {
 ### A.2 Format des placeholders
 
 - Forme : `[CATEGORIE_N]`, par exemple `[PERSONNE_1]`, `[ORGANISATION_2]`. Motif de reconnaissance : `\[[A-Z_]+_\d+\]`.
+- **Personnes dont le prénom et le nom sont connus** : le prénom et le nom de famille ont chacun leur repère, `[PRENOM_1] [NOM_1]`. Les repères sont partagés : « Isabelle Moreau » et « Patrick Moreau » donnent `[PRENOM_1] [NOM_1]` et `[PRENOM_2] [NOM_1]`, et « l'affaire Moreau » devient « l'affaire `[NOM_1]` », sans ambiguïté à trancher. L'assistant voit ainsi le lien entre les personnes de même nom. Une personne connue par son seul nom garde `[PERSONNE_N]`. Dans l'interface, le prénom et le nom restent côte à côte et aucun repère n'est affiché.
 - `N` est un compteur par catégorie et par conversation.
 - Un numéro n'est **jamais réattribué ni réutilisé**, même si l'entité est supprimée.
 - Une même entité garde le même placeholder pendant toute la conversation.

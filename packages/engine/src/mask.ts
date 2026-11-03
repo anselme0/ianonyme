@@ -2,13 +2,15 @@
 
 import { Coverage, findOccurrences, makeHaystack, normalizeValue, placeholderRanges } from './normalize.js';
 import { runStructuredRules } from './rules.js';
-import { entityValues } from './state.js';
+import { entityValues, sharedFamily } from './state.js';
 import type { ConversationState, LeakReport, LeakItem, Replacement } from './types.js';
 
 interface Match {
   start: number;
   end: number;
   entityId: string;
+  /** Repère à la place de celui de l'entité (nom de famille seul). */
+  replacement?: string;
 }
 
 function overlaps(a: { start: number; end: number }, b: { start: number; end: number }): boolean {
@@ -44,14 +46,20 @@ export function mask(
   const matches: Match[] = [];
   for (const [nv, { value, ids }] of valueIndex(state)) {
     let entityId: string | undefined;
-    if (ids.length === 1) entityId = ids[0];
+    let replacement: string | undefined;
+    const family = sharedFamily(state, ids, value);
+    if (family && (ids.length > 1 || state.entities[ids[0] as string]?.parts)) {
+      // Nom de famille seul : le repère du nom, commun à toutes les personnes qui le portent.
+      entityId = family.entityId;
+      replacement = family.placeholder;
+    } else if (ids.length === 1) entityId = ids[0];
     else {
       const chosen = state.preferred[nv];
       if (chosen && ids.includes(chosen)) entityId = chosen;
     }
     if (!entityId) continue;
     for (const occ of findOccurrences(hay, value)) {
-      if (!blocked.some((b) => overlaps(b, occ))) matches.push({ ...occ, entityId });
+      if (!blocked.some((b) => overlaps(b, occ))) matches.push({ ...occ, entityId, ...(replacement ? { replacement } : {}) });
     }
   }
   matches.sort((a, b) => b.end - b.start - (a.end - a.start) || a.start - b.start);
@@ -70,10 +78,11 @@ export function mask(
   for (const m of picked) {
     const entity = state.entities[m.entityId];
     if (!entity) continue;
-    masked += text.slice(cursor, m.start) + entity.placeholder;
+    const placeholder = m.replacement ?? entity.placeholder;
+    masked += text.slice(cursor, m.start) + placeholder;
     replacements.push({
       span: { start: m.start, end: m.end },
-      placeholder: entity.placeholder,
+      placeholder,
       entityId: m.entityId,
       original: text.slice(m.start, m.end),
     });

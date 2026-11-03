@@ -12,12 +12,12 @@ describe('masquage', () => {
 
   it('remplace de la forme la plus longue à la plus courte, en une passe', () => {
     const { masked } = mask('Jean Garnier, M. Garnier, Garnier', state);
-    expect(masked).toBe('[PERSONNE_1], [PERSONNE_1], [PERSONNE_1]');
+    expect(masked).toBe('[PRENOM_1] [NOM_1], [NOM_1], [NOM_1]');
   });
 
   it('respecte les frontières de mot', () => {
     const { masked } = mask('Garnieri, Garnier, xGarnier, Garnier-Dupont', state);
-    expect(masked).toBe('Garnieri, [PERSONNE_1], xGarnier, [PERSONNE_1]-Dupont');
+    expect(masked).toBe('Garnieri, [NOM_1], xGarnier, [NOM_1]-Dupont');
   });
 
   it('ignore la casse, les accents, les espaces insécables et les apostrophes', () => {
@@ -29,27 +29,27 @@ describe('masquage', () => {
       'Étienne  D’Artois',
       'Étienne D’Artois',
     ]) {
-      expect(mask(t, s).masked, t).toBe('[PERSONNE_1]');
+      expect(mask(t, s).masked, t).toBe('[PRENOM_1] [NOM_1]');
     }
   });
 
   it('traite les tirets comme des espaces', () => {
     const s = stateWith(['Jean-Pierre Martin']);
-    expect(mask('Jean Pierre Martin et Jean‑Pierre Martin', s).masked).toBe('[PERSONNE_1] et [PERSONNE_1]');
+    expect(mask('Jean Pierre Martin et Jean‑Pierre Martin', s).masked).toBe('[PRENOM_1] [NOM_1] et [PRENOM_1] [NOM_1]');
   });
 
   it('masque une valeur coupée par des caractères invisibles ou accents combinants', () => {
     const s = stateWith(['Jean Garnier']);
-    expect(mask('Gar­nier', s).masked).toBe('[PERSONNE_1]');
-    expect(mask('Jean Gar​nier', s).masked).toBe('[PERSONNE_1]');
+    expect(mask('Gar­nier', s).masked).toBe('[NOM_1]');
+    expect(mask('Jean Gar​nier', s).masked).toBe('[PRENOM_1] [NOM_1]');
     const accent = stateWith(['Éric Dupont']);
-    expect(mask('Éric Dupont', accent).masked).toBe('[PERSONNE_1]');
+    expect(mask('Éric Dupont', accent).masked).toBe('[PRENOM_1] [NOM_1]');
   });
 
   it('ne retouche jamais un repère déjà inséré', () => {
     const s = stateWith(['Jean Garnier'], ['PERSONNE', 'ORGANISATION']);
     const t = 'Voir [PERSONNE_1] puis Garnier';
-    expect(mask(t, s).masked).toBe('Voir [PERSONNE_1] puis [PERSONNE_1]');
+    expect(mask(t, s).masked).toBe('Voir [PERSONNE_1] puis [NOM_1]');
     const s2 = addManualMention(createState(), 'PERSONNE', 'ORGANISATION');
     expect(mask('[PERSONNE_1]', s2).masked).toBe('[PERSONNE_1]');
   });
@@ -69,7 +69,7 @@ describe('cohérence des repères', () => {
     s = addManualMention(s, 'Jean Garnier', 'PERSONNE');
     s = addManualMention(s, 'Garnier', 'PERSONNE');
     expect(Object.keys(s.entities)).toHaveLength(1);
-    expect(mask('Garnier', s).masked).toBe('[PERSONNE_1]');
+    expect(mask('Garnier', s).masked).toBe('[NOM_1]');
   });
 
   it('ne réutilise jamais un numéro après suppression', async () => {
@@ -80,7 +80,7 @@ describe('cohérence des repères', () => {
     });
     s = addManualMention(s, 'Marie Durand', 'PERSONNE');
     const only = Object.values(s.entities);
-    expect(only.map((e) => e.placeholder)).toEqual(['[PERSONNE_2]']);
+    expect(only.map((e) => e.placeholder)).toEqual(['[PRENOM_2] [NOM_2]']);
   });
 
   it('numérote par catégorie', () => {
@@ -89,9 +89,9 @@ describe('cohérence des repères', () => {
     s = addManualMention(s, 'ACME SARL', 'ORGANISATION');
     s = addManualMention(s, 'Marie Durand', 'PERSONNE');
     expect(Object.values(s.entities).map((e) => e.placeholder)).toEqual([
-      '[PERSONNE_1]',
+      '[PRENOM_1] [NOM_1]',
       '[ORGANISATION_1]',
-      '[PERSONNE_2]',
+      '[PRENOM_2] [NOM_2]',
     ]);
   });
 });

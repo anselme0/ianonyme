@@ -11,6 +11,7 @@ const TOKEN_RE = /ZqRst(\d+)Zq/g;
 export interface RestoredValue {
   text: string;
   entityId: string;
+  placeholder?: string;
 }
 
 /**
@@ -23,7 +24,7 @@ export function segmentsToMarkdown(segments: Segment[]): { markdown: string; val
   const markdown = segments
     .map((s) => {
       if (!s.restoredFrom) return s.text;
-      values.push({ text: s.text, entityId: s.restoredFrom });
+      values.push({ text: s.text, entityId: s.restoredFrom, ...(s.placeholder ? { placeholder: s.placeholder } : {}) });
       return `ZqRst${values.length - 1}Zq`;
     })
     .join('');
@@ -39,7 +40,7 @@ interface HastNode {
 }
 
 /** Plugin rehype : remplace chaque jeton par un élément souligné avec info-bulle. */
-function rehypeRestored(values: RestoredValue[], titleFor: (entityId: string) => string) {
+function rehypeRestored(values: RestoredValue[], titleFor: (value: RestoredValue) => string) {
   const visit = (node: HastNode): void => {
     if (!node.children) return;
     const next: HastNode[] = [];
@@ -53,7 +54,7 @@ function rehypeRestored(values: RestoredValue[], titleFor: (entityId: string) =>
           next.push({
             type: 'element',
             tagName: 'span',
-            properties: { className: ['restored'], title: titleFor(v.entityId), 'data-restored': v.entityId },
+            properties: { className: ['restored'], title: titleFor(v), 'data-restored': v.entityId },
             children: [{ type: 'text', value: v.text }],
           });
           cursor = m.index + m[0].length;
@@ -73,7 +74,7 @@ export function AssistantText({ segments, entities }: { segments: Segment[]; ent
   const byId = useMemo(() => new Map(entities.map((e) => [e.id, e.placeholder])), [entities]);
   const { markdown, values } = useMemo(() => segmentsToMarkdown(segments), [segments]);
   const plugin = useMemo(
-    () => rehypeRestored(values, (id) => t.conversation.restoredFrom(byId.get(id) ?? '[…]')),
+    () => rehypeRestored(values, (v) => t.conversation.restoredFrom(v.placeholder ?? byId.get(v.entityId) ?? '[…]')),
     [byId, values],
   );
   return (

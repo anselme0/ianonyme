@@ -462,7 +462,7 @@ export class ChatService {
       mentions: ingested.mentions,
       conflicts: ingested.conflicts,
       pendingSuggestions,
-      protectedInMessage: new Set(maskedCurrent.match(/\[[A-Z][A-Z_]*_\d+\]/g) ?? []).size,
+      protectedInMessage: new Set(maskedCurrent.replace(/\[PRENOM_(\d+)\] \[NOM_(\d+)\]/g, '[PERSONNE_$1$2]').match(/\[[A-Z][A-Z_]*_\d+\]/g) ?? []).size,
     };
   }
 

@@ -29,9 +29,9 @@ function stream(text: string, cuts: number[]) {
 
 describe('restitution', () => {
   it('rétablit les valeurs', () => {
-    const r = restore('Voir [PERSONNE_1] chez [ORGANISATION_1].', state);
+    const r = restore('Voir [PRENOM_1] [NOM_1] chez [ORGANISATION_1].', state);
     expect(r.restored).toBe('Voir Jean Garnier chez ACME SARL.');
-    expect(r.segments.filter((s) => s.restoredFrom)).toHaveLength(2);
+    expect(r.segments.filter((s) => s.restoredFrom)).toHaveLength(3);
     expect(r.anomalies).toEqual([]);
   });
 
@@ -98,10 +98,10 @@ describe('restitution en flux', () => {
 
   it('ne laisse jamais un repère incomplet à l\'écran', () => {
     const r = createStreamRestorer(state);
-    const first = r.push('Bonjour [PERS');
+    const first = r.push('Bonjour [NO');
     expect(first.map((s) => s.text).join('')).toBe('Bonjour ');
-    const second = r.push('ONNE_1] !');
-    expect(second.map((s) => s.text).join('')).toBe('Jean Garnier !');
+    const second = r.push('M_1] !');
+    expect(second.map((s) => s.text).join('')).toBe('Garnier !');
   });
 
   it('retire le repère incomplet à l\'arrêt de la génération', () => {

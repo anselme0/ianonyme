@@ -5,7 +5,7 @@ import { Coverage, makeHaystack, normalizeValue, findOccurrences, placeholderRan
 import { runRules } from './rules.js';
 import type { Category, Conflict, ConversationState, Mention } from './types.js';
 import type { Haystack } from './normalize.js';
-import { canonicalFor, entityValues } from './state.js';
+import { canonicalFor, entityValues, sharedFamily } from './state.js';
 import { parseName } from './names.js';
 
 interface Candidate {
@@ -107,6 +107,11 @@ export function detect(
     if (ids.length > 1) {
       const chosen = state.preferred[normalizeValue(value)];
       if (chosen && ids.includes(chosen)) ids = [chosen];
+      // Le nom de famille seul, commun à plusieurs personnes, n'est pas ambigu : il a son propre repère.
+      else {
+        const family = sharedFamily(state, ids, value);
+        if (family) ids = [family.entityId];
+      }
     }
     if (ids.length > 1) {
       mentions.push({

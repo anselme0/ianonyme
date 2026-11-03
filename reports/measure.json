@@ -10,9 +10,9 @@
         "PERSONNE": {
           "direct": {
             "total": 21,
-            "detected": 20,
+            "detected": 21,
             "bySource": {
-              "regex": 20,
+              "regex": 21,
               "variant": 0,
               "llm": 0
             }
@@ -191,9 +191,9 @@
       "total": {
         "direct": {
           "total": 43,
-          "detected": 41,
+          "detected": 42,
           "bySource": {
-            "regex": 41,
+            "regex": 42,
             "variant": 0,
             "llm": 0
           }
@@ -209,10 +209,10 @@
         }
       },
       "directValues": 43,
-      "directValuesLeft": 2,
-      "falseAutomaticPerDocument": 0,
+      "directValuesLeft": 1,
+      "falseAutomaticPerDocument": 0.3333333333333333,
       "falseSuggestionsPerDocument": 0,
-      "conflictsPerDocument": 1
+      "conflictsPerDocument": 0
     },
     "eval": {
       "documents": 3,
@@ -440,9 +440,9 @@
       },
       "directValues": 43,
       "directValuesLeft": 3,
-      "falseAutomaticPerDocument": 0,
+      "falseAutomaticPerDocument": 1,
       "falseSuggestionsPerDocument": 0,
-      "conflictsPerDocument": 1
+      "conflictsPerDocument": 0
     }
   },
   "all": {
@@ -451,9 +451,9 @@
       "PERSONNE": {
         "direct": {
           "total": 41,
-          "detected": 40,
+          "detected": 41,
           "bySource": {
-            "regex": 39,
+            "regex": 40,
             "variant": 1,
             "llm": 0
           }
@@ -652,9 +652,9 @@
     "total": {
       "direct": {
         "total": 86,
-        "detected": 79,
+        "detected": 80,
         "bySource": {
-          "regex": 78,
+          "regex": 79,
           "variant": 1,
           "llm": 0
         }
@@ -670,10 +670,10 @@
       }
     },
     "directValues": 86,
-    "directValuesLeft": 5,
-    "falseAutomaticPerDocument": 0,
+    "directValuesLeft": 4,
+    "falseAutomaticPerDocument": 0.6666666666666666,
     "falseSuggestionsPerDocument": 0,
-    "conflictsPerDocument": 1
+    "conflictsPerDocument": 0
   },
   "perDocument": [
     {
@@ -688,9 +688,9 @@
       "document": "ajust-02",
       "characters": 796,
       "directValues": 15,
-      "directValuesLeft": 1,
-      "falseAutomatic": 0,
-      "conflicts": 2
+      "directValuesLeft": 0,
+      "falseAutomatic": 1,
+      "conflicts": 0
     },
     {
       "document": "ajust-03",
@@ -698,7 +698,7 @@
       "directValues": 12,
       "directValuesLeft": 0,
       "falseAutomatic": 0,
-      "conflicts": 1
+      "conflicts": 0
     }
   ],
   "llm": null

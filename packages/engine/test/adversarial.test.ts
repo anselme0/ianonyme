@@ -41,7 +41,7 @@ describe('variantes typographiques d’un nom protégé', () => {
 
   it('forme avec civilité, initiale, inversion et virgule', () => {
     const text = 'M. Garnier, Mme GARNIER, J. Garnier, Garnier Jean, Garnier, Jean, Dr Garnier';
-    expect(protectedText(text)).toBe('[PERSONNE_1], [PERSONNE_1], [PERSONNE_1], [PERSONNE_1], [PERSONNE_1], [PERSONNE_1]');
+    expect(protectedText(text)).toBe('[NOM_1], [NOM_1], [PRENOM_1] [NOM_1], [PRENOM_1] [NOM_1], [PRENOM_1] [NOM_1], [NOM_1]');
   });
 
   it('nom entre guillemets, parenthèses, ponctuation et Markdown', () => {
@@ -110,13 +110,13 @@ describe('historique et état', () => {
   it('une valeur rejetée ne sort jamais du masquage des autres valeurs', () => {
     const text = 'Jean Garnier a écrit à Paul Fictif.';
     const r = ingestText(createState(), text);
-    expect(mask(text, r.state).masked).toBe('[PERSONNE_1] a écrit à [PERSONNE_2].');
+    expect(mask(text, r.state).masked).toBe('[PRENOM_1] [NOM_1] a écrit à [PRENOM_2] [NOM_2].');
   });
 
   it('un repère saisi par l’utilisateur n’est jamais confondu avec un repère généré', () => {
     const state = addManualMention(createState(), 'Jean Garnier', 'PERSONNE');
     const masked = mask('[PERSONNE_1] et Jean Garnier', state).masked;
-    expect(masked).toBe('[PERSONNE_1] et [PERSONNE_1]');
+    expect(masked).toBe('[PERSONNE_1] et [PRENOM_1] [NOM_1]');
   });
 
   it('un nom très long ou très répété reste traité en un temps raisonnable', () => {
@@ -141,11 +141,11 @@ describe('historique et état', () => {
 describe('prénoms inconnus et formes inversées', () => {
   it('propage le nom de famille même si le prénom n’est pas dans la liste', () => {
     const state = addManualMention(createState(), 'Dimitri Kowal', 'PERSONNE');
-    expect(mask('M. Kowal, Mme Kowal et D. Kowal', state).masked).toBe('[PERSONNE_1], [PERSONNE_1] et [PERSONNE_1]');
+    expect(mask('M. Kowal, Mme Kowal et D. Kowal', state).masked).toBe('[NOM_1], [NOM_1] et [PRENOM_1] [NOM_1]');
   });
   it('comprend une forme de référence inversée', () => {
     const state = addManualMention(createState(), 'Garnier Jean', 'PERSONNE');
-    expect(mask('Garnier, J. Garnier et Jean Garnier', state).masked).toBe('[PERSONNE_1], [PERSONNE_1] et [PERSONNE_1]');
+    expect(mask('Garnier, J. Garnier et Jean Garnier', state).masked).toBe('[NOM_1], [PRENOM_1] [NOM_1] et [PRENOM_1] [NOM_1]');
   });
 });
 

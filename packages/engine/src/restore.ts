@@ -9,9 +9,20 @@ const STRICT_RE = /^[A-Z][A-Z_]*_\d+$/;
 const MAX_HELD = 41;
 const HELD_RE = /^\[[A-Za-z0-9_ -]*$/;
 
-function placeholderIndex(state: ConversationState): Map<string, string> {
-  const map = new Map<string, string>();
-  for (const e of Object.values(state.entities)) map.set(e.placeholder, e.id);
+/** Repère -> entité et valeur à restituer. Prénom et nom de famille ont chacun leur repère. */
+function placeholderIndex(state: ConversationState): Map<string, { id: string; value: string }> {
+  const map = new Map<string, { id: string; value: string }>();
+  const parts = Object.values(state.nameParts ?? {});
+  for (const e of Object.values(state.entities)) {
+    if (e.parts) {
+      for (const ph of [e.parts.given, e.parts.family]) {
+        const part = parts.find((p) => p.placeholder === ph);
+        if (part && !map.has(ph)) map.set(ph, { id: e.id, value: part.value });
+      }
+    } else {
+      map.set(e.placeholder, { id: e.id, value: e.canonical });
+    }
+  }
   return map;
 }
 
@@ -43,10 +54,9 @@ function scan(
     pushPlain(segments, text.slice(cursor, m.index));
     cursor = m.index + m[0].length;
     if (STRICT_RE.test(inner)) {
-      const id = index.get(m[0]);
-      const entity = id ? state.entities[id] : undefined;
-      if (entity) {
-        segments.push({ text: entity.canonical, restoredFrom: entity.id });
+      const hit = index.get(m[0]);
+      if (hit) {
+        segments.push({ text: hit.value, restoredFrom: hit.id, placeholder: m[0] });
       } else {
         anomalies.push({ kind: 'unknown_placeholder', text: m[0], position: offset + m.index });
         pushPlain(segments, m[0]);

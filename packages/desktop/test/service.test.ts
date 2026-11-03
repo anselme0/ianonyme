@@ -27,10 +27,10 @@ describe('envoi et restitution', () => {
     for (const secret of ['Lacombe', 'Garnier', 'Renard', '04 72 33 18 45', 'expertises-lacombe', 'Tilleuls', 'RG 24/01532']) {
       expect(sent, secret).not.toContain(secret);
     }
-    expect(h.spy.calls[0]?.messages[0]?.content).toContain('[PERSONNE_');
+    expect(h.spy.calls[0]?.messages[0]?.content).toContain('[PRENOM_');
     expect(h.spy.calls[0]?.system).toContain('Conservez les repères');
     const reply = h.done[0]!.message;
-    expect(reply.text).not.toMatch(/\[PERSONNE_\d+\]/);
+    expect(reply.text).not.toMatch(/\[(?:PRENOM|NOM)_\d+\]/);
     expect(reply.segments?.some((s) => s.restoredFrom)).toBe(true);
     expect(reply.text).toContain('12 mars 2024');
   });
@@ -49,23 +49,19 @@ describe('envoi et restitution', () => {
     expect(h.errors).toEqual([]);
     expect(h.spy.calls).toHaveLength(5);
     const last = h.spy.calls[4]!.messages.filter((m) => m.role === 'user').map((m) => m.content);
-    expect(last[0]).toBe('[PERSONNE_1] a appelé hier.');
-    expect(last[4]).toBe('[PERSONNE_2] rappelle [PERSONNE_1].');
+    expect(last[0]).toBe('[PRENOM_1] [NOM_1] a appelé hier.');
+    expect(last[4]).toBe('[NOM_2] rappelle [PRENOM_1] [NOM_1].');
     expect(JSON.stringify(h.spy.calls[4])).not.toMatch(/Renard|Garnier/);
   });
 
-  it('bloque l\'envoi sans appeler le fournisseur quand une valeur reste visible', async () => {
+  it('deux personnes qui se confondent restent à trancher : pas de repère attribué au hasard', async () => {
     const h = new Harness();
     const conv = h.service.create();
-    await h.send(conv.id, 'Pierre Dupuis et Jacques Dupuis sont frères.');
+    await h.send(conv.id, 'Jean Dupuis et Jacques Dupuis sont frères.');
     expect(h.errors).toEqual([]);
-    await h.send(conv.id, 'Dupuis a signé.');
-    expect(h.errors).toHaveLength(1);
-    expect(h.errors[0]?.code).toBe('leak_blocked');
-    expect(h.errors[0]?.leaks?.length).toBeGreaterThan(0);
-    expect(h.spy.calls).toHaveLength(1);
-    // Le message bloqué n'est pas enregistré.
-    expect(h.service.getView(conv.id).messages.map((m) => m.role)).toEqual(['user', 'assistant']);
+    const p = h.service.preview(conv.id, 'J. Dupuis a signé.', [], 0);
+    expect(p.conflicts).toHaveLength(1);
+    expect(p.requiresReview).toBe(true);
   });
 
   it('signale les repères altérés par l\'assistant', async () => {
@@ -129,7 +125,7 @@ describe('aperçu et détection', () => {
     expect(p.requiresReview).toBe(true);
     expect(p.leak.ok).toBe(true);
     expect(p.maskedCurrent).not.toMatch(/Garnier|Lacombe|Renard/);
-    expect(p.maskedCurrent).toContain('Document « rapport [PERSONNE_');
+    expect(p.maskedCurrent).toContain('Document « rapport [PRENOM_');
   });
 
   it('un message court sans suggestion ni conflit ne demande pas de revue', () => {
@@ -167,7 +163,7 @@ describe('analyse approfondie', () => {
     // L'analyse protège d'office : rien ne reste à vérifier hors cas ambigus.
     expect(r.mentions).toEqual([]);
     const a = h.service.analyze(conv.id, 'Le maire de la commune a signé.');
-    expect(a.maskedText).toMatch(/^\[PERSONNE_\d\] a signé\.$/);
+    expect(a.maskedText).toMatch(/^\[PRENOM_\d\] \[NOM_\d\] a signé\.$/);
   });
 
   it('bascule en analyse de base quand le modèle est absent', async () => {
@@ -299,6 +295,6 @@ describe('nom de fichier', () => {
     const h = new Harness();
     const conv = h.service.create();
     const file = await h.service.importFile(conv.id, 'Compte rendu réunion M. Jean Garnier 2025.txt', new TextEncoder().encode('Contenu.'));
-    expect(file.file?.maskedName).toMatch(/^Compte rendu réunion \[PERSONNE_\d+\] 2025\.txt$/);
+    expect(file.file?.maskedName).toMatch(/^Compte rendu réunion \[PRENOM_\d+\] \[NOM_\d+\] 2025\.txt$/);
   });
 });

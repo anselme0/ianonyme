@@ -28,8 +28,8 @@ describe('historique et re-masquage', () => {
     const state = addManualMention(state0, 'Zoé Quenelle', 'PERSONNE');
     const payload = buildApiPayload(conv(state, ...turns));
     expect(payload.leak.ok).toBe(true);
-    expect(payload.messages[0]?.content).toBe('Le dossier de [PERSONNE_1] avance.');
-    expect(payload.messages[3]?.content).toBe('Que pense [PERSONNE_1] de cela ?');
+    expect(payload.messages[0]?.content).toBe('Le dossier de [PRENOM_1] [NOM_1] avance.');
+    expect(payload.messages[3]?.content).toBe('Que pense [NOM_1] de cela ?');
   });
 
   it('bloque quand une valeur reste dans l\'historique et indique le message', () => {
@@ -56,35 +56,47 @@ describe('historique et re-masquage', () => {
     }
     const payload = buildApiPayload(conv(state, ...turns));
     expect(payload.leak.ok).toBe(true);
-    const placeholders = payload.messages.flatMap((m) => m.content.match(/\[PERSONNE_\d+\]/g) ?? []);
-    expect(new Set(placeholders)).toEqual(new Set(['[PERSONNE_1]', '[PERSONNE_2]']));
-    expect(payload.messages[0]?.content).toBe('[PERSONNE_1] a appelé.');
-    expect(payload.messages[4]?.content).toBe('[PERSONNE_2] rappelle [PERSONNE_1].');
+    const placeholders = payload.messages.flatMap((m) => m.content.match(/\[(?:PRENOM|NOM)_\d+\]/g) ?? []);
+    expect(new Set(placeholders)).toEqual(new Set(['[PRENOM_1]', '[NOM_1]', '[PRENOM_2]', '[NOM_2]']));
+    expect(payload.messages[0]?.content).toBe('[PRENOM_1] [NOM_1] a appelé.');
+    expect(payload.messages[4]?.content).toBe('[NOM_2] rappelle [PRENOM_1] [NOM_1].');
   });
 });
 
 describe('conflits', () => {
-  it('signale deux personnes de même nom de famille, sans fusion', () => {
-    const state = ingestText(createState(), 'Pierre Dupuis et Jacques Dupuis sont frères.').state;
+  it('un nom de famille partagé a son propre repère : rien à trancher', () => {
+    const state = ingestText(createState(), 'Isabelle Moreau et Patrick Moreau sont frère et sœur.').state;
     expect(Object.keys(state.entities)).toHaveLength(2);
-    const r = detect('Dupuis a signé.', state);
+    const r = detect("L'affaire Moreau avance.", state);
+    expect(r.conflicts).toHaveLength(0);
+    expect(mask("L'affaire Moreau avance.", state).masked).toBe("L'affaire [NOM_1] avance.");
+    // Les deux personnes gardent des prénoms distincts et partagent le repère du nom.
+    expect(mask('Isabelle Moreau et Patrick Moreau', state).masked).toBe('[PRENOM_1] [NOM_1] et [PRENOM_2] [NOM_1]');
+    const back = restore("[PRENOM_2] [NOM_1] et l'affaire [NOM_1]", state).restored;
+    expect(back).toBe("Patrick Moreau et l'affaire Moreau");
+  });
+
+  it('signale deux personnes qui se confondent (même initiale), sans fusion', () => {
+    const state = ingestText(createState(), 'Jean Dupuis et Jacques Dupuis sont frères.').state;
+    expect(Object.keys(state.entities)).toHaveLength(2);
+    const r = detect('J. Dupuis a signé.', state);
     expect(r.conflicts).toHaveLength(1);
     expect(r.conflicts[0]?.candidateEntityIds).toHaveLength(2);
     expect(r.mentions[0]?.status).toBe('suggested');
-    // L'ambiguïté non tranchée n'est pas masquée : la vérification de sécurité la bloque.
-    const masked = mask('Dupuis a signé.', state).masked;
-    expect(masked).toBe('Dupuis a signé.');
-    expect(buildApiPayload(conv(state, 'Dupuis a signé.')).leak.ok).toBe(false);
+    // L'ambiguïté non tranchée n'est pas attribuée : seul le nom de famille, commun, est remplacé.
+    const masked = mask('J. Dupuis a signé.', state).masked;
+    expect(masked).toBe('J. [NOM_1] a signé.');
+    expect(buildApiPayload(conv(state, 'J. Dupuis a signé.')).leak.ok).toBe(true);
   });
 
-  it('se résout par le choix explicite de l\'utilisateur', () => {
-    const base = ingestText(createState(), 'Pierre Dupuis et Jacques Dupuis sont frères.').state;
-    const r = detect('Dupuis a signé.', base);
+  it("se résout par le choix explicite de l'utilisateur", () => {
+    const base = ingestText(createState(), 'Jean Dupuis et Jacques Dupuis sont frères.').state;
+    const r = detect('J. Dupuis a signé.', base);
     const mention = r.mentions[0]!;
     const target = r.conflicts[0]!.candidateEntityIds[0]!;
     const state = linkMention(base, mention, target);
-    expect(detect('Dupuis a signé.', state).conflicts).toHaveLength(0);
-    expect(mask('Dupuis a signé.', state).masked).toMatch(/^\[PERSONNE_\d\] a signé\.$/);
+    expect(detect('J. Dupuis a signé.', state).conflicts).toHaveLength(0);
+    expect(mask('J. Dupuis a signé.', state).masked).toMatch(/^\[PRENOM_\d\] \[NOM_1\] a signé\.$/);
   });
 
   it('n\'attribue pas Marc Moreau à Isabelle Moreau', () => {
@@ -114,7 +126,7 @@ describe('décisions de l\'utilisateur', () => {
       { id: 'x', text: 'le président de l\'association', span: { start: 0, end: 5 }, category: 'FONCTION', source: 'llm', status: 'suggested' },
       id,
     );
-    expect(mask('Le président de l\'association parle.', state).masked).toBe('[PERSONNE_1] parle.');
+    expect(mask('Le président de l\'association parle.', state).masked).toBe('[PRENOM_1] [NOM_1] parle.');
   });
 
   it('ajout manuel d\'une catégorie sans variantes', () => {
@@ -157,8 +169,8 @@ describe('allers-retours', () => {
 describe('nom de fichier, cas de séparateurs', () => {
   it('reconnaît une valeur reliée par des soulignés dans un texte', () => {
     const state = stateWith(['Jean Garnier']);
-    expect(mask('rapport_Jean_Garnier.docx', state).masked).toBe('rapport_[PERSONNE_1].docx');
-    expect(protectFileName(state, 'Jean.Garnier.pdf').maskedName).toBe('[PERSONNE_1].pdf');
+    expect(mask('rapport_Jean_Garnier.docx', state).masked).toBe('rapport_[PRENOM_1] [NOM_1].docx');
+    expect(protectFileName(state, 'Jean.Garnier.pdf').maskedName).toBe('[PRENOM_1] [NOM_1].pdf');
   });
   it('ouvre la casse mixte dans la forme lisible', () => {
     const r = protectFileName(createState(), 'ExpertiseJeanGarnier_v2.docx');

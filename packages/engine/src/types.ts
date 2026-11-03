@@ -57,6 +57,11 @@ export interface Entity {
   /** Autres formes à masquer. */
   variants: string[];
   placeholder: string;
+  /**
+   * Personne dont le prénom et le nom de famille sont séparés : repères partagés entre les personnes
+   * qui portent le même prénom ou le même nom (« Isabelle Moreau » et « Patrick Moreau » partagent le nom).
+   */
+  parts?: { given: string; family: string };
 }
 
 export interface Conflict {
@@ -69,7 +74,9 @@ export interface Conflict {
 export interface ConversationState {
   entities: Record<string, Entity>;
   /** Dernier numéro attribué par catégorie. Jamais décrémenté. */
-  counters: Partial<Record<Category, number>>;
+  counters: Partial<Record<Category | 'PRENOM' | 'NOM', number>>;
+  /** Repères de prénom et de nom de famille (clé `G:` ou `F:` + valeur normalisée) et leur valeur. */
+  nameParts?: Record<string, { placeholder: string; value: string }>;
   /** Valeurs rejetées (forme normalisée) : plus jamais suggérées dans cette conversation. */
   rejectedValues: string[];
   /** Dernier numéro d'entité attribué (ajout au contrat : identifiants jamais réutilisés). */
@@ -104,6 +111,8 @@ export interface Segment {
   text: string;
   /** Identifiant de l'entité dont la valeur a été restituée. */
   restoredFrom?: string;
+  /** Repère remplacé (renseigné quand une valeur est restituée). */
+  placeholder?: string;
 }
 
 export interface Anomaly {

@@ -3,7 +3,7 @@
 
 import { EngineError } from './errors.js';
 import { normalizeValue } from './normalize.js';
-import { ORG_KEYWORDS_STRIPPED, stripCivility, variantsFor } from './names.js';
+import { CIVILITY_VARIANTS, ORG_KEYWORDS_STRIPPED, parseName, stripCivility, variantsFor } from './names.js';
 import type { Category, ConversationState, Entity, Mention } from './types.js';
 
 export function createState(): ConversationState {
@@ -47,26 +47,83 @@ function addVariant(entity: Entity, value: string): Entity {
   return { ...entity, variants: [...entity.variants, value.trim()] };
 }
 
+/** Repère de prénom ou de nom de famille pour une valeur : créé une fois, réutilisé ensuite. */
+function namePart(
+  state: ConversationState,
+  kind: 'PRENOM' | 'NOM',
+  value: string,
+): { state: ConversationState; placeholder: string } {
+  const key = `${kind === 'PRENOM' ? 'G' : 'F'}:${normalizeValue(value)}`;
+  const known = state.nameParts?.[key];
+  if (known) return { state, placeholder: known.placeholder };
+  const n = (state.counters[kind] ?? 0) + 1;
+  const placeholder = `[${kind}_${n}]`;
+  return {
+    state: {
+      ...state,
+      counters: { ...state.counters, [kind]: n },
+      nameParts: { ...state.nameParts, [key]: { placeholder, value } },
+    },
+    placeholder,
+  };
+}
+
 function createEntity(state: ConversationState, category: Category, text: string): ConversationState {
   const canonical = canonicalFor(category, text);
-  const n = (state.counters[category] ?? 0) + 1;
   const entityCounter = state.entityCounter + 1;
   const id = `E${entityCounter}`;
-  let entity: Entity = {
-    id,
-    category,
-    canonical,
-    variants: [],
-    placeholder: `[${category}_${n}]`,
-  };
+  let base = state;
+  let placeholder: string;
+  let parts: Entity['parts'];
+  const parsed = category === 'PERSONNE' ? parseName(canonical) : null;
+  if (parsed && parsed.firstNames.length > 0 && parsed.family.length > 0) {
+    // Prénom et nom séparés : « Isabelle Moreau » devient « [PRENOM_1] [NOM_1] ».
+    const given = namePart(base, 'PRENOM', parsed.firstNames.join(' '));
+    const family = namePart(given.state, 'NOM', parsed.family.join(' '));
+    base = family.state;
+    placeholder = `${given.placeholder} ${family.placeholder}`;
+    parts = { given: given.placeholder, family: family.placeholder };
+  } else {
+    const n = (base.counters[category] ?? 0) + 1;
+    base = { ...base, counters: { ...base.counters, [category]: n } };
+    placeholder = `[${category}_${n}]`;
+  }
+  let entity: Entity = { id, category, canonical, variants: [], placeholder, ...(parts ? { parts } : {}) };
   for (const v of variantsFor(category, canonical)) entity = addVariant(entity, v);
   if (normalizeValue(text) !== normalizeValue(canonical)) entity = addVariant(entity, text);
-  return {
-    ...state,
-    entityCounter,
-    counters: { ...state.counters, [category]: n },
-    entities: { ...state.entities, [id]: entity },
-  };
+  return { ...base, entityCounter, entities: { ...base.entities, [id]: entity } };
+}
+
+/** Formes réduites au seul nom de famille d'une personne (« Moreau », « M. Moreau »…). */
+function familyOnlyForms(familyValue: string): Set<string> {
+  return new Set([familyValue, ...CIVILITY_VARIANTS.map((c) => `${c} ${familyValue}`)].map(normalizeValue));
+}
+
+/**
+ * Repère de nom de famille à utiliser pour `value` quand toutes les entités qui la portent n'en
+ * désignent que le nom de famille (« l'affaire Moreau » quand Isabelle et Patrick Moreau existent) :
+ * il n'y a alors rien à trancher. Renvoie l'entité qui porte le nom et le repère.
+ */
+export function sharedFamily(
+  state: ConversationState,
+  ids: string[],
+  value: string,
+): { entityId: string; placeholder: string } | undefined {
+  const nv = normalizeValue(value);
+  let owner: { entityId: string; placeholder: string } | undefined;
+  for (const id of ids) {
+    const e = state.entities[id];
+    if (!e) return undefined;
+    if (e.parts) {
+      const fam = Object.values(state.nameParts ?? {}).find((p) => p.placeholder === e.parts?.family);
+      if (!fam || !familyOnlyForms(fam.value).has(nv)) return undefined;
+      if (owner && owner.placeholder !== e.parts.family) return undefined;
+      owner ??= { entityId: id, placeholder: e.parts.family };
+    } else if (normalizeValue(e.canonical) !== nv) {
+      return undefined;
+    }
+  }
+  return owner;
 }
 
 function withoutRejected(state: ConversationState, value: string): ConversationState {
