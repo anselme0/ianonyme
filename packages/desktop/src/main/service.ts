@@ -13,6 +13,7 @@ import {
   mask,
   applyLlmMentions,
   mergeLlmMentions,
+  normalizeValue,
   parseLlmOutput,
   protectFileName,
   rejectMention,
@@ -98,6 +99,8 @@ export interface ServiceDeps {
 }
 
 const DEFAULT_TITLE = 'Nouvelle conversation';
+
+const MAX_CONFLICT_CALLS = 10;
 
 function withTimeout<T>(p: Promise<T>, ms: number, onTimeout: () => void): Promise<T> {
   return new Promise<T>((resolve, reject) => {
@@ -382,6 +385,7 @@ export class ChatService {
       const applied = applyLlmMentions(state, merged.mentions, merged.conflicts, merged.peerLinks);
       c.state = applied.state;
       merged.mentions = applied.remaining;
+      await this.resolveConflicts(c, text, llm, controller.signal, timeoutMs);
       merged.stats.durationMs = Date.now() - started;
       log('service', 'llm_done', { proposed: merged.stats.proposed, retained: merged.stats.retained, ms: merged.stats.durationMs });
       return { mentions: merged.mentions, conflicts: merged.conflicts, stats: merged.stats, degraded: false };
@@ -391,6 +395,40 @@ export class ChatService {
       return { ...empty, degraded: true, degradedReason: timedOut ? 'timeout' : controller.signal.aborted ? 'absent' : 'error' };
     } finally {
       c.llmAbort = undefined;
+    }
+  }
+
+  /**
+   * Tranche d'office les mentions ambiguës en interrogeant le modèle local avec le contexte de la phrase.
+   * Une valeur n'est attribuée que si toutes ses occurrences reçoivent la même réponse ; au moindre doute
+   * (réponse absente, illisible ou contradictoire), elle reste un point de vigilance pour l'utilisateur.
+   */
+  private async resolveConflicts(c: Conv, text: string, llm: LocalLlm, signal: AbortSignal, timeoutMs: number): Promise<void> {
+    const { mentions, conflicts } = ingestText(c.state, text);
+    const answers = new Map<string, { mention: Mention; picks: Set<string> }>();
+    for (const conflict of conflicts.slice(0, MAX_CONFLICT_CALLS)) {
+      const mention = mentions.find((m) => m.id === conflict.mentionId);
+      if (!mention) continue;
+      const names = conflict.candidateEntityIds.map((id) => c.state.entities[id]?.canonical ?? '');
+      const context = text.slice(Math.max(0, mention.span.start - 200), mention.span.end + 200);
+      const list = names.map((n, i) => `${i + 1}. ${n}`).join('\n');
+      const prompt = `Dans l'extrait ci-dessous, « ${mention.text} » désigne-t-il l'une de ces personnes ?\n${list}\nRéponds uniquement par le numéro, ou 0 si l'extrait ne permet pas de décider.\n\nExtrait : ${context}`;
+      let pick: string;
+      try {
+        const out = await withTimeout(llm.ask(prompt, signal), timeoutMs, () => undefined);
+        const n = Number(/\d+/.exec(out)?.[0]);
+        pick = n >= 1 && n <= names.length ? (conflict.candidateEntityIds[n - 1] ?? '') : '';
+      } catch {
+        pick = '';
+      }
+      const key = normalizeValue(mention.text);
+      const slot = answers.get(key) ?? { mention, picks: new Set<string>() };
+      slot.picks.add(pick);
+      answers.set(key, slot);
+    }
+    for (const { mention, picks } of answers.values()) {
+      const only = picks.size === 1 ? [...picks][0] : '';
+      if (only) c.state = linkMention(c.state, mention, only);
     }
   }
 

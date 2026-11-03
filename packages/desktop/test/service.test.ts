@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { defaultConfig } from '../src/main/config.js';
+import { FakeLlm } from '../src/main/localllm.js';
 import type { LocalLlm } from '../src/main/localllm.js';
 import { Harness, spyProvider } from './helpers.js';
 
@@ -15,6 +16,7 @@ const absentLlm: LocalLlm = {
   status: () => 'absent',
   propose: () => Promise.reject(new Error('absent')),
   warmUp: () => {},
+  ask: () => Promise.resolve('0'),
 };
 
 describe('envoi et restitution', () => {
@@ -166,6 +168,24 @@ describe('analyse approfondie', () => {
     expect(a.maskedText).toMatch(/^\[PRENOM_\d\] \[NOM_\d\] a signé\.$/);
   });
 
+  it('tranche d’office une ambiguïté avec le modèle, sinon la laisse en point de vigilance', async () => {
+    const chosen = Object.assign(new FakeLlm(), { ask: () => Promise.resolve('1') });
+    const h = new Harness(spyProvider(), chosen);
+    const conv = h.service.create();
+    await h.send(conv.id, 'Jean Dupuis et Jacques Dupuis sont frères.');
+    expect(h.service.analyze(conv.id, 'J. Dupuis a signé.').conflicts).toHaveLength(1);
+    await h.service.propose(conv.id, 'J. Dupuis a signé.');
+    const after = h.service.analyze(conv.id, 'J. Dupuis a signé.');
+    expect(after.conflicts).toHaveLength(0);
+    expect(after.maskedText).toMatch(/^\[PRENOM_\d\] \[NOM_1\] a signé\.$/);
+
+    const unsure = new Harness();
+    const c2 = unsure.service.create();
+    await unsure.send(c2.id, 'Jean Dupuis et Jacques Dupuis sont frères.');
+    await unsure.service.propose(c2.id, 'J. Dupuis a signé.');
+    expect(unsure.service.analyze(c2.id, 'J. Dupuis a signé.').conflicts).toHaveLength(1);
+  });
+
   it('bascule en analyse de base quand le modèle est absent', async () => {
     const h = new Harness(spyProvider(), absentLlm);
     const conv = h.service.create();
@@ -180,6 +200,7 @@ describe('analyse approfondie', () => {
       simulated: true,
       status: () => 'ready',
       warmUp: () => {},
+      ask: () => Promise.resolve('0'),
       propose: (_c, _s, signal) =>
         new Promise((_, reject) => signal.addEventListener('abort', () => reject(new Error('aborted')))),
     };
@@ -202,6 +223,7 @@ describe('analyse approfondie', () => {
       simulated: true,
       status: () => 'ready',
       warmUp: () => {},
+      ask: () => Promise.resolve('0'),
       propose: () => {
         calls++;
         return Promise.resolve('pas du json');
@@ -221,6 +243,7 @@ describe('analyse approfondie', () => {
       simulated: true,
       status: () => 'ready',
       warmUp: () => {},
+      ask: () => Promise.resolve('0'),
       propose: () => Promise.resolve(JSON.stringify({ mentions: [{ text: 'le préfet inventé', category: 'FONCTION', linkedTo: null }] })),
     };
     const h = new Harness(spyProvider(), liar);

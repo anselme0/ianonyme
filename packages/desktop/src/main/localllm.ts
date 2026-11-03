@@ -20,6 +20,8 @@ export interface LocalLlm {
   simulated: boolean;
   /** Sortie brute du modèle pour un morceau de texte (JSON attendu). */
   propose(chunk: string, state: ConversationState, signal: AbortSignal): Promise<string>;
+  /** Réponse libre et brève à une question (choix entre plusieurs candidats). */
+  ask(prompt: string, signal: AbortSignal): Promise<string>;
   /** Démarre le chargement du modèle sans bloquer. */
   warmUp(): void;
 }
@@ -30,6 +32,9 @@ class AbsentLlm implements LocalLlm {
     return 'absent';
   }
   propose(): Promise<string> {
+    return Promise.reject(new Error('absent'));
+  }
+  ask(): Promise<string> {
     return Promise.reject(new Error('absent'));
   }
   warmUp(): void {}
@@ -46,6 +51,10 @@ export class FakeLlm implements LocalLlm {
     return 'ready';
   }
   warmUp(): void {}
+  /** Le faux modèle ne tranche jamais : le point reste à vérifier. */
+  ask(): Promise<string> {
+    return Promise.resolve('0');
+  }
   propose(chunk: string, state: ConversationState): Promise<string> {
     const mentions: { text: string; category: string; linkedTo: string | null }[] = [];
     const push = (text: string, category: string, linkedTo: string | null): void => {
@@ -113,7 +122,7 @@ export class NodeLlamaLlm implements LocalLlm {
   simulated = false;
   private state: LocalAnalysisStatus = 'absent';
   private loading: Promise<void> | null = null;
-  private runtime: { prompt(p: string, signal: AbortSignal): Promise<string> } | null = null;
+  private runtime: { prompt(p: string, signal: AbortSignal): Promise<string>; ask(p: string, signal: AbortSignal): Promise<string> } | null = null;
 
   constructor(
     private readonly entry: LocalModelEntry | undefined,
@@ -152,6 +161,14 @@ export class NodeLlamaLlm implements LocalLlm {
           session.dispose();
         }
       },
+      ask: async (text, signal) => {
+        const session = new lib.LlamaChatSession({ contextSequence: context.getSequence() });
+        try {
+          return await session.prompt(text, { temperature: 0, maxTokens: 16, signal });
+        } finally {
+          session.dispose();
+        }
+      },
     };
     this.state = 'ready';
     log('localllm', 'loaded', { ms: Date.now() - started });
@@ -160,6 +177,11 @@ export class NodeLlamaLlm implements LocalLlm {
   async propose(chunk: string, state: ConversationState, signal: AbortSignal): Promise<string> {
     if (this.state !== 'ready' || !this.runtime) throw new Error(this.state);
     return this.runtime.prompt(buildLlmPrompt(chunk, state), signal);
+  }
+
+  async ask(prompt: string, signal: AbortSignal): Promise<string> {
+    if (this.state !== 'ready' || !this.runtime) throw new Error(this.state);
+    return this.runtime.ask(prompt, signal);
   }
 }
 
@@ -212,6 +234,13 @@ export class OpenAiCompatibleLlm implements LocalLlm {
           : {}),
       }),
     });
+  }
+
+  async ask(prompt: string, signal: AbortSignal): Promise<string> {
+    const response = await this.call(prompt, signal, false);
+    if (!response.ok) throw new Error('server_error');
+    const body = (await response.json()) as { choices?: { message?: { content?: string } }[] };
+    return body.choices?.[0]?.message?.content ?? '';
   }
 
   async propose(chunk: string, state: ConversationState, signal: AbortSignal): Promise<string> {
