@@ -239,7 +239,11 @@ export function Review(p: ReviewProps) {
           </div>
           {selection && (
             <div className="selection-menu" style={{ left: selection.x, top: selection.y }} role="menu" data-testid="selection-menu">
-              <select aria-label={t.review.selectionFamily} value={family} onChange={(e) => setFamily(e.target.value as FamilyId)}>
+              <select aria-label={t.review.selectionFamily} value={family} onChange={(e) => {
+                  setFamily(e.target.value as FamilyId);
+                  setSelectionLink('');
+                }}
+              >
                 {FAMILY_ORDER.map((f) => (
                   <option key={f} value={f}>
                     {t.families[f]}
@@ -248,11 +252,13 @@ export function Review(p: ReviewProps) {
               </select>
               <select aria-label={t.review.linkOptional} value={selectionLink} onChange={(e) => setSelectionLink(e.target.value)} data-testid="selection-link">
                 <option value="">{t.review.linkNone}</option>
-                {p.entities.map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {e.canonical}
-                  </option>
-                ))}
+                {p.entities
+                  .filter((e) => familyOf(e.category) === family)
+                  .map((e) => (
+                    <option key={e.id} value={e.id}>
+                      {e.canonical}
+                    </option>
+                  ))}
               </select>
               <button
                 type="button"
@@ -337,11 +343,13 @@ export function Review(p: ReviewProps) {
                     <option value="" disabled>
                       {t.review.linkChoose}
                     </option>
-                    {p.entities.map((e) => (
-                      <option key={e.id} value={e.id}>
-                        {e.canonical}
-                      </option>
-                    ))}
+                    {p.entities
+                      .filter((e) => familyOf(e.category) === familyOf(it.mention.category))
+                      .map((e) => (
+                        <option key={e.id} value={e.id}>
+                          {e.canonical}
+                        </option>
+                      ))}
                   </select>
                 )}
               </li>
