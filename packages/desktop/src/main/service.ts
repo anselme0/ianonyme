@@ -12,6 +12,8 @@ import {
   linkMention,
   mask,
   applyLlmMentions,
+  findOccurrences,
+  makeHaystack,
   mergeLlmMentions,
   normalizeValue,
   parseLlmOutput,
@@ -80,6 +82,8 @@ interface Conv {
   settings: { assistantId: string; deepAnalysisOnMessages: boolean };
   restoredNoticeShown: boolean;
   files: Map<string, DraftFile>;
+  /** Derniers textes analysés (brouillon compris) : sert à n'afficher que les formes réellement présentes. */
+  recentTexts: string[];
   abort?: AbortController;
   llmAbort?: AbortController;
 }
@@ -101,6 +105,7 @@ export interface ServiceDeps {
 const DEFAULT_TITLE = 'Nouvelle conversation';
 
 const MAX_CONFLICT_CALLS = 10;
+const MAX_RECENT_TEXTS = 20;
 
 function withTimeout<T>(p: Promise<T>, ms: number, onTimeout: () => void): Promise<T> {
   return new Promise<T>((resolve, reject) => {
@@ -214,13 +219,28 @@ export class ChatService {
     return view;
   }
 
+  private remember(c: Conv, text: string): void {
+    c.recentTexts = [...c.recentTexts.filter((t) => t !== text), text].slice(-MAX_RECENT_TEXTS);
+  }
+
+  /** Formes d'une entité qui apparaissent vraiment dans les textes de la conversation. */
+  private seenVariants(c: Conv): (e: { canonical: string; variants: string[] }) => string[] {
+    const texts = [...c.messages.map((m) => m.clear), ...[...c.files.values()].map((f) => f.text), ...c.recentTexts];
+    const hays = texts.map((t) => makeHaystack(t));
+    return (e) =>
+      e.variants.filter(
+        (v) => normalizeValue(v) !== normalizeValue(e.canonical) && hays.some((h) => findOccurrences(h, v).length > 0),
+      );
+  }
+
   private view(c: Conv): ConversationView {
+    const seen = this.seenVariants(c);
     const entities: EntityView[] = Object.values(c.state.entities).map((e) => ({
       id: e.id,
       category: e.category,
       canonical: e.canonical,
       placeholder: e.placeholder,
-      variants: e.variants,
+      variants: seen(e),
     }));
     return {
       ...this.summary(c),
@@ -243,6 +263,7 @@ export class ChatService {
       settings: { assistantId: this.defaultProviderId(), deepAnalysisOnMessages: true },
       restoredNoticeShown: false,
       files: new Map(),
+      recentTexts: [],
     };
     this.convs.set(id, conv);
     log('service', 'conversation_created', { count: this.convs.size });
@@ -276,6 +297,7 @@ export class ChatService {
     c.messages = [];
     c.state = createState();
     c.files.clear();
+    c.recentTexts = [];
     c.restoredNoticeShown = false;
     c.title = DEFAULT_TITLE;
     c.titleIsDefault = true;
@@ -333,7 +355,10 @@ export class ChatService {
   analyze(convId: string, text: string, commit = false): AnalysisView {
     const c = this.get(convId);
     const { state, mentions, conflicts } = ingestText(c.state, text);
-    if (commit) c.state = state;
+    if (commit) {
+      c.state = state;
+      this.remember(c, text);
+    }
     const { masked, replacements } = mask(text, state);
     return {
       mentions,
@@ -363,6 +388,7 @@ export class ChatService {
     // Les entités repérées par les règles sont enregistrées : les suggestions s'y rattachent.
     const { state } = ingestText(c.state, text);
     c.state = state;
+    this.remember(c, text);
     const controller = new AbortController();
     c.llmAbort = controller;
     const raw: unknown[] = [];

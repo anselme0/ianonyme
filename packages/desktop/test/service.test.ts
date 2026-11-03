@@ -138,6 +138,17 @@ describe('aperçu et détection', () => {
     expect(p.protectedInMessage).toBe(1);
   });
 
+  it('la liste des éléments protégés ne montre que les formes présentes dans les textes', async () => {
+    const h = new Harness();
+    const conv = h.service.create();
+    await h.send(conv.id, 'Sophie Renard écrit. Mme Renard répond.');
+    const [entity] = h.service.getView(conv.id).entities;
+    expect(entity?.canonical).toBe('Sophie Renard');
+    expect(entity?.variants).toContain('Mme Renard');
+    expect(entity?.variants).not.toContain('Dr Renard');
+    expect(entity?.variants).not.toContain('Renard, Sophie');
+  });
+
   it('la détection instantanée n\'enregistre rien', () => {
     const h = new Harness();
     const conv = h.service.create();
