@@ -105,6 +105,8 @@ export interface AnalysisView {
   mentions: Mention[];
   conflicts: Conflict[];
   maskedText: string;
+  /** Ce qui est remplacé dans le texte envoyé, à sa place dans le texte d'origine. */
+  replacements: { start: number; end: number; placeholder: string }[];
   protectedInText: number;
   leak: { ok: boolean; leaks: LeakItem[] };
 }

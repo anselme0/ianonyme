@@ -6,10 +6,12 @@ interface Props {
   marks: Mark[];
   onMarkClick?: (mark: Mark) => void;
   selectedId?: string | null;
+  /** Repère affiché à la place du texte d'origine, par identifiant de surlignage (vue « ce que l'IA reçoit »). */
+  labels?: Record<string, string>;
 }
 
 /** Texte avec ses informations surlignées par famille. `data-off` donne le décalage de chaque morceau. */
-export function Marked({ text, marks, onMarkClick, selectedId }: Props) {
+export function Marked({ text, marks, onMarkClick, selectedId, labels }: Props) {
   let offset = 0;
   return (
     <>
@@ -24,15 +26,17 @@ export function Marked({ text, marks, onMarkClick, selectedId }: Props) {
             </span>
           );
         }
+        const label = labels?.[mark.id];
         return (
           <mark
             key={`${mark.id}-${i}`}
             data-mark-id={mark.id}
             data-off={off}
-            className={`mark fam-${mark.family} mark-${mark.kind}${selectedId === mark.id ? ' mark-selected' : ''}`}
+            className={`mark fam-${mark.family} mark-${mark.kind}${selectedId === mark.id ? ' mark-selected' : ''}${label ? ' mark-sent' : ''}`}
+            title={label ? piece.text : undefined}
             onClick={onMarkClick ? () => onMarkClick(mark) : undefined}
           >
-            {piece.text}
+            {label ?? piece.text}
           </mark>
         );
       })}

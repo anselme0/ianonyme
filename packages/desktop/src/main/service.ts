@@ -364,6 +364,7 @@ export class ChatService {
       mentions,
       conflicts,
       maskedText: masked,
+      replacements: replacements.map((r) => ({ start: r.span.start, end: r.span.end, placeholder: r.placeholder })),
       protectedInText: new Set(replacements.map((r) => r.entityId)).size,
       leak: checkLeak(masked, state),
     };

@@ -120,6 +120,7 @@ export function Review(p: ReviewProps) {
   }, [current?.key]);
 
   const onMouseUp = (): void => {
+    if (showSent) return;
     const sel = window.getSelection();
     if (!sel || sel.isCollapsed || !doc.current || sel.rangeCount === 0) return setSelection(null);
     const range = sel.getRangeAt(0);
@@ -133,6 +134,16 @@ export function Review(p: ReviewProps) {
     const rect = range.getBoundingClientRect();
     setSelection({ text: value, x: rect.left, y: rect.bottom + 6 });
   };
+
+  // Repère qui remplace chaque information protégée : même place, mêmes couleurs, seul le texte change.
+  const labels = useMemo(() => {
+    const out: Record<string, string> = {};
+    for (const m of analysis?.mentions ?? []) {
+      const r = analysis?.replacements.find((x) => x.start <= m.span.start && m.span.end <= x.end);
+      if (r && m.status === 'accepted') out[m.id] = r.placeholder;
+    }
+    return out;
+  }, [analysis]);
 
   const autoGroups = useMemo(() => {
     const seen = new Set<string>();
@@ -189,23 +200,11 @@ export function Review(p: ReviewProps) {
 
       <div className="review-body">
         <section className="review-doc" aria-label={t.review.document}>
-          {showSent && (
-            <pre className="received-text" data-testid="review-sent">
-              {(analysis?.maskedText ?? '').split(/(\[[A-Z][A-Z_]*_\d+\])/g).map((part, i) =>
-                /^\[[A-Z][A-Z_]*_\d+\]$/.test(part) ? (
-                  <code key={i} className="placeholder">
-                    {part}
-                  </code>
-                ) : (
-                  <span key={i}>{part}</span>
-                ),
-              )}
-            </pre>
-          )}
-          <div className="doc-text" ref={doc} onMouseUp={onMouseUp} data-testid="review-doc" hidden={showSent}>
+          <div className="doc-text" ref={doc} onMouseUp={onMouseUp} data-testid="review-doc">
             <Marked
               text={text}
               marks={marks}
+              labels={showSent ? labels : undefined}
               selectedId={current?.mention.id ?? null}
               onMarkClick={(m) => {
                 const index = items.findIndex((it) => it.mention.id === m.id);
@@ -360,9 +359,14 @@ export function Review(p: ReviewProps) {
         </button>
         <span className="text-2 small keys">{t.review.keys}</span>
         <span className="spacer" />
-        <button type="button" className="btn btn-secondary" aria-pressed={showSent} onClick={() => setShowSent(!showSent)} data-testid="review-see-sent">
-          {showSent ? t.review.backToDocument : t.review.seeReceived}
-        </button>
+        <div className="segmented" role="group" aria-label={t.review.compare}>
+          <button type="button" className={showSent ? 'seg' : 'seg seg-on'} aria-pressed={!showSent} onClick={() => setShowSent(false)} data-testid="review-see-original">
+            {t.review.original}
+          </button>
+          <button type="button" className={showSent ? 'seg seg-on' : 'seg'} aria-pressed={showSent} onClick={() => setShowSent(true)} data-testid="review-see-sent">
+            {t.review.seeReceived}
+          </button>
+        </div>
         <button
           type="button"
           className="btn btn-primary"

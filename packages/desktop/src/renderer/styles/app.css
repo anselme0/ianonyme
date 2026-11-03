@@ -692,6 +692,32 @@ h3 {
   background: var(--fb);
   color: var(--ff);
 }
+.mark-sent {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.seg {
+  padding: 6px 12px;
+  border: 0;
+  background: var(--surface);
+  color: var(--text-2);
+  font: inherit;
+  cursor: pointer;
+}
+.seg + .seg {
+  border-left: 1px solid var(--border-strong);
+}
+.seg-on {
+  background: var(--accent-soft);
+  color: var(--text);
+  font-weight: 600;
+}
 .mark-suggested {
   outline: 1px dashed var(--amber-border);
 }
