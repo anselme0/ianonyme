@@ -1,4 +1,4 @@
-import { Check, ChevronDown, ChevronRight, Loader2, ShieldCheck, TriangleAlert } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight, Loader2, ShieldCheck, TriangleAlert, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Category, Mention } from 'engine';
 import type { AnalysisView, EntityView } from '../../shared/api.js';
@@ -205,6 +205,15 @@ export function Review(p: ReviewProps) {
               text={text}
               marks={marks}
               labels={showSent ? labels : undefined}
+              onRemove={
+                showSent
+                  ? undefined
+                  : (m) => {
+                      const mention = analysis?.mentions.find((x) => x.id === m.id);
+                      if (mention) p.onIgnore(mention);
+                    }
+              }
+              removeLabel={t.review.unprotect}
               selectedId={current?.mention.id ?? null}
               onMarkClick={(m) => {
                 const index = items.findIndex((it) => it.mention.id === m.id);
@@ -339,9 +348,11 @@ export function Review(p: ReviewProps) {
                   <ul className="auto-list">
                     {list.map((a) => (
                       <li key={a.text}>
-                        <span>{a.text}</span> <span className="text-2 small">{a.label}</span>{' '}
-                        <button type="button" className="btn btn-secondary btn-sm" onClick={() => p.onIgnore(a.mention)} data-testid="unprotect">
-                          {t.review.unprotect}
+                        <span className="auto-text">
+                          {a.text} <span className="text-2 small">{a.label}</span>
+                        </span>
+                        <button type="button" className="icon-btn auto-x" aria-label={t.review.unprotect} title={t.review.unprotect} onClick={() => p.onIgnore(a.mention)} data-testid="unprotect">
+                          <X size={14} aria-hidden />
                         </button>
                       </li>
                     ))}

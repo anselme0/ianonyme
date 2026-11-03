@@ -48,6 +48,17 @@ test('« Ne plus protéger » laisse la mention en clair, comme l’utilisateur 
   await app.close();
 });
 
+test('une croix au survol d’un élément protégé le retire', async () => {
+  const { app, page } = await launch();
+  await page.getByTestId('composer-input').fill('Le maire de la commune a signé hier.');
+  await page.getByTestId('verify').click();
+  await expect(page.getByTestId('unprotect')).toHaveCount(1);
+  await page.locator('[data-testid="review-doc"] mark.mark-protected').first().hover();
+  await page.getByTestId('mark-unprotect').first().click();
+  await expect(page.getByTestId('unprotect')).toHaveCount(0);
+  await app.close();
+});
+
 test('écran de démarrage pendant la préparation de l’analyse, avec sortie vers l’analyse de base', async () => {
   // Un serveur qui ne termine jamais le téléchargement : l'analyse approfondie reste « en préparation ».
   const server = createServer((_req, res) => {
