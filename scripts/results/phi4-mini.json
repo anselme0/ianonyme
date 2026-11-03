@@ -1,0 +1,362 @@
+{
+ "t1": {
+  "constrained": {
+   "calls": 6,
+   "invalid": 0,
+   "offschema": 0,
+   "retries": 0,
+   "raw_mentions": 55,
+   "hallu": 2,
+   "chunks": 6
+  },
+  "free": {
+   "calls": 11,
+   "invalid": 6,
+   "offschema": 4,
+   "retries": 10,
+   "raw_mentions": 7,
+   "hallu": 0,
+   "chunks": 6
+  },
+  "per_run_sets": [
+   {
+    "ajust-01": [
+     "IBAN du séquestre",
+     "l'entreprise",
+     "le maire de la commune",
+     "son beau-frère",
+     "son prédécesseur"
+    ],
+    "ajust-02": [
+     "tribunal judiciaire de Dijon"
+    ],
+    "ajust-03": [
+     "M. Faure (frère d'Étienne)",
+     "la belle-mère de M. Haddad"
+    ],
+    "eval-01": [],
+    "eval-02": [
+     "M. Julien Perrin, comptable",
+     "l'ancien maire",
+     "l'association locale",
+     "la présidente",
+     "son oncle"
+    ],
+    "eval-03": [
+     "le demandeur",
+     "notaire à Albi",
+     "syndic"
+    ]
+   },
+   {
+    "ajust-01": [
+     "IBAN du séquestre",
+     "l'entreprise",
+     "le maire de la commune",
+     "son beau-frère",
+     "son prédécesseur"
+    ],
+    "ajust-02": [
+     "tribunal judiciaire de Dijon"
+    ],
+    "ajust-03": [
+     "M. Faure (frère d'Étienne)",
+     "la belle-mère de M. Haddad"
+    ],
+    "eval-01": [],
+    "eval-02": [
+     "M. Julien Perrin, comptable",
+     "l'ancien maire",
+     "l'association locale",
+     "la présidente",
+     "son oncle"
+    ],
+    "eval-03": [
+     "le demandeur",
+     "notaire à Albi",
+     "syndic"
+    ]
+   },
+   {
+    "ajust-01": [
+     "IBAN du séquestre",
+     "l'entreprise",
+     "le maire de la commune",
+     "son beau-frère",
+     "son prédécesseur"
+    ],
+    "ajust-02": [
+     "tribunal judiciaire de Dijon"
+    ],
+    "ajust-03": [
+     "M. Faure (frère d'Étienne)",
+     "la belle-mère de M. Haddad"
+    ],
+    "eval-01": [],
+    "eval-02": [
+     "M. Julien Perrin, comptable",
+     "l'ancien maire",
+     "l'association locale",
+     "la présidente",
+     "son oncle"
+    ],
+    "eval-03": [
+     "le demandeur",
+     "notaire à Albi",
+     "syndic"
+    ]
+   }
+  ],
+  "scores": {
+   "ajust": {
+    "score": {
+     "bycat": {
+      "TELEPHONE": {
+       "all": 3,
+       "rules": 3,
+       "n": 3
+      },
+      "NUM_DOSSIER": {
+       "all": 4,
+       "rules": 4,
+       "n": 4
+      },
+      "DATE_NAISSANCE": {
+       "all": 1,
+       "rules": 1,
+       "n": 1
+      },
+      "ADRESSE": {
+       "all": 4,
+       "rules": 4,
+       "n": 4
+      },
+      "EMAIL": {
+       "all": 3,
+       "rules": 3,
+       "n": 3
+      },
+      "LIEU": {
+       "all": 0,
+       "rules": 0,
+       "n": 1
+      },
+      "PERSONNE": {
+       "all": 26,
+       "rules": 21,
+       "n": 36
+      },
+      "ORGANISATION": {
+       "all": 5,
+       "rules": 5,
+       "n": 5
+      },
+      "IBAN": {
+       "all": 1,
+       "rules": 1,
+       "n": 1
+      }
+     },
+     "false": 3,
+     "link_bad": 0,
+     "kept": 8,
+     "n": {
+      "direct": 43,
+      "indirect": 15
+     },
+     "all": {
+      "direct": 42,
+      "indirect": 5
+     },
+     "link_ok": 0,
+     "rules": {
+      "direct": 42,
+      "indirect": 0
+     },
+     "link_none": 5
+    },
+    "hallu": 1,
+    "raw": 21,
+    "docs": 3
+   },
+   "eval": {
+    "score": {
+     "bycat": {
+      "TELEPHONE": {
+       "all": 3,
+       "rules": 3,
+       "n": 3
+      },
+      "NUM_DOSSIER": {
+       "all": 4,
+       "rules": 4,
+       "n": 4
+      },
+      "DATE_NAISSANCE": {
+       "all": 1,
+       "rules": 1,
+       "n": 1
+      },
+      "ADRESSE": {
+       "all": 3,
+       "rules": 3,
+       "n": 3
+      },
+      "EMAIL": {
+       "all": 3,
+       "rules": 3,
+       "n": 3
+      },
+      "LIEU": {
+       "all": 1,
+       "rules": 0,
+       "n": 2
+      },
+      "IDENTIFIANT": {
+       "all": 1,
+       "rules": 1,
+       "n": 1
+      },
+      "PERSONNE": {
+       "all": 28,
+       "rules": 22,
+       "n": 38
+      },
+      "ORGANISATION": {
+       "all": 5,
+       "rules": 5,
+       "n": 5
+      },
+      "IBAN": {
+       "all": 1,
+       "rules": 1,
+       "n": 1
+      }
+     },
+     "false": 0,
+     "link_bad": 0,
+     "kept": 8,
+     "n": {
+      "direct": 43,
+      "indirect": 18
+     },
+     "all": {
+      "direct": 42,
+      "indirect": 8
+     },
+     "link_ok": 0,
+     "rules": {
+      "direct": 41,
+      "indirect": 2
+     },
+     "link_none": 8
+    },
+    "hallu": 1,
+    "raw": 34,
+    "docs": 3
+   }
+  },
+  "stable_runs": true
+ },
+ "t1_wall_s": 128,
+ "t4": {
+  "texte_tres_court": {
+   "pass": true,
+   "out": []
+  },
+  "noms_communs": {
+   "pass": true,
+   "out": [
+    "Pierre Blanc",
+    "marin Lebon"
+   ]
+  },
+  "homonymes": {
+   "pass": true,
+   "out": [
+    [
+     "Le fils de Garnier",
+     null
+    ]
+   ]
+  },
+  "injection_contrainte": {
+   "pass": true,
+   "out": "{\n  \"mentions\": []\n}"
+  },
+  "injection_libre": {
+   "pass": true,
+   "out": "```json\n{\n  \"mentions\": []\n}\n```"
+  },
+  "chevauchement_petits_morceaux": {
+   "pass": true,
+   "full": [],
+   "small": [
+    "Pessac",
+    "chef du service technique",
+    "la directrice",
+    "le fils de la directrice",
+    "le fournisseur"
+   ]
+  },
+  "tableau_en_tete_pied": {
+   "pass": true,
+   "out": [
+    "la belle-mère de M. Haddad",
+    "M. Faure (frère d'Étienne)"
+   ]
+  }
+ },
+ "t4_wall_s": 29,
+ "t6": {
+  "timeout_court": "exception gérée: TimeoutError",
+  "modele_absent": "HTTP 404 gérée"
+ },
+ "t6_wall_s": 2,
+ "t5": {
+  "load": {
+   "cold_s": 1.5,
+   "warm_s": 0.0
+  },
+  "latency": {
+   "gpu_1p": {
+    "median_s": 6.9,
+    "runs": [
+     6.9,
+     6.8,
+     6.9
+    ]
+   },
+   "gpu_10p": {
+    "median_s": 113.6,
+    "runs": [
+     113.3,
+     113.7,
+     113.6
+    ]
+   },
+   "cpu_1p": {
+    "median_s": 36.7,
+    "runs": [
+     36.2,
+     37.2
+    ]
+   },
+   "cpu_10p": {
+    "median_s": 941.9,
+    "runs": [
+     941.9
+    ]
+   }
+  },
+  "mem": {
+   "gpu_peak_vram_mib": 4794,
+   "gpu_peak_ollama_rss_mib": 131,
+   "cpu_peak_ollama_rss_mib": 107,
+   "cpu_peak_vram_mib": 1075
+  },
+  "tps": 192.3,
+  "tps_cpu": 21.9
+ },
+ "t5_wall_s": 1403
+}

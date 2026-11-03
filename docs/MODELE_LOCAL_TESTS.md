@@ -133,13 +133,43 @@ L'équipe remplit ce tableau **avant** de lancer T1 à T6. Aucune valeur n'est p
 
 Un tableau par machine. Mentionner la taille du corpus d'évaluation à côté de chaque pourcentage : sur peu de documents, ces chiffres sont indicatifs, pas représentatifs.
 
-| Candidat | Quantif. | Fichier (Go) | Licence | JSON invalide | Hallucinations | Rappel indirect (règles seules → avec LLM) | Rappel direct (règles seules → avec LLM) | Rattachements corrects | Fausses suggestions / doc | Chargement | Débit (tok/s) | Latence 10 p. | RAM pic | Verdict |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| | | | | | | | | | | | | | | |
+**PC 32 Go / RTX 5070 (12 Go) / Ryzen 7 7700X, Windows 11, Ollama 0.40.13.** Mesuré avec `scripts/harness.py` (prompt de l'annexe C.2, température 0, seed 42, `num_ctx` 8192, morceaux de 2000 caractères, sortie contrainte par schéma). **Corpus d'évaluation : 3 documents fictifs, 43 mentions directes et 9 mentions indirectes.** Chaque point de rappel indirect vaut donc environ 11 points de pourcentage : ces chiffres sont indicatifs, pas représentatifs.
+
+| Candidat (digest Ollama) | Fichier (Go) | Licence | JSON invalide (contraint / libre) | Hallucinations | Rappel indirect (règles → +LLM) | Rappel direct (règles → +LLM) | Rattachements ok / mauvais / non rattachés | Fausses sugg. / doc | Chargement à froid | Débit GPU / CPU (tok/s) | Latence 1 p. GPU / CPU | Latence 10 p. GPU / CPU | Verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| qwen2.5:1.5b (65ec06548149) | 1,0 | non lue | 14 % (1/7) / 0 % | 29 % (5/17) | 11 → 17 % | 95 → 98 % | 0 / 1 / 0 | 0 | 1,2 s | 334 / n.m. | 13 s / n.m. | 126 s / n.m. | **Éliminé** (gain +6 pts, JSON, hallucinations) |
+| ministral-3:3b (f04aa1c738f6) | 3,0 | non lue | 0 % / 0 % | 0 % (0/28) | 11 → 56 % | 95 → 100 % | 2 / 1 / 6 | 0,3 | 2,0 s | 200 / 23 | 20 s / 88 s | 86 s / 848 s | Qualité OK ; **latence 10 p. hors seuil** |
+| qwen3.5:4b (d8b0f5e9760c) | 3,3 | non lue | 0 % / sort du schéma (6 appels sur 9) | 5 % (2/41) | 11 → 67 % | 95 → 100 % | 1 / 0 / 12 | 0,3 | 5,6 s | 142 / 17 | 24 s / 170 s | 242 s / 1990 s | Meilleur gain ; **latence hors seuil** ; échoue aux homonymes |
+| gemma3:4b (68ceab7e468a) | 3,4 | non lue (conditions Google) | 0 % / 0 % | 0 % (0/19) | 11 → 28 % | 95 → 100 % | 2 / 0 / 3 | 0 | 2,0 s | 166 / 20 | 12 s / 78 s | 131 s / 1106 s | Gain de 17 pts, juste au-dessus du seuil ; latence hors seuil ; échoue aux homonymes |
+| phi4-mini (78fad5d182a7) | 2,5 | non lue | 0 % / 55 % (6/11) | 3 % (1/34) | 11 → 44 % | 95 → 98 % | 0 / 0 / 8 | 0 | 1,5 s | 192 / 22 | 7 s / 37 s | 114 s / 942 s | Le plus rapide ; latence 10 p. hors seuil ; aucun rattachement |
+| ministral-3:8b (1922accd5827) | 6,0 | non lue | 0 % / 50 % (4/8) | 0 % (0/30) | 11 → 56 % | 95 → 100 % | 4 / 0 / 6 | 0,3 | 2,0 s | 107 / n.m. | 17 s / n.m. | 206 s / n.m. | Meilleurs rattachements ; latence hors seuil ; échoue aux homonymes |
+
+n.m. = non mesuré (CPU abandonné pour `qwen2.5:1.5b`, éliminé, et `ministral-3:8b`, pour raccourcir la campagne).
+
+### Résultats de T4 et T6
+
+- T4, tous modèles : texte très court, noms communs, tentative d'injection (avec et sans schéma) et tableau/en-tête/pied de page : réussis. La sortie reste conforme au schéma face à l'injection.
+- T4, homonymes (deux « Garnier » connus, le modèle ne doit pas rattacher « Garnier » seul) : **échec pour `qwen3.5:4b`, `gemma3:4b` et `ministral-3:8b`** ; réussi pour `qwen2.5:1.5b`, `ministral-3:3b`, `phi4-mini`.
+- T4, chevauchement (morceaux de 350 caractères) : échec pour `ministral-3:3b` uniquement.
+- T3, stabilité : 3 exécutions identiques pour les 6 modèles.
+- T6 (partiel) : délai dépassé et modèle absent déclenchent une erreur gérée, sans plantage, pour tous. Le téléchargement a pris 30 à 45 s pour 2,5 à 3,4 Go. Non testés : `node-llama-cpp`, application empaquetée, comparaison avec Ollama, reprise de téléchargement, vérification d'empreinte.
+
+### Limites de cette campagne
+
+- **Le baseline de règles et le corpus sont de ma main** (`scripts/rules.py`, `corpus/`) : ce n'est pas le `packages/engine` du dépôt. Le rappel direct de 95 % est donc flatteur et à ne pas présenter tel quel.
+- Seuls des fichiers `.txt` ont été testés : pas de `.docx` ni de PDF.
+- Chaque document du corpus tient dans un seul morceau de 2000 caractères : le découpage et le chevauchement sont très peu sollicités. Les documents de 1 et 10 pages sont construits en répétant les mêmes textes (3000 caractères par page), ce qui produit beaucoup de sorties répétées : les latences sont probablement pessimistes pour de vrais documents.
+- Les mesures de mémoire sont à écarter : la sonde ne voyait que le processus serveur d'Ollama (~130 Mo) et la VRAM comprend ~1,8 Go déjà utilisés par le bureau. La VRAM maximale va de ~3,4 Go (`qwen2.5:1.5b`) à ~8 Go (`ministral-3:8b`), à titre indicatif ; la RAM pic (seuil de 8 Go) n'est pas mesurée.
+- La passe de 30 pages et la répétition à 3 des 10 pages en CPU ont été abandonnées (campagne raccourcie).
+- Les licences n'ont pas été lues, la quantification n'a pas été relevée (valeur par défaut d'Ollama), les empreintes sont les identifiants courts d'Ollama et non des hash de fichiers GGUF.
+- Le « PC de travail » de référence basse n'a pas été défini ; le CPU mesuré (Ryzen 7 7700X, 8 cœurs) est meilleur que la plupart des PC de bureau.
 
 ## 8. Décision
 
-À compléter une fois les tests terminés :
+À compléter une fois les tests terminés. **Aucune décision prise** : les chiffres ci-dessus ne suffisent pas, en particulier à cause de la latence.
+
+Constat provisoire (Claude, 3 nov. 2026) : aucun candidat ne passe le critère de latence sur 10 pages, même sur GPU (86 à 242 s contre 60 s fixés) ; en CPU seul, 10 pages prennent 14 à 33 minutes. Côté qualité, `qwen3.5:4b` (+56 points sur les indirects) et `ministral-3:3b` (+44) sont en tête ; `ministral-3:8b` rattache le mieux. Selon la procédure du §6 (étape 3), il faut soit lever le critère de latence en le consignant, soit revoir le traitement (morceaux plus petits, plafond de temps, LLM sur demande seulement), soit appliquer le repli de `DOCUMENTATION.md` §15.
+
 
 - Modèle retenu :
 - Version / quantification :

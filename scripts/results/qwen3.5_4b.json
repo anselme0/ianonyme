@@ -377,5 +377,51 @@
   "timeout_court": "exception gérée: TimeoutError",
   "modele_absent": "HTTP 404 gérée"
  },
- "t6_wall_s": 2
+ "t6_wall_s": 2,
+ "t5": {
+  "load": {
+   "cold_s": 5.55,
+   "warm_s": 0.0
+  },
+  "latency": {
+   "gpu_1p": {
+    "median_s": 23.7,
+    "runs": [
+     24.6,
+     23.6,
+     23.7
+    ]
+   },
+   "gpu_10p": {
+    "median_s": 242.2,
+    "runs": [
+     253.9,
+     242.2,
+     242.2
+    ]
+   },
+   "cpu_1p": {
+    "median_s": 169.5,
+    "runs": [
+     173.4,
+     165.5
+    ]
+   },
+   "cpu_10p": {
+    "median_s": 1990.4,
+    "runs": [
+     1990.4
+    ]
+   }
+  },
+  "mem": {
+   "gpu_peak_vram_mib": 6501,
+   "gpu_peak_ollama_rss_mib": 138,
+   "cpu_peak_ollama_rss_mib": 138,
+   "cpu_peak_vram_mib": 1998
+  },
+  "tps": 141.6,
+  "tps_cpu": 16.8
+ },
+ "t5_wall_s": 3175
 }

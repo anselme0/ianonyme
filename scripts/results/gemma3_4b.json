@@ -1,0 +1,369 @@
+{
+ "t1": {
+  "constrained": {
+   "calls": 6,
+   "invalid": 0,
+   "offschema": 0,
+   "retries": 0,
+   "raw_mentions": 39,
+   "hallu": 0,
+   "chunks": 6
+  },
+  "free": {
+   "calls": 6,
+   "invalid": 0,
+   "offschema": 0,
+   "retries": 0,
+   "raw_mentions": 50,
+   "hallu": 1,
+   "chunks": 6
+  },
+  "per_run_sets": [
+   {
+    "ajust-01": [
+     "Valmont-sur-Aure",
+     "cour d'appel"
+    ],
+    "ajust-02": [
+     "Beaune",
+     "Le voisin du couple, qui a assisté à la scène, sera entendu."
+    ],
+    "ajust-03": [
+     "L'humidité",
+     "La belle-mère de M. Haddad",
+     "frère d'Étienne"
+    ],
+    "eval-01": [
+     "Pessac"
+    ],
+    "eval-02": [
+     "M. Julien Perrin, comptable",
+     "Mme Aurélie Rousseau, présidente de l'association locale",
+     "l'ancien maire"
+    ],
+    "eval-03": [
+     "notaire à Albi"
+    ]
+   },
+   {
+    "ajust-01": [
+     "Valmont-sur-Aure",
+     "cour d'appel"
+    ],
+    "ajust-02": [
+     "Beaune",
+     "Le voisin du couple, qui a assisté à la scène, sera entendu."
+    ],
+    "ajust-03": [
+     "L'humidité",
+     "La belle-mère de M. Haddad",
+     "frère d'Étienne"
+    ],
+    "eval-01": [
+     "Pessac"
+    ],
+    "eval-02": [
+     "M. Julien Perrin, comptable",
+     "Mme Aurélie Rousseau, présidente de l'association locale",
+     "l'ancien maire"
+    ],
+    "eval-03": [
+     "notaire à Albi"
+    ]
+   },
+   {
+    "ajust-01": [
+     "Valmont-sur-Aure",
+     "cour d'appel"
+    ],
+    "ajust-02": [
+     "Beaune",
+     "Le voisin du couple, qui a assisté à la scène, sera entendu."
+    ],
+    "ajust-03": [
+     "L'humidité",
+     "La belle-mère de M. Haddad",
+     "frère d'Étienne"
+    ],
+    "eval-01": [
+     "Pessac"
+    ],
+    "eval-02": [
+     "M. Julien Perrin, comptable",
+     "Mme Aurélie Rousseau, présidente de l'association locale",
+     "l'ancien maire"
+    ],
+    "eval-03": [
+     "notaire à Albi"
+    ]
+   }
+  ],
+  "scores": {
+   "ajust": {
+    "score": {
+     "all": {
+      "indirect": 3,
+      "direct": 43
+     },
+     "link_bad": 2,
+     "kept": 7,
+     "rules": {
+      "indirect": 0,
+      "direct": 42
+     },
+     "link_none": 2,
+     "n": {
+      "indirect": 15,
+      "direct": 43
+     },
+     "link_ok": 0,
+     "bycat": {
+      "PERSONNE": {
+       "all": 24,
+       "rules": 21,
+       "n": 36
+      },
+      "DATE_NAISSANCE": {
+       "all": 1,
+       "rules": 1,
+       "n": 1
+      },
+      "EMAIL": {
+       "all": 3,
+       "rules": 3,
+       "n": 3
+      },
+      "ADRESSE": {
+       "all": 4,
+       "rules": 4,
+       "n": 4
+      },
+      "LIEU": {
+       "all": 1,
+       "rules": 0,
+       "n": 1
+      },
+      "TELEPHONE": {
+       "all": 3,
+       "rules": 3,
+       "n": 3
+      },
+      "IBAN": {
+       "all": 1,
+       "rules": 1,
+       "n": 1
+      },
+      "ORGANISATION": {
+       "all": 5,
+       "rules": 5,
+       "n": 5
+      },
+      "NUM_DOSSIER": {
+       "all": 4,
+       "rules": 4,
+       "n": 4
+      }
+     },
+     "false": 3
+    },
+    "hallu": 0,
+    "raw": 17,
+    "docs": 3
+   },
+   "eval": {
+    "score": {
+     "all": {
+      "indirect": 5,
+      "direct": 43
+     },
+     "link_bad": 0,
+     "kept": 5,
+     "rules": {
+      "indirect": 2,
+      "direct": 41
+     },
+     "link_none": 3,
+     "n": {
+      "indirect": 18,
+      "direct": 43
+     },
+     "link_ok": 2,
+     "bycat": {
+      "PERSONNE": {
+       "all": 25,
+       "rules": 22,
+       "n": 38
+      },
+      "IDENTIFIANT": {
+       "all": 1,
+       "rules": 1,
+       "n": 1
+      },
+      "DATE_NAISSANCE": {
+       "all": 1,
+       "rules": 1,
+       "n": 1
+      },
+      "EMAIL": {
+       "all": 3,
+       "rules": 3,
+       "n": 3
+      },
+      "ADRESSE": {
+       "all": 3,
+       "rules": 3,
+       "n": 3
+      },
+      "LIEU": {
+       "all": 2,
+       "rules": 0,
+       "n": 2
+      },
+      "TELEPHONE": {
+       "all": 3,
+       "rules": 3,
+       "n": 3
+      },
+      "IBAN": {
+       "all": 1,
+       "rules": 1,
+       "n": 1
+      },
+      "ORGANISATION": {
+       "all": 5,
+       "rules": 5,
+       "n": 5
+      },
+      "NUM_DOSSIER": {
+       "all": 4,
+       "rules": 4,
+       "n": 4
+      }
+     },
+     "false": 0
+    },
+    "hallu": 0,
+    "raw": 19,
+    "docs": 3
+   }
+  },
+  "stable_runs": true
+ },
+ "t1_wall_s": 122,
+ "t4": {
+  "texte_tres_court": {
+   "pass": true,
+   "out": []
+  },
+  "noms_communs": {
+   "pass": true,
+   "out": [
+    "Pierre Blanc",
+    "Blanc",
+    "Victor Hugo",
+    "Lebon"
+   ]
+  },
+  "homonymes": {
+   "pass": false,
+   "out": [
+    [
+     "Jean Garnier",
+     "Jean Garnier"
+    ],
+    [
+     "Paul Garnier",
+     "Paul Garnier"
+    ],
+    [
+     "Garnier",
+     "Jean Garnier"
+    ],
+    [
+     "Garnier",
+     "Paul Garnier"
+    ]
+   ]
+  },
+  "injection_contrainte": {
+   "pass": true,
+   "out": "{\"mentions\": []}"
+  },
+  "injection_libre": {
+   "pass": true,
+   "out": "```json\n{\"mentions\": []}\n```"
+  },
+  "chevauchement_petits_morceaux": {
+   "pass": true,
+   "full": [
+    "Pessac"
+   ],
+   "small": [
+    "Pessac",
+    "chef du service technique",
+    "la directrice",
+    "le fils de la directrice"
+   ]
+  },
+  "tableau_en_tete_pied": {
+   "pass": true,
+   "out": [
+    "L'humidité",
+    "La belle-mère de M. Haddad",
+    "frère d'Étienne"
+   ]
+  }
+ },
+ "t4_wall_s": 33,
+ "t6": {
+  "timeout_court": "exception gérée: TimeoutError",
+  "modele_absent": "HTTP 404 gérée"
+ },
+ "t6_wall_s": 2,
+ "t5": {
+  "load": {
+   "cold_s": 2.03,
+   "warm_s": 0.0
+  },
+  "latency": {
+   "gpu_1p": {
+    "median_s": 12.3,
+    "runs": [
+     12.3,
+     12.3,
+     12.3
+    ]
+   },
+   "gpu_10p": {
+    "median_s": 131.2,
+    "runs": [
+     143.6,
+     131.2,
+     124.3
+    ]
+   },
+   "cpu_1p": {
+    "median_s": 78.1,
+    "runs": [
+     78.7,
+     77.5
+    ]
+   },
+   "cpu_10p": {
+    "median_s": 1106.2,
+    "runs": [
+     1106.2
+    ]
+   }
+  },
+  "mem": {
+   "gpu_peak_vram_mib": 5071,
+   "gpu_peak_ollama_rss_mib": 107,
+   "cpu_peak_ollama_rss_mib": 106,
+   "cpu_peak_vram_mib": 1069
+  },
+  "tps": 166.1,
+  "tps_cpu": 20.4
+ },
+ "t5_wall_s": 1731
+}
