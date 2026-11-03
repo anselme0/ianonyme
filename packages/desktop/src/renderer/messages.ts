@@ -19,8 +19,6 @@ export const t = {
     rename: 'Renommer',
     remove: 'Supprimer',
     userMenu: 'Menu',
-    reliability: 'Fiabilité de la détection',
-    demoOnly: 'démonstration',
     untitled: 'Nouvelle conversation',
   },
 
@@ -46,20 +44,18 @@ export const t = {
   composer: {
     placeholder: 'Écrivez votre message',
     attach: 'Joindre un fichier',
-    send: 'Vérifier',
+    send: 'Envoyer',
+    verify: 'Vérifier',
     sending: 'Envoi en cours…',
     willProtect: (n: number) =>
       n === 0
-        ? 'Aucune information sensible repérée dans ce message. Vérifiez qu’il n’en contient pas avant d’envoyer.'
+        ? ''
         : `${n} ${plural(n, 'élément sera protégé', 'éléments seront protégés')} dans ce message`,
     dropHere: 'Déposez un fichier ici',
     analysing: 'Analyse approfondie en cours…',
     skipAnalysis: "Passer en analyse de base",
     removeFile: 'Retirer ce fichier',
-    briefPreviewTitle: 'Ce que l’IA va recevoir',
-    briefPreviewCountdown: (s: number) => `Envoi dans ${s} s`,
     cancel: 'Annuler',
-    sendNow: 'Envoyer maintenant',
   },
 
   fileSteps: {
@@ -96,7 +92,6 @@ export const t = {
   protection: {
     title: 'Protection',
     tabElements: 'Éléments protégés',
-    tabReceived: 'Ce que l’IA va recevoir',
     protectedCount: (n: number) =>
       n === 0
         ? 'Aucun élément protégé pour le moment'
@@ -104,9 +99,6 @@ export const t = {
     toReview: (n: number) => `${n} à vérifier`,
     openReview: 'Ouvrir la vérification',
     empty: 'Les informations repérées apparaîtront ici.',
-    receivedEmpty: 'Le texte protégé de votre message apparaîtra ici.',
-    showHistory: 'Afficher tout l’historique',
-    hideHistory: 'Afficher seulement le message',
     deepActive: 'Analyse approfondie sur votre ordinateur : active',
     deepActiveSimulated: 'Analyse approfondie simulée (démonstration)',
     deepLoading: 'Analyse approfondie : préparation en cours',
@@ -114,31 +106,22 @@ export const t = {
     basicMore: 'En savoir plus',
     basicExplain:
       'Analyse de base : l’analyse approfondie n’est pas disponible. Les noms, numéros et coordonnées sont protégés, mais certaines mentions indirectes (fonctions, liens de parenté) peuvent ne pas être repérées.',
-    toggleLabel: 'Analyser aussi les messages',
-    toggleHelp: 'Analyse vos messages avant l’envoi. Désactivez-la pour envoyer plus vite.',
     collapse: 'Replier le volet',
     expand: 'Déplier le volet Protection',
-  },
-
-  receivedView: {
-    received: 'Texte reçu par l’IA',
-    compare: 'Comparaison',
-    original: 'Texte d’origine',
-    protectedText: 'Texte protégé',
-    title: 'Ce que l’IA va recevoir',
-    send: 'Envoyer',
-    back: 'Retour',
   },
 
   review: {
     title: 'Vérifier avant d’envoyer',
     progress: (done: number, total: number) => `${done} sur ${total} vérifiés`,
-    toVerify: 'À vérifier',
+    toVerify: 'Points de vigilance',
     autoProtected: 'Protégé automatiquement',
     protect: 'Protéger',
     ignore: 'Ignorer',
     linkTo: 'Relier à…',
+    messageTab: 'Message',
     linkChoose: 'Relier à quel élément ?',
+    linkOptional: 'Relier à un élément existant (facultatif)',
+    linkNone: 'Nouvel élément',
     sourceRegex: 'Repéré automatiquement',
     sourceVariant: (name: string) => `Variante de ${name}`,
     sourceVariantGeneric: 'Variante d’un élément protégé',
@@ -146,10 +129,9 @@ export const t = {
     designates: (name: string) => `Désigne probablement ${name}`,
     conflict: 'Plusieurs personnes peuvent correspondre. Choisissez.',
     chooseCandidate: (name: string) => `Choisir ${name}`,
-    continue: 'Continuer',
+    continue: 'Envoyer',
     continueDisabled: 'Traitez d’abord les points à vérifier pour continuer.',
     cancel: 'Annuler',
-    seeReceived: 'Voir ce que l’IA va recevoir',
     unprotect: 'Ne plus protéger',
     nothingToVerify: 'Aucun point à vérifier.',
     basicNotice:
@@ -217,31 +199,6 @@ export const t = {
     accountEmail: 'Adresse e-mail',
     accountEdit: 'Modifier le profil',
     accountSignOut: 'Se déconnecter',
-  },
-
-  reliability: {
-    title: 'Fiabilité de la détection',
-    measuredOn: (n: number) => `Mesurée sur ${n} ${plural(n, 'document fictif', 'documents fictifs')}`,
-    smallCorpus:
-      'Le corpus est très petit : aucun pourcentage n’est représentatif d’un usage réel, et aucun chiffre global ne doit être extrapolé.',
-    family: 'Famille',
-    total: 'Ensemble',
-    direct: 'Informations directes (nom, numéro…)',
-    indirect: 'Informations indirectes (fonction, lien de parenté…)',
-    autoPart: 'Part repérée automatiquement',
-    deepPart: 'Avec l’analyse approfondie',
-    deepNotMeasured: 'Non mesurée : aucun modèle n’a encore été choisi',
-    gain: 'Gain apporté par l’analyse approfondie',
-    visibleLeft: 'Informations restées visibles dans le texte envoyé',
-    falseProtected: 'Éléments protégés à tort, par document',
-    falseSuggestions: 'Suggestions rejetées, par document',
-    adjustSet: 'Documents d’ajustement',
-    evalSet: 'Documents d’évaluation',
-    none: 'Aucune mesure disponible. Lancez la mesure sur le corpus.',
-    back: 'Retour à la conversation',
-    noItems: '—',
-    exactLeakNote: 'La recherche exacte ne détecte pas les ré-identifications par recoupement d’indices indirects.',
-    ofTotal: (d: number, n: number) => `${d} sur ${n}`,
   },
 
   startup: {

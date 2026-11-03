@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { AssistantText, segmentsToMarkdown } from '../src/renderer/components/Thread.js';
 
 const entities = [
-  { id: 'E1', category: 'PERSONNE' as const, canonical: 'Jean Garnier', placeholder: '[PERSONNE_1]' },
-  { id: 'E2', category: 'EMAIL' as const, canonical: 'fictif@exemple.org', placeholder: '[EMAIL_1]' },
+  { id: 'E1', category: 'PERSONNE' as const, canonical: 'Jean Garnier', placeholder: '[PERSONNE_1]', variants: [] },
+  { id: 'E2', category: 'EMAIL' as const, canonical: 'fictif@exemple.org', placeholder: '[EMAIL_1]', variants: [] },
 ];
 
 describe('rendu des réponses restituées', () => {

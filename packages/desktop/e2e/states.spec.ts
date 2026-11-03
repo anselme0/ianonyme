@@ -9,13 +9,12 @@ import { DEMO, SHOTS, launch } from './launch.js';
 test('analyse de base quand le modèle local est absent', async () => {
   const { app, page } = await launch({ localEngine: 'none' });
   await expect(page.getByTestId('analysis-status')).toContainText('Analyse de base');
-  await expect(page.getByTestId('deep-toggle')).toBeDisabled();
   await page.screenshot({ path: `${SHOTS}/10-analyse-de-base.png` });
 
   // Import : rien ne s'ouvre ; « Vérifier » ouvre la revue sans suggestion et le dit.
   await page.getByTestId('file-input').setInputFiles(resolve(DEMO, 'rapport-expertise-fictif.pdf'));
-  await expect(page.locator('.file-chip.file-ready')).toBeVisible({ timeout: 30_000 });
-  await page.getByTestId('send').click();
+  await expect(page.locator('.file-tile.file-ready')).toBeVisible({ timeout: 30_000 });
+  await page.getByTestId('verify').click();
   await expect(page.getByTestId('review')).toBeVisible();
   await expect(page.getByTestId('review')).toContainText('Analyse de base');
   await expect(page.getByTestId('verify-item')).toHaveCount(0);
@@ -71,8 +70,6 @@ test('conversations : création, renommage, effacement, suppression', async () =
   await expect(page.getByTestId('conversation-item').first()).toHaveText('Dossier fictif A');
   await page.getByTestId('composer-input').fill('M. Jean Garnier écrit.');
   await page.getByTestId('send').click();
-  await page.getByTestId('review-continue').click();
-  await page.getByTestId('brief-send').click();
   await expect(page.getByTestId('assistant-text')).toHaveCount(1, { timeout: 30_000 });
   await expect(page.getByTestId('entity-row')).toHaveCount(1);
   await page.getByTestId('user-menu').click();

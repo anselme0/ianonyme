@@ -217,6 +217,7 @@ export class ChatService {
       category: e.category,
       canonical: e.canonical,
       placeholder: e.placeholder,
+      variants: e.variants,
     }));
     return {
       ...this.summary(c),

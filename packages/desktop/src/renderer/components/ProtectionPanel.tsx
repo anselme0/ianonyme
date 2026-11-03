@@ -1,6 +1,5 @@
 import { PanelRightClose, PanelRightOpen, ShieldCheck, TriangleAlert } from 'lucide-react';
-import { useState } from 'react';
-import type { AppInfo, EntityView, PreviewView } from '../../shared/api.js';
+import type { AppInfo, EntityView } from '../../shared/api.js';
 import { FAMILY_ORDER, familyOf } from '../families.js';
 import { t } from '../messages.js';
 
@@ -12,16 +11,10 @@ interface Props {
   onOpenReview(): void;
   focusEntity: string | null;
   onFocusEntity(id: string | null): void;
-  preview: PreviewView | null;
   info: AppInfo;
-  deepAnalysis: boolean;
-  onToggleDeep(value: boolean): void;
 }
 
 export function ProtectionPanel(p: Props) {
-  const [tab, setTab] = useState<'elements' | 'received'>('elements');
-  const [history, setHistory] = useState(false);
-
   if (p.collapsed) {
     return (
       <aside className="protection protection-collapsed" aria-label={t.protection.title}>
@@ -42,12 +35,6 @@ export function ProtectionPanel(p: Props) {
       : t.protection.basic;
 
   const byFamily = FAMILY_ORDER.map((f) => ({ f, items: p.entities.filter((e) => familyOf(e.category) === f) })).filter((g) => g.items.length > 0);
-  const maskedLines =
-    p.preview === null
-      ? []
-      : history
-        ? p.preview.maskedPayload
-        : p.preview.maskedPayload.slice(-1);
 
   return (
     <aside className="protection" aria-label={t.protection.title} data-testid="protection-panel">
@@ -70,27 +57,21 @@ export function ProtectionPanel(p: Props) {
         )}
       </div>
 
-      <div className="tabs" role="tablist">
-        <button type="button" role="tab" aria-selected={tab === 'elements'} className={tab === 'elements' ? 'tab tab-on' : 'tab'} onClick={() => setTab('elements')}>
-          {t.protection.tabElements}
-        </button>
-        <button type="button" role="tab" aria-selected={tab === 'received'} className={tab === 'received' ? 'tab tab-on' : 'tab'} onClick={() => setTab('received')} data-testid="tab-received">
-          {t.protection.tabReceived}
-        </button>
-      </div>
+      <h3 className="protection-section">{t.protection.tabElements}</h3>
 
-      <div className="protection-body" role="tabpanel">
-        {tab === 'elements' ? (
-          byFamily.length === 0 ? (
-            <p className="text-2 small">{t.protection.empty}</p>
-          ) : (
-            byFamily.map(({ f, items }) => (
-              <section key={f} className="family-group">
-                <h3>
-                  {t.families[f]} ({items.length})
-                </h3>
-                <ul>
-                  {items.map((e) => (
+      <div className="protection-body">
+        {byFamily.length === 0 ? (
+          <p className="text-2 small">{t.protection.empty}</p>
+        ) : (
+          byFamily.map(({ f, items }) => (
+            <section key={f} className="family-group">
+              <h3>
+                {t.families[f]} ({items.length})
+              </h3>
+              <ul>
+                {items.map((e) => {
+                  const others = e.variants.filter((v) => v.toLowerCase() !== e.canonical.toLowerCase());
+                  return (
                     <li key={e.id}>
                       <button
                         type="button"
@@ -100,29 +81,22 @@ export function ProtectionPanel(p: Props) {
                       >
                         <span className={`dot fam-${f}`} aria-hidden />
                         <span className="entity-name">{e.canonical}</span>
-                        <code className="placeholder">{e.placeholder}</code>
                       </button>
+                      {others.length > 0 && (
+                        <ul className="entity-sub" data-testid="entity-sub">
+                          {others.map((v) => (
+                            <li key={v} className="text-2">
+                              {v}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </li>
-                  ))}
-                </ul>
-              </section>
-            ))
-          )
-        ) : (
-          <div data-testid="received-view">
-            {maskedLines.length === 0 || p.preview === null ? (
-              <p className="text-2 small">{t.protection.receivedEmpty}</p>
-            ) : (
-              <>
-                <pre className="received-text" data-testid="received-text">
-                  {maskedLines.map((m) => m.content).join('\n\n— — —\n\n')}
-                </pre>
-                <button type="button" className="link-btn" onClick={() => setHistory(!history)}>
-                  {history ? t.protection.hideHistory : t.protection.showHistory}
-                </button>
-              </>
-            )}
-          </div>
+                  );
+                })}
+              </ul>
+            </section>
+          ))
         )}
       </div>
 
@@ -132,17 +106,6 @@ export function ProtectionPanel(p: Props) {
           {llmReady ? deepLine : null}
         </p>
         {!llmReady && <p className="small text-2">{t.protection.basicExplain}</p>}
-        <label className={`switch${llmReady ? '' : ' switch-off'}`}>
-          <input
-            type="checkbox"
-            checked={llmReady && p.deepAnalysis}
-            disabled={!llmReady}
-            onChange={(e) => p.onToggleDeep(e.target.checked)}
-            data-testid="deep-toggle"
-          />
-          <span>{t.protection.toggleLabel}</span>
-        </label>
-        <p className="small text-2">{t.protection.toggleHelp}</p>
       </footer>
     </aside>
   );

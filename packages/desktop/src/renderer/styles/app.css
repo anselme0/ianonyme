@@ -552,31 +552,87 @@ h3 {
   font-size: 13px;
   color: var(--amber-fg);
 }
-.file-chips {
+.file-tiles {
   list-style: none;
   margin: 0 0 var(--space-2);
   padding: 0;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.file-chip {
-  display: flex;
   flex-wrap: wrap;
-  align-items: center;
   gap: 8px;
-  padding: 6px 10px;
+}
+.file-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 104px;
+  min-height: 84px;
+  padding: 8px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   background: var(--surface);
+  font-size: 12px;
 }
-.file-chip-name {
+.file-tile-icon {
+  color: var(--text-2);
+}
+.file-tile-name {
   font-weight: 500;
+  line-height: 1.25;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
 }
-.file-chip-stage {
+.file-tile-stage {
+  color: var(--text-2);
+  font-size: 11px;
+}
+.file-tile-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+}
+.file-tiles-sent {
+  margin: var(--space-2) 0 0;
+}
+.file-tiles-sent .file-tile {
+  min-height: 0;
+  width: 132px;
+}
+.review-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.review-tab-title {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tab-badge {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--amber-bg);
+  color: var(--amber-fg);
+  font-size: 12px;
+}
+.entity-sub {
+  list-style: none;
+  margin: 0 0 4px 24px;
+  padding: 0 0 0 8px;
+  border-left: 1px solid var(--border);
+  font-size: 13px;
+}
+.protection-section {
+  margin: var(--space-3) 0 var(--space-2);
   font-size: 13px;
   color: var(--text-2);
-  flex: 1;
 }
 .file-failed {
   border-color: var(--red-border);
@@ -589,20 +645,6 @@ h3 {
   align-items: center;
   font-size: 13px;
   color: var(--amber-fg);
-}
-.brief {
-  margin-bottom: var(--space-2);
-  padding: 10px 12px;
-  border: 1px solid var(--accent);
-  border-radius: var(--radius);
-  background: var(--accent-soft);
-}
-.brief-head {
-  display: flex;
-  justify-content: space-between;
-}
-.brief .received-text {
-  max-height: 140px;
 }
 .row-actions {
   display: flex;

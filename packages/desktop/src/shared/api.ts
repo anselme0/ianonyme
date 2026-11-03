@@ -61,6 +61,8 @@ export interface EntityView {
   category: Category;
   canonical: string;
   placeholder: string;
+  /** Autres formes sous lesquelles l'élément apparaît (variantes, fonction ou lien rattachés). */
+  variants: string[];
 }
 
 export interface FileChip {

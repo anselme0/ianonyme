@@ -1,4 +1,4 @@
-import { Paperclip, SendHorizontal, Square, X, FileText, Loader2, TriangleAlert } from 'lucide-react';
+import { Paperclip, SearchCheck, SendHorizontal, Square, X, FileText, Loader2, TriangleAlert } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import type { ChangeEvent, DragEvent, KeyboardEvent } from 'react';
 import type { FileChip } from '../../shared/api.js';
@@ -18,12 +18,15 @@ interface Props {
   marks: Mark[];
   files: ComposerFile[];
   protectedCount: number;
-  busy: boolean;
+  /** Vérification demandée par l'utilisateur en cours : seul cas où l'on propose de passer en analyse de base. */
+  waiting: boolean;
   generating: boolean;
+  /** Analyse approfondie en arrière-plan pendant la frappe. */
   analysing: boolean;
   blockedMarkIds?: string[];
   onChange(value: string): void;
   onSend(): void;
+  onVerify(): void;
   onStop(): void;
   onSkipAnalysis(): void;
   onPickFiles(files: File[]): void;
@@ -61,7 +64,7 @@ export function Composer(p: Props) {
   const onKey = (e: KeyboardEvent<HTMLTextAreaElement>): void => {
     if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
-      if (!p.busy && !p.generating) p.onSend();
+      if (!p.waiting && !p.generating) p.onSend();
     }
   };
 
@@ -77,25 +80,25 @@ export function Composer(p: Props) {
     if (picked.length > 0) p.onPickFiles(picked);
   };
 
-  const canSend = (p.value.trim().length > 0 || p.files.some((f) => f.stage === 'ready')) && !p.busy && !p.generating;
+  const canSend = (p.value.trim().length > 0 || p.files.some((f) => f.stage === 'ready')) && !p.waiting && !p.generating;
 
   return (
     <div className="composer" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
       {p.files.length > 0 && (
-        <ul className="file-chips" aria-label={t.conversation.attachedFile}>
+        <ul className="file-tiles" aria-label={t.conversation.attachedFile}>
           {p.files.map((f, i) => (
-            <li key={`${f.name}-${i}`} className={`file-chip file-${f.stage}`} data-testid="file-chip">
-              {f.stage === 'failed' ? <TriangleAlert size={16} aria-hidden /> : f.stage === 'ready' ? <FileText size={16} aria-hidden /> : <Loader2 size={16} className="spin" aria-hidden />}
-              <span className="file-chip-name">{f.chip?.maskedName ?? t.conversation.attachedFile}</span>
-              <span className="file-chip-stage">
-                {f.stage === 'failed' ? (f.error ?? t.fileSteps.failed) : t.fileSteps[f.stage]}
+            <li key={`${f.name}-${i}`} className={`file-tile file-${f.stage}`} data-testid="file-chip" title={f.name}>
+              <span className="file-tile-icon">
+                {f.stage === 'failed' ? <TriangleAlert size={18} aria-hidden /> : f.stage === 'ready' ? <FileText size={18} aria-hidden /> : <Loader2 size={18} className="spin" aria-hidden />}
               </span>
-              <button type="button" className="icon-btn" aria-label={t.composer.removeFile} onClick={() => p.onRemoveFile(i)}>
-                <X size={14} aria-hidden />
+              <span className="file-tile-name">{f.name}</span>
+              <span className="file-tile-stage">{f.stage === 'failed' ? (f.error ?? t.fileSteps.failed) : t.fileSteps[f.stage]}</span>
+              <button type="button" className="icon-btn file-tile-remove" aria-label={t.composer.removeFile} onClick={() => p.onRemoveFile(i)}>
+                <X size={12} aria-hidden />
               </button>
               {f.chip?.warnings.map((w, k) => (
                 <span key={k} className="file-warning" role="status">
-                  <TriangleAlert size={14} aria-hidden /> {t.file.warning(w)}
+                  <TriangleAlert size={12} aria-hidden /> {t.file.warning(w)}
                 </span>
               ))}
             </li>
@@ -130,12 +133,14 @@ export function Composer(p: Props) {
           <span className="composer-count" data-testid="protect-count" role="status">
             {t.composer.willProtect(p.protectedCount)}
           </span>
-          {p.analysing && (
+          {(p.analysing || p.waiting) && (
             <span className="composer-analysing" role="status">
               <Loader2 size={14} className="spin" aria-hidden /> {t.composer.analysing}
-              <button type="button" className="link-btn" onClick={p.onSkipAnalysis}>
-                {t.composer.skipAnalysis}
-              </button>
+              {p.waiting && (
+                <button type="button" className="link-btn" onClick={p.onSkipAnalysis} data-testid="skip-analysis">
+                  {t.composer.skipAnalysis}
+                </button>
+              )}
             </span>
           )}
           <span className="spacer" />
@@ -144,9 +149,14 @@ export function Composer(p: Props) {
               <Square size={14} aria-hidden /> {t.conversation.stop}
             </button>
           ) : (
-            <button type="button" className="btn btn-primary" disabled={!canSend} onClick={p.onSend} data-testid="send">
-              <SendHorizontal size={16} aria-hidden /> {t.composer.send}
-            </button>
+            <>
+              <button type="button" className="btn btn-secondary" disabled={!canSend} onClick={p.onVerify} data-testid="verify">
+                <SearchCheck size={16} aria-hidden /> {t.composer.verify}
+              </button>
+              <button type="button" className="btn btn-primary" disabled={!canSend} onClick={p.onSend} data-testid="send">
+                <SendHorizontal size={16} aria-hidden /> {t.composer.send}
+              </button>
+            </>
           )}
         </div>
       </div>

@@ -8,22 +8,29 @@ import { marksFrom } from '../marks.js';
 import { t } from '../messages.js';
 import { Marked } from './Marked.js';
 
-export interface ReviewProps {
+/** Un onglet par texte transmis : le message, puis chaque document. */
+export interface ReviewTab {
+  key: string;
   title: string;
   text: string;
   analysis: AnalysisView | null;
   suggestions: Mention[];
-  entities: EntityView[];
   total: number;
+}
+
+export interface ReviewProps {
+  tabs: ReviewTab[];
+  active: number;
+  onTab(index: number): void;
+  entities: EntityView[];
   running: boolean;
   degraded: 'absent' | 'timeout' | 'error' | null;
   onProtect(mention: Mention, entityId?: string): void;
   onIgnore(mention: Mention): void;
   onLink(mention: Mention, entityId: string): void;
-  onAddManual(text: string, category: Category): void;
+  onAddManual(text: string, category: Category, entityId?: string): void;
   onCancel(): void;
   onContinue(): void;
-  onSeeReceived(): void;
 }
 
 interface Item {
@@ -33,19 +40,26 @@ interface Item {
   candidates: EntityView[];
 }
 
+function itemCount(tab: ReviewTab): number {
+  return tab.suggestions.length + (tab.analysis?.conflicts.length ?? 0);
+}
+
 export function Review(p: ReviewProps) {
+  const tab = p.tabs[Math.min(p.active, p.tabs.length - 1)] as ReviewTab;
+  const { text, analysis, suggestions } = tab;
   const [selected, setSelected] = useState(0);
   const [linkOpen, setLinkOpen] = useState<string | null>(null);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [selection, setSelection] = useState<{ text: string; x: number; y: number } | null>(null);
   const [family, setFamily] = useState<FamilyId>('personnes');
+  const [selectionLink, setSelectionLink] = useState('');
   const doc = useRef<HTMLDivElement>(null);
 
   const items: Item[] = useMemo(() => {
-    const conflicts = p.analysis?.conflicts ?? [];
+    const conflicts = analysis?.conflicts ?? [];
     const out: Item[] = [];
     for (const c of conflicts) {
-      const mention = p.analysis?.mentions.find((m) => m.id === c.mentionId);
+      const mention = analysis?.mentions.find((m) => m.id === c.mentionId);
       if (!mention) continue;
       out.push({
         key: `c-${mention.id}`,
@@ -54,22 +68,22 @@ export function Review(p: ReviewProps) {
         candidates: c.candidateEntityIds.map((id) => p.entities.find((e) => e.id === id)).filter((e): e is EntityView => e !== undefined),
       });
     }
-    for (const s of p.suggestions) out.push({ key: `s-${s.id}`, kind: 'suggestion', mention: s, candidates: [] });
+    for (const s of suggestions) out.push({ key: `s-${s.id}`, kind: 'suggestion', mention: s, candidates: [] });
     return out.sort((a, b) => a.mention.span.start - b.mention.span.start);
-  }, [p.analysis, p.suggestions, p.entities]);
+  }, [analysis, suggestions, p.entities]);
 
   const remaining = items.length;
-  const done = Math.max(0, p.total - remaining);
-  const canContinue = remaining === 0 && !p.running;
+  const done = Math.max(0, tab.total - remaining);
+  const canContinue = p.tabs.every((x) => itemCount(x) === 0) && !p.running;
   const current = items[Math.min(selected, Math.max(0, items.length - 1))];
 
   const marks = useMemo(() => {
-    const base = p.analysis ? marksFrom(p.analysis.mentions, p.analysis.conflicts) : [];
-    const sug = marksFrom(p.suggestions, []);
+    const base = analysis ? marksFrom(analysis.mentions, analysis.conflicts) : [];
+    const sug = marksFrom(suggestions, []);
     // Une suggestion ne remplace pas ce qui est déjà protégé.
     const free = sug.filter((s) => !base.some((b) => s.start < b.end && b.start < s.end));
     return [...base, ...free];
-  }, [p.analysis, p.suggestions]);
+  }, [analysis, suggestions]);
 
   useEffect(() => {
     if (selected >= items.length) setSelected(Math.max(0, items.length - 1));
@@ -113,7 +127,7 @@ export function Review(p: ReviewProps) {
     if (!startEl || !endEl || !doc.current.contains(startEl) || !doc.current.contains(endEl)) return setSelection(null);
     const start = Number(startEl.dataset.off) + range.startOffset;
     const end = Number(endEl.dataset.off) + range.endOffset;
-    const value = p.text.slice(Math.min(start, end), Math.max(start, end)).trim();
+    const value = text.slice(Math.min(start, end), Math.max(start, end)).trim();
     if (value.length === 0) return setSelection(null);
     const rect = range.getBoundingClientRect();
     setSelection({ text: value, x: rect.left, y: rect.bottom + 6 });
@@ -122,7 +136,7 @@ export function Review(p: ReviewProps) {
   const autoGroups = useMemo(() => {
     const seen = new Set<string>();
     const groups = new Map<FamilyId, { text: string; label: string; mention: Mention }[]>();
-    for (const m of p.analysis?.mentions ?? []) {
+    for (const m of analysis?.mentions ?? []) {
       if (m.status !== 'accepted') continue;
       const key = m.text.toLowerCase();
       if (seen.has(key)) continue;
@@ -134,7 +148,7 @@ export function Review(p: ReviewProps) {
       groups.set(f, [...(groups.get(f) ?? []), { text: m.text, label, mention: m }]);
     }
     return groups;
-  }, [p.analysis, p.entities]);
+  }, [analysis, p.entities]);
 
   const sourceLabel = (it: Item): string => {
     if (it.kind === 'conflict') return t.review.conflict;
@@ -145,19 +159,38 @@ export function Review(p: ReviewProps) {
   return (
     <div className="review" role="dialog" aria-modal="true" aria-label={t.review.title} data-testid="review">
       <header className="review-head">
-        <h2>
-          {t.review.title} — <span className="review-file">{p.title}</span>
-        </h2>
+        <h2>{t.review.title}</h2>
         <span className="review-progress" data-testid="review-progress" role="status">
-          {t.review.progress(done, p.total)}
+          {t.review.progress(done, tab.total)}
         </span>
       </header>
+
+      <div className="review-tabs" role="tablist" data-testid="review-tabs">
+        {p.tabs.map((x, i) => {
+          const n = itemCount(x);
+          return (
+            <button
+              key={x.key}
+              type="button"
+              role="tab"
+              aria-selected={i === p.active}
+              className={i === p.active ? 'tab tab-on' : 'tab'}
+              onClick={() => p.onTab(i)}
+              title={x.title}
+              data-testid="review-tab"
+            >
+              <span className="review-tab-title">{x.title}</span>
+              {n > 0 && <span className="tab-badge">{n}</span>}
+            </button>
+          );
+        })}
+      </div>
 
       <div className="review-body">
         <section className="review-doc" aria-label={t.review.document}>
           <div className="doc-text" ref={doc} onMouseUp={onMouseUp} data-testid="review-doc">
             <Marked
-              text={p.text}
+              text={text}
               marks={marks}
               selectedId={current?.mention.id ?? null}
               onMarkClick={(m) => {
@@ -175,12 +208,21 @@ export function Review(p: ReviewProps) {
                   </option>
                 ))}
               </select>
+              <select aria-label={t.review.linkOptional} value={selectionLink} onChange={(e) => setSelectionLink(e.target.value)} data-testid="selection-link">
+                <option value="">{t.review.linkNone}</option>
+                {p.entities.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.canonical}
+                  </option>
+                ))}
+              </select>
               <button
                 type="button"
                 className="btn btn-primary btn-sm"
                 onClick={() => {
-                  p.onAddManual(selection.text, DEFAULT_CATEGORY[family]);
+                  p.onAddManual(selection.text, DEFAULT_CATEGORY[family], selectionLink || undefined);
                   setSelection(null);
+                  setSelectionLink('');
                   window.getSelection()?.removeAllRanges();
                 }}
                 data-testid="protect-selection"
@@ -304,9 +346,6 @@ export function Review(p: ReviewProps) {
         </button>
         <span className="text-2 small keys">{t.review.keys}</span>
         <span className="spacer" />
-        <button type="button" className="btn btn-secondary" onClick={p.onSeeReceived} data-testid="review-see-received">
-          {t.review.seeReceived}
-        </button>
         <button
           type="button"
           className="btn btn-primary"

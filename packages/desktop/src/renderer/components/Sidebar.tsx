@@ -1,4 +1,4 @@
-import { BarChart3, Info, Pencil, PanelLeftClose, PanelLeftOpen, Plus, Settings, Trash2, User } from 'lucide-react';
+import { Info, Pencil, PanelLeftClose, PanelLeftOpen, Plus, Settings, Trash2, User } from 'lucide-react';
 import { useState } from 'react';
 import type { AppInfo, ConversationSummary } from '../../shared/api.js';
 import iconDark from '../assets/icon-dark.svg';
@@ -16,7 +16,6 @@ interface Props {
   onRemove(id: string): void;
   onOpenSettings(): void;
   onOpenAbout(): void;
-  onOpenReliability(): void;
   info: AppInfo;
   dark: boolean;
 }
@@ -110,10 +109,6 @@ export function Sidebar(p: Props) {
             </button>
             <button type="button" role="menuitem" className="menu-item" onClick={() => { setMenu(false); p.onOpenAbout(); }} data-testid="menu-about">
               <Info size={16} aria-hidden /> {t.sidebar.about}
-            </button>
-            <button type="button" role="menuitem" className="menu-item" onClick={() => { setMenu(false); p.onOpenReliability(); }} data-testid="menu-reliability">
-              <BarChart3 size={16} aria-hidden /> {t.sidebar.reliability}
-              <span className="pill pill-neutral">{t.sidebar.demoOnly}</span>
             </button>
           </div>
         )}

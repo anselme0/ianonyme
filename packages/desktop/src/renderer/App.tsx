@@ -1,5 +1,5 @@
 import { TriangleAlert, X } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Category, LeakItem, Mention, Segment } from 'engine';
 import type {
   AnalysisView,
@@ -10,19 +10,14 @@ import type {
   ConversationView,
   DecideInput,
   ErrorCode,
-  MeasureReport,
-  PreviewView,
 } from '../shared/api.js';
-import { composeMessage } from '../shared/compose.js';
 import { api } from './api.js';
 import { About } from './components/About.js';
 import { Composer } from './components/Composer.js';
 import type { ComposerFile } from './components/Composer.js';
-import { InlineReview } from './components/InlineReview.js';
-import { PreviewDialog, ProtectedText } from './components/PreviewDialog.js';
 import { ProtectionPanel } from './components/ProtectionPanel.js';
-import { Reliability } from './components/Reliability.js';
 import { Review } from './components/Review.js';
+import type { ReviewTab } from './components/Review.js';
 import { Settings } from './components/Settings.js';
 import type { ThemeChoice } from './components/Settings.js';
 import { Sidebar } from './components/Sidebar.js';
@@ -31,25 +26,31 @@ import { Thread } from './components/Thread.js';
 import { marksFrom } from './marks.js';
 import { t } from './messages.js';
 
+type Degraded = 'absent' | 'timeout' | 'error' | null;
+
 type UiFile = ComposerFile & {
   uid: string;
-  reviewed: boolean;
   text: string;
   /** Cas ambigus laissés par l'analyse approfondie, à traiter à la vérification. */
   suggestions: Mention[];
-  degraded: ReviewState['degraded'];
+  degraded: Degraded;
 };
 
 interface ReviewState {
-  title: string;
-  text: string;
-  analysis: AnalysisView | null;
+  tabs: ReviewTab[];
+  active: number;
+  degraded: Degraded;
+}
+
+interface DeepResult {
   suggestions: Mention[];
-  total: number;
-  degraded: 'absent' | 'timeout' | 'error' | null;
-  fileId: string | null;
-  /** Revue courte dans le fil (message court avec une ou deux suggestions). */
-  inline: boolean;
+  degraded: Degraded;
+}
+
+interface Prepared {
+  text: string;
+  files: UiFile[];
+  message: DeepResult;
 }
 
 type UiError = { kind: 'blocked'; leaks: LeakItem[] } | { kind: 'code'; code: ErrorCode | 'unknown' } | null;
@@ -74,7 +75,11 @@ function readTheme(): ThemeChoice {
   return 'system';
 }
 
-const BRIEF_SECONDS = 3;
+// Délais avant l'analyse approfondie en arrière-plan : court après une ponctuation ou un espace,
+// plus long au milieu d'un mot (le mot n'est probablement pas fini).
+const BACKGROUND_DELAY_MS = 1500;
+const BACKGROUND_DELAY_MID_WORD_MS = 5000;
+const BACKGROUND_MIN_CHARS = 8;
 
 export function App() {
   const [info, setInfo] = useState<AppInfo | null>(null);
@@ -85,18 +90,19 @@ export function App() {
 
   const [text, setText] = useState('');
   const [files, setFiles] = useState<UiFile[]>([]);
+  const filesRef = useRef<UiFile[]>([]);
   const [analysis, setAnalysis] = useState<AnalysisView | null>(null);
-  const [preview, setPreview] = useState<PreviewView | null>(null);
   const [streaming, setStreaming] = useState<Segment[] | null>(null);
   const [pendingUser, setPendingUser] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
-  const [analysing, setAnalysing] = useState(false);
+  /** Analyses approfondies en cours en arrière-plan. */
+  const [background, setBackground] = useState(0);
+  /** L'utilisateur a cliqué sur Vérifier ou Envoyer et attend la fin de l'analyse. */
+  const [waiting, setWaiting] = useState(false);
   const [error, setError] = useState<UiError>(null);
   const [review, setReview] = useState<ReviewState | null>(null);
-  const [dialog, setDialog] = useState<{ preview: PreviewView; original: string } | null>(null);
-  const [brief, setBrief] = useState<{ preview: PreviewView; left: number } | null>(null);
-  const [screen, setScreen] = useState<'chat' | 'reliability'>('chat');
-  const [measure, setMeasure] = useState<MeasureReport | null>(null);
+  const reviewRef = useRef<ReviewState | null>(null);
+  reviewRef.current = review;
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [startupDone, setStartupDone] = useState(false);
@@ -110,8 +116,19 @@ export function App() {
   const queue = useRef<File[]>([]);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const analysisSeq = useRef(0);
+  const latestText = useRef('');
+  latestText.current = text;
+  const deepCache = useRef(new Map<string, DeepResult>());
+  const deepChain = useRef<Promise<unknown>>(Promise.resolve());
+  const drainRef = useRef<Promise<void>>(Promise.resolve());
+  const processing = useRef(false);
 
   const dark = theme === 'dark' || (theme === 'system' && systemDark);
+
+  const updateFiles = (change: (list: UiFile[]) => UiFile[]): void => {
+    filesRef.current = change(filesRef.current);
+    setFiles(filesRef.current);
+  };
 
   // ---- Thème ----
   useEffect(() => {
@@ -185,7 +202,9 @@ export function App() {
       if (e.code === 'leak_blocked') {
         if (snapshot.current) {
           setText(snapshot.current.text);
-          setFiles(snapshot.current.files);
+          const saved = snapshot.current.files;
+          filesRef.current = saved;
+          setFiles(saved);
         }
         setError({ kind: 'blocked', leaks: e.leaks ?? [] });
       } else {
@@ -201,8 +220,7 @@ export function App() {
     };
   }, [refreshList]);
 
-  // ---- Détection instantanée et aperçu du panneau ----
-  const readyFileIds = useMemo(() => files.filter((f) => f.stage === 'ready' && f.chip).map((f) => f.chip!.id), [files]);
+  // ---- Détection instantanée (règles et variantes) pour le surlignage ----
   useEffect(() => {
     if (!conv) return;
     const seq = ++analysisSeq.current;
@@ -210,36 +228,66 @@ export function App() {
       void api.detect.run(conv.id, text).then((a) => {
         if (seq === analysisSeq.current) setAnalysis(a);
       });
-      void api.chat.preview(conv.id, text, readyFileIds, 0).then((p) => {
-        if (seq === analysisSeq.current) setPreview(p);
-      });
     }, 120);
     return () => clearTimeout(timer);
-  }, [conv?.id, conv?.entities.length, text, readyFileIds, conv]);
+  }, [conv?.id, conv?.entities.length, text, conv]);
 
-  // ---- Compte à rebours de l'aperçu bref ----
+  // ---- Analyse approfondie ----
+  // Les analyses s'enchaînent l'une après l'autre (un seul modèle). Le résultat est gardé par texte :
+  // si l'utilisateur clique sur Vérifier ou Envoyer après l'analyse en arrière-plan, rien n'est refait.
+  const deepAnalyse = (target: string, skipIfStale: boolean): Promise<DeepResult> => {
+    const current = convRef.current;
+    if (!current || info?.localAnalysis !== 'ready') return Promise.resolve({ suggestions: [], degraded: 'absent' });
+    const key = `${current.id}\u0000${target}`;
+    const cached = deepCache.current.get(key);
+    if (cached) return Promise.resolve(cached);
+    const job = deepChain.current.then(async (): Promise<DeepResult> => {
+      const again = deepCache.current.get(key);
+      if (again) return again;
+      if (skipIfStale && latestText.current !== target) return { suggestions: [], degraded: null };
+      setBackground((n) => n + 1);
+      try {
+        const r = await api.llm.propose(current.id, target);
+        const result: DeepResult = {
+          suggestions: r.mentions.filter((m) => m.status === 'suggested'),
+          degraded: r.degraded ? (r.degradedReason ?? 'error') : null,
+        };
+        if (!r.degraded) deepCache.current.set(key, result);
+        return result;
+      } finally {
+        setBackground((n) => n - 1);
+      }
+    });
+    deepChain.current = job.catch(() => undefined);
+    return job;
+  };
+
+  // Pendant la frappe : l'analyse approfondie tourne en arrière-plan et le surlignage suit.
   useEffect(() => {
-    if (!brief) return;
-    if (brief.left <= 0) {
-      setBrief(null);
-      void doSend();
-      return;
-    }
-    const timer = setTimeout(() => setBrief((b) => (b ? { ...b, left: b.left - 1 } : b)), 1000);
+    if (!conv || generating || info?.localAnalysis !== 'ready') return;
+    const target = text;
+    if (target.trim().length < BACKGROUND_MIN_CHARS) return;
+    const midWord = /[\p{L}\p{N}]$/u.test(target);
+    const timer = setTimeout(
+      () => {
+        void deepAnalyse(target, true).then(async () => {
+          if (convRef.current?.id === conv.id && latestText.current === target) setConv(await api.conversations.get(conv.id));
+        });
+      },
+      midWord ? BACKGROUND_DELAY_MID_WORD_MS : BACKGROUND_DELAY_MS,
+    );
     return () => clearTimeout(timer);
-  }, [brief]);
+  }, [text, conv?.id, info?.localAnalysis, generating]);
 
   // ---- Conversations ----
   const resetDraft = (): void => {
     setText('');
-    setFiles([]);
+    updateFiles(() => []);
     setAnalysis(null);
-    setPreview(null);
     setError(null);
     setReview(null);
-    setDialog(null);
-    setBrief(null);
     setFocusEntity(null);
+    deepCache.current.clear();
     queue.current = [];
   };
 
@@ -247,7 +295,6 @@ export function App() {
     if (generating) return;
     resetDraft();
     setConv(await api.conversations.get(id));
-    setScreen('chat');
   };
 
   const create = async (): Promise<void> => {
@@ -255,7 +302,6 @@ export function App() {
     resetDraft();
     setConv(await api.conversations.create());
     await refreshList();
-    setScreen('chat');
   };
 
   const toolAfter = async (list: Promise<ConversationSummary[]>, removedId?: string): Promise<void> => {
@@ -279,54 +325,41 @@ export function App() {
     return view;
   };
 
-  const refreshReview = async (patch?: Partial<ReviewState>, drop?: Mention): Promise<void> => {
-    if (!conv || !review) return;
-    const next = await api.detect.run(conv.id, review.text, true);
-    const covered = (m: Mention): boolean => next.mentions.some((x) => x.status === 'accepted' && m.span.start >= x.span.start && m.span.end <= x.span.end);
-    setReview((r) =>
-      r
-        ? {
-            ...r,
-            ...patch,
-            analysis: next,
-            suggestions: (patch?.suggestions ?? r.suggestions).filter((s) => s.id !== drop?.id && !covered(s)),
-          }
-        : r,
+  /** Recalcule tous les onglets après une décision ; `drop` retire la suggestion traitée de l'onglet actif. */
+  const refreshReview = async (drop?: Mention): Promise<void> => {
+    const r = reviewRef.current;
+    const current = convRef.current;
+    if (!r || !current) return;
+    const tabs = await Promise.all(
+      r.tabs.map(async (tab, index) => {
+        const next = await api.detect.run(current.id, tab.text, true);
+        const covered = (m: Mention): boolean => next.mentions.some((x) => x.status === 'accepted' && m.span.start >= x.span.start && m.span.end <= x.span.end);
+        const suggestions = tab.suggestions.filter((s) => !(index === r.active && s.id === drop?.id) && !covered(s));
+        // Ce qui est traité ne revient pas à la prochaine vérification.
+        if (tab.key === 'message') deepCache.current.set(`${current.id}\u0000${tab.text}`, { suggestions, degraded: null });
+        else updateFiles((list) => list.map((f) => (f.uid === tab.key ? { ...f, suggestions } : f)));
+        return { ...tab, analysis: next, suggestions };
+      }),
     );
+    setReview((prev) => (prev ? { ...prev, tabs } : prev));
+    setConv(await api.conversations.get(current.id));
   };
 
-  // ---- Analyse approfondie ----
-  const runDeep = async (target: string): Promise<{ suggestions: Mention[]; degraded: ReviewState['degraded'] }> => {
-    if (!conv || info?.localAnalysis !== 'ready') return { suggestions: [], degraded: 'absent' };
-    setAnalysing(true);
-    try {
-      const r = await api.llm.propose(conv.id, target);
-      return { suggestions: r.mentions.filter((m) => m.status === 'suggested'), degraded: r.degraded ? (r.degradedReason ?? 'error') : null };
-    } finally {
-      setAnalysing(false);
-    }
-  };
-
-  const openReview = async (title: string, target: string, fileId: string | null, found: { suggestions: Mention[]; degraded: ReviewState['degraded'] }): Promise<void> => {
-    if (!conv) return;
-    const { suggestions, degraded } = found;
-    const a = await api.detect.run(conv.id, target, true);
-    setConv(await api.conversations.get(conv.id));
-    setReview({ title, text: target, analysis: a, suggestions, total: suggestions.length + a.conflicts.length, degraded, fileId, inline: false });
+  const onDecision = (input: Omit<DecideInput, 'convId'>, drop?: Mention): void => {
+    void decide(input).then(() => refreshReview(drop));
   };
 
   // ---- Fichiers ----
   // L'import et l'analyse des fichiers se font en arrière-plan : aucun volet ne s'ouvre avant « Vérifier ».
-  const processing = useRef(false);
   const processOne = async (): Promise<void> => {
     const current = convRef.current;
     const file = queue.current.shift();
     if (!current || !file) return;
     setError(null);
     const uid = `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-    const entry: UiFile = { uid, chip: null, name: file.name, stage: 'reading', reviewed: false, text: '', suggestions: [], degraded: null };
-    setFiles((f) => [...f, entry]);
-    const patch = (p: Partial<UiFile>): void => setFiles((list) => list.map((x) => (x.uid === uid ? { ...x, ...p } : x)));
+    const entry: UiFile = { uid, chip: null, name: file.name, stage: 'reading', text: '', suggestions: [], degraded: null };
+    updateFiles((f) => [...f, entry]);
+    const patch = (p: Partial<UiFile>): void => updateFiles((list) => list.map((x) => (x.uid === uid ? { ...x, ...p } : x)));
     const res = await api.files.import(current.id, file.name, await file.arrayBuffer());
     if (!res.ok || !res.file || res.text === undefined) {
       const reason = res.blocked?.reason ?? 'file_unreadable';
@@ -335,117 +368,132 @@ export function App() {
       return;
     }
     patch({ chip: res.file, stage: 'detecting', text: res.text });
-    const deepOn = info?.localAnalysis === 'ready';
-    if (deepOn) patch({ stage: 'deep' });
-    const found = deepOn ? await runDeep(res.text) : { suggestions: [], degraded: 'absent' as const };
+    if (info?.localAnalysis === 'ready') patch({ stage: 'deep' });
+    const found = await deepAnalyse(res.text, false);
     setConv(await api.conversations.get(current.id));
     patch({ stage: 'ready', suggestions: found.suggestions, degraded: found.degraded });
   };
-  const drainQueue = async (): Promise<void> => {
-    if (processing.current) return;
-    processing.current = true;
-    try {
-      while (queue.current.length > 0) await processOneRef.current();
-    } finally {
-      processing.current = false;
-    }
-  };
-  // Les gestionnaires asynchrones doivent toujours voir l'état le plus récent.
   const processOneRef = useRef(processOne);
   processOneRef.current = processOne;
 
+  const drainQueue = (): void => {
+    if (processing.current) return;
+    processing.current = true;
+    drainRef.current = (async () => {
+      try {
+        while (queue.current.length > 0) await processOneRef.current();
+      } finally {
+        processing.current = false;
+      }
+    })();
+  };
+
   const pickFiles = (picked: File[]): void => {
     queue.current.push(...picked);
-    void drainQueue();
+    drainQueue();
   };
 
-  const closeReview = (): void => {
-    setReview(null);
-  };
-
-  // ---- Envoi ----
-  const originalOf = (userText: string, list: UiFile[]): string =>
-    composeMessage(userText, list.filter((f) => f.chip).map((f) => ({ readableName: f.chip!.readableName, text: f.text })));
-
-  const doSend = async (regenerate = false): Promise<void> => {
+  // ---- Envoi et vérification ----
+  const doSend = async (): Promise<void> => {
     const current = convRef.current;
     if (!current) return;
     setError(null);
-    setDialog(null);
-    setBrief(null);
-    snapshot.current = { text, files };
-    const ids = files.filter((f) => f.chip && f.stage === 'ready').map((f) => f.chip!.id);
-    if (!regenerate) setPendingUser(text.trim());
+    setReview(null);
+    snapshot.current = { text, files: filesRef.current };
+    const ids = filesRef.current.filter((f) => f.chip && f.stage === 'ready').map((f) => f.chip!.id);
+    setPendingUser(text.trim());
     setGenerating(true);
     setStreaming([]);
-    if (!regenerate) {
-      setText('');
-      setFiles([]);
-    }
-    await api.chat.send({ convId: current.id, userText: regenerate ? '' : text, fileIds: regenerate ? [] : ids, regenerate });
+    setText('');
+    updateFiles(() => []);
+    await api.chat.send({ convId: current.id, userText: text, fileIds: ids, regenerate: false });
   };
 
-  const onSend = async (): Promise<void> => {
-    if (!conv || !info || generating || analysing) return;
+  const doRegenerate = async (): Promise<void> => {
+    const current = convRef.current;
+    if (!current) return;
     setError(null);
-    const readyFiles = files.filter((f) => f.chip && f.stage === 'ready');
-    const unreviewed = readyFiles.find((f) => !f.reviewed);
-    if (unreviewed && unreviewed.chip) {
-      await openReview(unreviewed.chip.maskedName, unreviewed.text, unreviewed.chip.id, { suggestions: unreviewed.suggestions, degraded: unreviewed.degraded });
-      return;
+    snapshot.current = { text, files: filesRef.current };
+    setGenerating(true);
+    setStreaming([]);
+    await api.chat.send({ convId: current.id, userText: '', fileIds: [], regenerate: true });
+  };
+
+  /** Attend la fin de la lecture des fichiers et de l'analyse approfondie du message. */
+  const prepare = async (): Promise<Prepared | null> => {
+    if (!convRef.current || !info || generating || waiting) return null;
+    setError(null);
+    setWaiting(true);
+    try {
+      await drainRef.current;
+      const message: DeepResult = text.trim().length > 0 ? await deepAnalyse(text, false) : { suggestions: [], degraded: null };
+      return { text, files: filesRef.current.filter((f) => f.chip && f.stage === 'ready'), message };
+    } finally {
+      setWaiting(false);
     }
-    let pending: Mention[] = [];
-    if (text.trim().length > 0 && conv.settings.deepAnalysisOnMessages && info.localAnalysis === 'ready') {
-      pending = (await runDeep(text)).suggestions;
-    }
-    const pv = await api.chat.preview(conv.id, text, readyFileIds, pending.length);
+  };
+
+  const buildTabs = async (p: Prepared): Promise<ReviewTab[]> => {
+    const current = convRef.current!;
+    const tabs: ReviewTab[] = [];
+    const make = async (key: string, title: string, body: string, suggestions: Mention[]): Promise<ReviewTab> => {
+      const a = await api.detect.run(current.id, body, true);
+      const covered = (m: Mention): boolean => a.mentions.some((x) => x.status === 'accepted' && m.span.start >= x.span.start && m.span.end <= x.span.end);
+      const open = suggestions.filter((s) => !covered(s));
+      return { key, title, text: body, analysis: a, suggestions: open, total: open.length + a.conflicts.length };
+    };
+    if (p.text.trim().length > 0) tabs.push(await make('message', t.review.messageTab, p.text, p.message.suggestions));
+    for (const f of p.files) tabs.push(await make(f.uid, f.name, f.text, f.suggestions));
+    return tabs;
+  };
+
+  const degradedOf = (p: Prepared): Degraded => {
+    if (info?.localAnalysis !== 'ready') return 'absent';
+    return p.message.degraded ?? p.files.find((f) => f.degraded)?.degraded ?? null;
+  };
+
+  const openReview = async (p: Prepared): Promise<void> => {
+    const tabs = await buildTabs(p);
+    setConv(await api.conversations.get(convRef.current!.id));
+    setReview({ tabs, active: 0, degraded: degradedOf(p) });
+  };
+
+  const onVerify = async (): Promise<void> => {
+    const p = await prepare();
+    if (p) await openReview(p);
+  };
+
+  /** « Envoyer » : mêmes vérifications que « Vérifier », sans les montrer sauf en cas de doute. */
+  const onSend = async (): Promise<void> => {
+    const p = await prepare();
+    if (!p || !convRef.current) return;
+    const current = convRef.current;
+    const pending = p.message.suggestions.length + p.files.reduce((n, f) => n + f.suggestions.length, 0);
+    const pv = await api.chat.preview(current.id, p.text, p.files.map((f) => f.chip!.id), pending);
     if (!pv.leak.ok) {
       setError({ kind: 'blocked', leaks: pv.leak.leaks });
-      setAnalysis(await api.detect.run(conv.id, text));
+      setAnalysis(await api.detect.run(current.id, p.text));
       return;
     }
-    if (readyFiles.length > 0 && pending.length === 0 && pv.conflicts.length === 0) {
-      setDialog({ preview: pv, original: originalOf(text, files) });
+    if (pending + pv.conflicts.length > 0) {
+      await openReview(p);
       return;
     }
-    // Le volet de vérification s'ouvre ici, sur « Vérifier » : s'il y a quelque chose à traiter ou à relire.
-    const current = await api.detect.run(conv.id, text);
-    if (pv.requiresReview || current.protectedInText > 0) {
-      const a = await api.detect.run(conv.id, text, true);
-      setConv(await api.conversations.get(conv.id));
-      const count = pending.length + a.conflicts.length;
-      setReview({ title: '', text, analysis: a, suggestions: pending, total: count, degraded: info.localAnalysis === 'ready' ? null : 'absent', fileId: null, inline: readyFiles.length === 0 && count > 0 && count <= 2 });
-      return;
-    }
-    setBrief({ preview: pv, left: BRIEF_SECONDS });
+    await doSend();
   };
 
+  /** « Envoyer » depuis le volet de vérification. */
   const afterReview = async (): Promise<void> => {
-    if (!conv || !review) return;
-    const isFile = review.fileId !== null;
-    if (isFile) setFiles((list) => list.map((f) => (f.chip?.id === review.fileId ? { ...f, reviewed: true } : f)));
-    const ids = readyFileIds;
-    const pv = await api.chat.preview(conv.id, text, ids, 0);
-    setReview(null);
-    const nextFile = files.find((f) => f.chip && f.stage === 'ready' && !f.reviewed && f.chip.id !== review.fileId);
-    if (nextFile?.chip) {
-      await openReview(nextFile.chip.maskedName, nextFile.text, nextFile.chip.id, { suggestions: nextFile.suggestions, degraded: nextFile.degraded });
+    const current = convRef.current;
+    if (!current) return;
+    const ready = filesRef.current.filter((f) => f.chip && f.stage === 'ready');
+    const pv = await api.chat.preview(current.id, text, ready.map((f) => f.chip!.id), 0);
+    if (!pv.leak.ok) {
+      setReview(null);
+      setError({ kind: 'blocked', leaks: pv.leak.leaks });
       return;
     }
-    if (!isFile && text.trim().length === 0) return;
-    if (isFile && text.trim().length === 0 && ids.length === 0) return;
-    if (ids.length === 0) {
-      setBrief({ preview: pv, left: BRIEF_SECONDS });
-      return;
-    }
-    setDialog({ preview: pv, original: originalOf(text, files.map((f) => (f.chip?.id === review.fileId ? { ...f, reviewed: true } : f))) });
-  };
-
-  const openMessageReview = async (): Promise<void> => {
-    if (!conv) return;
-    const a = await api.detect.run(conv.id, text, true);
-    setConv(await api.conversations.get(conv.id));
-    setReview({ title: '', text, analysis: a, suggestions: [], total: a.conflicts.length, degraded: null, fileId: null, inline: false });
+    await doSend();
   };
 
   const onProtectLeak = async (): Promise<void> => {
@@ -457,14 +505,14 @@ export function App() {
       setAnalysis(await api.detect.run(conv.id, text));
       return;
     }
-    await openMessageReview();
+    await openReview({ text, files: filesRef.current.filter((f) => f.chip && f.stage === 'ready'), message: { suggestions: [], degraded: null } });
   };
 
   // ---- Rendu ----
   if (!info || !conv) return <div className="boot" aria-busy="true" />;
 
   const marks = analysis ? marksFrom(analysis.mentions, analysis.conflicts) : [];
-  const toReview = (analysis?.conflicts.length ?? 0) + (review?.suggestions.length ?? 0);
+  const toReview = (analysis?.conflicts.length ?? 0) + files.reduce((n, f) => n + f.suggestions.length, 0);
   const blockedValue = error?.kind === 'blocked' ? error.leaks[0]?.value : undefined;
   const provider = info.providers.find((p) => p.id === conv.settings.assistantId);
   const isEmpty = conv.messages.length === 0 && pendingUser === null && streaming === null;
@@ -490,185 +538,131 @@ export function App() {
         onRemove={(id) => void toolAfter(api.conversations.remove(id), id)}
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenAbout={() => setAboutOpen(true)}
-        onOpenReliability={() => {
-          void api.app.measure().then(setMeasure);
-          setScreen('reliability');
-        }}
         info={info}
         dark={dark}
       />
 
-      {screen === 'reliability' ? (
-        <Reliability report={measure} onBack={() => setScreen('chat')} />
-      ) : (
-        <main className="main" aria-label={conv.title}>
-          <header className="conv-head">
-            <h1 className="conv-title-h">{conv.title}</h1>
-            <label className="assistant-pick">
-              <span>{t.conversation.assistant} :</span>
-              <select
-                value={conv.settings.assistantId}
-                onChange={(e) => void api.settings.update({ convId: conv.id, assistantId: e.target.value }).then(setConv)}
-                data-testid="assistant-select"
-                aria-label={t.conversation.assistant}
-              >
-                {info.providers.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.label}
-                  </option>
-                ))}
-              </select>
-              {provider?.simulated && <span className="pill pill-neutral">{t.conversation.simulatedBadge}</span>}
-            </label>
-          </header>
+      <main className="main" aria-label={conv.title}>
+        <header className="conv-head">
+          <h1 className="conv-title-h">{conv.title}</h1>
+          <label className="assistant-pick">
+            <span>{t.conversation.assistant} :</span>
+            <select
+              value={conv.settings.assistantId}
+              onChange={(e) => void api.settings.update({ convId: conv.id, assistantId: e.target.value }).then(setConv)}
+              data-testid="assistant-select"
+              aria-label={t.conversation.assistant}
+            >
+              {info.providers.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+            {provider?.simulated && <span className="pill pill-neutral">{t.conversation.simulatedBadge}</span>}
+          </label>
+        </header>
 
-          {isEmpty ? (
-            <section className="empty" data-testid="empty">
-              <h2>{t.conversation.emptyTitle}</h2>
-              <ul className="task-list">
-                {(['summary', 'timeline', 'contradictions'] as const).map((k) => (
-                  <li key={k}>
-                    <button
-                      type="button"
-                      className="task-btn"
-                      onClick={() => {
-                        setText(t.tasks[k].prompt);
-                        inputRef.current?.focus();
-                      }}
-                      data-testid={`task-${k}`}
-                    >
-                      {t.tasks[k].label}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : (
-            <Thread conv={conv} streaming={streaming} pendingUser={pendingUser} generating={generating} focusEntity={focusEntity} onRegenerate={() => void doSend(true)} />
-          )}
+        {isEmpty ? (
+          <section className="empty" data-testid="empty">
+            <h2>{t.conversation.emptyTitle}</h2>
+            <ul className="task-list">
+              {(['summary', 'timeline', 'contradictions'] as const).map((k) => (
+                <li key={k}>
+                  <button
+                    type="button"
+                    className="task-btn"
+                    onClick={() => {
+                      setText(t.tasks[k].prompt);
+                      inputRef.current?.focus();
+                    }}
+                    data-testid={`task-${k}`}
+                  >
+                    {t.tasks[k].label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : (
+          <Thread conv={conv} streaming={streaming} pendingUser={pendingUser} generating={generating} focusEntity={focusEntity} onRegenerate={() => void doRegenerate()} />
+        )}
 
-          <div className="dock">
-            {error && (
-              <div className={`banner ${error.kind === 'blocked' ? 'banner-red' : 'banner-amber'}`} role="alert" data-testid="banner">
-                <TriangleAlert size={16} aria-hidden />
-                <span className="banner-text">{errorText(error)}</span>
-                {error.kind === 'blocked' ? (
-                  <>
-                    <button type="button" className="btn btn-primary btn-sm" onClick={() => void onProtectLeak()} data-testid="blocked-protect">
-                      {t.blocked.protect}
-                    </button>
-                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setError(null); inputRef.current?.focus(); }} data-testid="blocked-edit">
-                      {t.blocked.edit}
-                    </button>
-                  </>
-                ) : (
-                  <button type="button" className="icon-btn" aria-label={t.errors.dismiss} onClick={() => setError(null)}>
-                    <X size={14} aria-hidden />
+        <div className="dock">
+          {error && (
+            <div className={`banner ${error.kind === 'blocked' ? 'banner-red' : 'banner-amber'}`} role="alert" data-testid="banner">
+              <TriangleAlert size={16} aria-hidden />
+              <span className="banner-text">{errorText(error)}</span>
+              {error.kind === 'blocked' ? (
+                <>
+                  <button type="button" className="btn btn-primary btn-sm" onClick={() => void onProtectLeak()} data-testid="blocked-protect">
+                    {t.blocked.protect}
                   </button>
-                )}
-              </div>
-            )}
-            {review?.inline && (
-              <InlineReview
-                analysis={review.analysis}
-                suggestions={review.suggestions}
-                entities={conv.entities}
-                onProtect={(m, entityId) => void decide({ action: 'accept', mention: m, entityId }).then(() => refreshReview(undefined, m))}
-                onIgnore={(m) => void decide({ action: 'reject', mention: m }).then(() => refreshReview(undefined, m))}
-                onLink={(m, entityId) => void decide({ action: 'link', mention: m, entityId }).then(() => refreshReview(undefined, m))}
-                onCancel={closeReview}
-                onContinue={() => void afterReview()}
-              />
-            )}
-            {brief && (
-              <div className="brief" role="status" data-testid="brief">
-                <div className="brief-head">
-                  <strong>{t.composer.briefPreviewTitle}</strong>
-                  <span className="text-2">{t.composer.briefPreviewCountdown(brief.left)}</span>
-                </div>
-                <pre className="received-text">
-                  <ProtectedText text={brief.preview.maskedCurrent} />
-                </pre>
-                <div className="row-actions">
-                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => setBrief(null)} data-testid="brief-cancel">
-                    {t.composer.cancel}
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setError(null); inputRef.current?.focus(); }} data-testid="blocked-edit">
+                    {t.blocked.edit}
                   </button>
-                  <button type="button" className="btn btn-primary btn-sm" onClick={() => { setBrief(null); void doSend(); }} data-testid="brief-send">
-                    {t.composer.sendNow}
-                  </button>
-                </div>
-              </div>
-            )}
-            <div className={error?.kind === 'blocked' ? 'blocked-field' : undefined}>
-              <Composer
-                value={text}
-                marks={marks}
-                files={files}
-                protectedCount={analysis?.protectedInText ?? 0}
-                busy={brief !== null || analysing}
-                generating={generating}
-                analysing={analysing}
-                inputRef={inputRef}
-                onChange={(v) => {
-                  setText(v);
-                  if (error?.kind === 'blocked') setError(null);
-                }}
-                onSend={() => void onSend()}
-                onStop={() => void api.chat.stop(conv.id)}
-                onSkipAnalysis={() => void api.llm.skip(conv.id)}
-                onPickFiles={pickFiles}
-                onRemoveFile={(i) => {
-                  const f = files[i];
-                  if (f?.chip) void api.files.discard(conv.id, f.chip.id);
-                  setFiles(files.filter((_, k) => k !== i));
-                }}
-              />
+                </>
+              ) : (
+                <button type="button" className="icon-btn" aria-label={t.errors.dismiss} onClick={() => setError(null)}>
+                  <X size={14} aria-hidden />
+                </button>
+              )}
             </div>
+          )}
+          <div className={error?.kind === 'blocked' ? 'blocked-field' : undefined}>
+            <Composer
+              value={text}
+              marks={marks}
+              files={files}
+              protectedCount={analysis?.protectedInText ?? 0}
+              waiting={waiting}
+              generating={generating}
+              analysing={background > 0}
+              inputRef={inputRef}
+              onChange={(v) => {
+                setText(v);
+                if (error?.kind === 'blocked') setError(null);
+              }}
+              onSend={() => void onSend()}
+              onVerify={() => void onVerify()}
+              onStop={() => void api.chat.stop(conv.id)}
+              onSkipAnalysis={() => void api.llm.skip(conv.id)}
+              onPickFiles={pickFiles}
+              onRemoveFile={(i) => {
+                const f = files[i];
+                if (f?.chip) void api.files.discard(conv.id, f.chip.id);
+                updateFiles((list) => list.filter((_, k) => k !== i));
+              }}
+            />
           </div>
-        </main>
-      )}
+        </div>
+      </main>
 
       <ProtectionPanel
         collapsed={panelCollapsed}
         onToggle={() => setPanelCollapsed(!panelCollapsed)}
         entities={conv.entities}
         toReview={toReview}
-        onOpenReview={() => void openMessageReview()}
+        onOpenReview={() => void onVerify()}
         focusEntity={focusEntity}
         onFocusEntity={setFocusEntity}
-        preview={preview}
         info={info}
-        deepAnalysis={conv.settings.deepAnalysisOnMessages}
-        onToggleDeep={(v) => void api.settings.update({ convId: conv.id, deepAnalysisOnMessages: v }).then(setConv)}
       />
 
-      {review && !review.inline && (
+      {review && review.tabs.length > 0 && (
         <Review
-          title={review.title || t.conversation.youLabel}
-          text={review.text}
-          analysis={review.analysis}
-          suggestions={review.suggestions}
+          tabs={review.tabs}
+          active={review.active}
+          onTab={(i) => setReview((r) => (r ? { ...r, active: i } : r))}
           entities={conv.entities}
-          total={review.total}
           running={false}
           degraded={review.degraded}
-          onProtect={(m, entityId) => void decide({ action: 'accept', mention: m, entityId }).then(() => refreshReview(undefined, m))}
-          onIgnore={(m) => void decide({ action: 'reject', mention: m }).then(() => refreshReview(undefined, m))}
-          onLink={(m, entityId) => void decide({ action: 'link', mention: m, entityId }).then(() => refreshReview(undefined, m))}
-          onAddManual={(value, category) => void decide({ action: 'add', text: value, category }).then(() => refreshReview())}
-          onCancel={closeReview}
+          onProtect={(m, entityId) => onDecision({ action: 'accept', mention: m, entityId }, m)}
+          onIgnore={(m) => onDecision({ action: 'reject', mention: m }, m)}
+          onLink={(m, entityId) => onDecision({ action: 'link', mention: m, entityId }, m)}
+          onAddManual={(value, category, entityId) => onDecision({ action: 'add', text: value, category, entityId })}
+          onCancel={() => setReview(null)}
           onContinue={() => void afterReview()}
-          onSeeReceived={() => void afterReview()}
-        />
-      )}
-
-      {dialog && (
-        <PreviewDialog
-          preview={dialog.preview}
-          originalText={dialog.original}
-          sending={generating}
-          onBack={() => setDialog(null)}
-          onSend={() => void doSend()}
         />
       )}
 

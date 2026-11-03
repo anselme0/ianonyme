@@ -151,9 +151,16 @@ export function Thread({ conv, streaming, pendingUser, generating, onRegenerate,
               </div>
             )}
             {m.files && m.files.length > 0 && (
-              <p className="msg-files">
-                <FileText size={14} aria-hidden /> {t.conversation.attachedFile}
-              </p>
+              <ul className="file-tiles file-tiles-sent" aria-label={t.conversation.attachedFile}>
+                {m.files.map((f, i) => (
+                  <li key={`${f.name}-${i}`} className="file-tile file-ready" title={f.name} data-testid="sent-file">
+                    <span className="file-tile-icon">
+                      <FileText size={18} aria-hidden />
+                    </span>
+                    <span className="file-tile-name">{f.name}</span>
+                  </li>
+                ))}
+              </ul>
             )}
             {m.role === 'assistant' && index === firstRestored && (
               <p className="notice" data-testid="restored-notice">

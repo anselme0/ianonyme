@@ -3,50 +3,31 @@ import { expect, test } from '@playwright/test';
 import { resolve } from 'node:path';
 import { DEMO, SHOTS, launch, protectAll } from './launch.js';
 
-const REAL_NAMES = ['Louis Cordier', 'Étienne Vasseur', 'Odile Marchand', 'Hélène Barraud', 'Paul-Henri Delmas', 'Claire Perrin'];
-
 test.describe.configure({ mode: 'serial' });
 
-test('parcours complet : import, revue, envoi masqué, restitution, tour suivant, blocage, fiabilité', async () => {
+test('parcours complet : import, vérification, envoi masqué, restitution, tour suivant, blocage', async () => {
   const { app, page } = await launch();
 
-  // 1. Import d'un rapport fictif (.docx) : l'analyse se fait en arrière-plan, aucun volet ne s'ouvre.
+  // 1. Import d'un rapport fictif (.docx) : tuile du document, analyse en arrière-plan, aucun volet.
   await page.getByTestId('file-input').setInputFiles(resolve(DEMO, 'rapport-expertise-fictif.docx'));
-  await expect(page.locator('.file-chip.file-ready')).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('.file-tile.file-ready')).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('.file-tile')).toContainText('rapport-expertise-fictif.docx');
   await expect(page.getByTestId('review')).toHaveCount(0);
 
-  // 2. « Vérifier » ouvre le volet : l'analyse a déjà tout protégé, l'utilisateur peut corriger.
-  await page.getByTestId('send').click();
+  // 2. « Vérifier » ouvre le volet : un onglet pour le message, un par document.
+  await page.getByTestId('composer-input').fill('Établis la chronologie des faits.');
+  await page.getByTestId('verify').click();
   await expect(page.getByTestId('review')).toBeVisible();
+  await expect(page.getByTestId('review-tab')).toHaveCount(2);
+  await page.getByTestId('review-tab').nth(1).click();
   await expect(page.getByTestId('review-doc')).toContainText('Louis Cordier');
   await expect(page.getByTestId('unprotect').first()).toBeVisible();
   await protectAll(page);
-  await expect(page.getByTestId('review-continue')).toBeEnabled();
   await page.screenshot({ path: `${SHOTS}/03-revue-terminee.png` });
 
-  // 3. « Ce que l'IA va recevoir » : aucune valeur réelle, repères visibles.
+  // 3. Envoi depuis le volet : la réponse restitue les vraies valeurs, soulignées.
   await page.getByTestId('review-continue').click();
-  const masked = page.getByTestId('preview-masked');
-  await expect(masked).toBeVisible();
-  const maskedText = await masked.innerText();
-  for (const name of REAL_NAMES) expect(maskedText).not.toContain(name);
-  expect(maskedText).not.toContain('01 99 00 67 45');
-  expect(maskedText).not.toContain('FR76');
-  expect(maskedText).toMatch(/\[PERSONNE_\d+\]/);
-  expect(maskedText).toMatch(/\[FONCTION_\d+\]|\[PERSONNE_\d+\]/);
-  await page.getByTestId('view-compare').click();
-  await page.screenshot({ path: `${SHOTS}/04-comparaison.png` });
-
-  // 4. Envoi : message de tâche « chronologie ».
-  await page.getByTestId('preview-back').click();
-  await page.getByTestId('composer-input').fill('Établis la chronologie des faits.');
-  await page.getByTestId('send').click();
-  // Plusieurs étapes possibles : revue du fichier déjà faite, aperçu final.
-  const send = page.getByTestId('preview-send');
-  await expect(send).toBeVisible();
-  await send.click();
-
-  // 5. Réponse restituée avec les vraies valeurs, soulignées.
+  await expect(page.getByTestId('sent-file')).toContainText('rapport-expertise-fictif.docx', { timeout: 30_000 });
   const reply = page.getByTestId('assistant-text').last();
   await expect(reply).toContainText('chronologie', { timeout: 30_000 });
   await expect(reply.locator('.restored').first()).toBeVisible({ timeout: 30_000 });
@@ -58,31 +39,23 @@ test('parcours complet : import, revue, envoi masqué, restitution, tour suivant
   const hint = await reply.locator('.restored').first().getAttribute('title');
   expect(hint).toMatch(/^Remplace \[[A-Z_]+_\d+\]$/);
 
-  // 6. Volet Protection : entités groupées par famille ; onglet « Ce que l'IA va recevoir ».
+  // 4. Volet Protection : liste groupée par famille, sans repères entre crochets.
   await expect(page.getByTestId('entity-row').first()).toBeVisible();
   const row = page.getByTestId('entity-row').filter({ hasText: 'Louis Cordier' });
-  const placeholder = (await row.locator('.placeholder').innerText()).trim();
-  expect(placeholder).toMatch(/^\[PERSONNE_\d+\]$/);
+  await expect(row).toBeVisible();
+  expect(await page.getByTestId('protection-panel').innerText()).not.toMatch(/\[[A-Z_]+_\d+\]/);
 
-  // 7. Tour suivant : le nom saisi directement reçoit le même repère.
+  // 5. Tour suivant : « Envoyer » vérifie sans rien montrer.
   await page.getByTestId('composer-input').fill('Que dit M. Louis Cordier ?');
   await expect(page.getByTestId('protect-count')).toContainText('1 élément sera protégé');
-  await page.getByTestId('tab-received').click();
-  await expect(page.getByTestId('received-text')).toContainText(`Que dit M. ${placeholder} ?`.replace('M. ', ''));
   await page.getByTestId('send').click();
-  await page.getByTestId('review-continue').click();
-  const brief = page.getByTestId('brief');
-  await expect(brief).toBeVisible();
-  await expect(brief).toContainText(placeholder);
-  await page.screenshot({ path: `${SHOTS}/06-tour-suivant.png` });
-  await page.getByTestId('brief-send').click();
   await expect(page.getByTestId('assistant-text')).toHaveCount(2, { timeout: 30_000 });
+  await expect(page.getByTestId('review')).toHaveCount(0);
+  await page.screenshot({ path: `${SHOTS}/06-tour-suivant.png` });
 
-  // 8. Envoi bloqué : deux personnes de même nom, une occurrence ambiguë.
+  // 6. Envoi bloqué : deux personnes de même nom, une occurrence ambiguë.
   await page.getByTestId('composer-input').fill('Pierre Dupuis et Jacques Dupuis sont frères.');
   await page.getByTestId('send').click();
-  await page.getByTestId('review-continue').click();
-  await page.getByTestId('brief-send').click();
   await expect(page.getByTestId('assistant-text')).toHaveCount(3, { timeout: 30_000 });
   await page.getByTestId('composer-input').fill('Dupuis a signé hier.');
   await page.getByTestId('send').click();
@@ -92,20 +65,13 @@ test('parcours complet : import, revue, envoi masqué, restitution, tour suivant
   await expect(page.getByTestId('composer-input')).toHaveValue('Dupuis a signé hier.');
   await page.screenshot({ path: `${SHOTS}/07-envoi-bloque.png` });
 
-  // 9. « Protéger » ouvre la revue ; le conflit se tranche explicitement.
+  // 7. « Protéger » ouvre le volet ; le conflit se tranche explicitement.
   await page.getByTestId('blocked-protect').click();
   await expect(page.getByTestId('review')).toBeVisible();
   await page.screenshot({ path: `${SHOTS}/08-conflit.png` });
   await page.getByTestId('choose-candidate').first().click();
   await expect(page.getByTestId('review-continue')).toBeEnabled();
   await page.getByTestId('review-cancel').click();
-
-  // 10. Écran « Fiabilité de la détection ».
-  await page.getByTestId('user-menu').click();
-  await page.getByTestId('menu-reliability').click();
-  await expect(page.getByTestId('reliability')).toBeVisible();
-  await expect(page.getByTestId('measured-on')).toContainText('documents fictifs');
-  await page.screenshot({ path: `${SHOTS}/09-fiabilite.png` });
 
   await app.close();
 });
