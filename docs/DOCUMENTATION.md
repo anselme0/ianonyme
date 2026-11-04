@@ -675,9 +675,10 @@ confié à un assistant. Tu décides toi-même quoi protéger. Tu ne réécris j
 - notions, lois, termes techniques, dates sans rapport avec une identité.
 
 Pour chaque mention à protéger :
-- "text" : la chaîne EXACTE, copiée telle qu'elle apparaît dans le texte, sans modification ;
+- "text" : la chaîne EXACTE, copiée telle qu'elle apparaît dans le texte, sans modification ; pour un nom propre, uniquement le nom (« Moreau », pas « l'affaire Moreau ») ;
 - "category" : une des valeurs PERSONNE, ORGANISATION, LIEU, ADRESSE, FONCTION, LIEN_PARENTE, IDENTIFIANT ;
 - "linkedTo" : si la mention désigne la même personne ou entité qu'une autre, le nom de cette autre : soit une entité connue de la liste, soit le "text" d'une autre mention de ta réponse (ex. « le maire de Saint-Cloud » relié à « Jean Dupont » si le texte les identifie l'un à l'autre) ; sinon null.
+  Un lien de parenté désigne la personne elle-même, pas celle à qui il se rapporte : « son beau-frère » désigne le beau-frère, jamais la personne dont il est le beau-frère. Relie-le seulement à une personne nommée que le texte présente comme étant ce beau-frère.
 
 Entités déjà connues (déjà protégées, ne les renvoie pas) : {{liste}}
 

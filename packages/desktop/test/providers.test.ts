@@ -163,6 +163,6 @@ describe('envoi sécurisé', () => {
       ],
     };
     await collect(secureStream(provider, c, new AbortController().signal));
-    expect(got).toEqual(['[PRENOM_1] [NOM_1] écrit', '[NOM_1] a bien écrit', 'Et [NOM_1] ?']);
+    expect(got).toEqual(['[PRENOM_1] [NOM_1] écrit', '[NOM_1] a bien écrit', 'Et M. [NOM_1] ?']);
   });
 });

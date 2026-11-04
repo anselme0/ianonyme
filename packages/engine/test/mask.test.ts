@@ -12,7 +12,7 @@ describe('masquage', () => {
 
   it('remplace de la forme la plus longue à la plus courte, en une passe', () => {
     const { masked } = mask('Jean Garnier, M. Garnier, Garnier', state);
-    expect(masked).toBe('[PRENOM_1] [NOM_1], [NOM_1], [NOM_1]');
+    expect(masked).toBe('[PRENOM_1] [NOM_1], M. [NOM_1], [NOM_1]');
   });
 
   it('respecte les frontières de mot', () => {

@@ -2,6 +2,7 @@
 
 import { Coverage, findOccurrences, makeHaystack, normalizeValue, placeholderRanges } from './normalize.js';
 import { runStructuredRules } from './rules.js';
+import { CIVILITY_SOURCE } from './names.js';
 import { entityValues, sharedFamily } from './state.js';
 import type { ConversationState, LeakReport, LeakItem, Replacement } from './types.js';
 
@@ -78,7 +79,9 @@ export function mask(
   for (const m of picked) {
     const entity = state.entities[m.entityId];
     if (!entity) continue;
-    const placeholder = m.replacement ?? entity.placeholder;
+    // Nom de famille seul : la civilité reste lisible (« Mme [NOM_2] »), elle distingue deux personnes de même nom.
+    const civility = m.replacement ? (new RegExp(`^${CIVILITY_SOURCE}\\s+`, 'u').exec(text.slice(m.start, m.end))?.[0] ?? '') : '';
+    const placeholder = civility + (m.replacement ?? entity.placeholder);
     masked += text.slice(cursor, m.start) + placeholder;
     replacements.push({
       span: { start: m.start, end: m.end },

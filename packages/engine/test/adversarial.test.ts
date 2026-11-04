@@ -41,7 +41,7 @@ describe('variantes typographiques d’un nom protégé', () => {
 
   it('forme avec civilité, initiale, inversion et virgule', () => {
     const text = 'M. Garnier, Mme GARNIER, J. Garnier, Garnier Jean, Garnier, Jean, Dr Garnier';
-    expect(protectedText(text)).toBe('[NOM_1], [NOM_1], [PRENOM_1] [NOM_1], [PRENOM_1] [NOM_1], [PRENOM_1] [NOM_1], [NOM_1]');
+    expect(protectedText(text)).toBe('M. [NOM_1], Mme [NOM_1], [PRENOM_1] [NOM_1], [PRENOM_1] [NOM_1], [PRENOM_1] [NOM_1], Dr [NOM_1]');
   });
 
   it('nom entre guillemets, parenthèses, ponctuation et Markdown', () => {
@@ -141,7 +141,7 @@ describe('historique et état', () => {
 describe('prénoms inconnus et formes inversées', () => {
   it('propage le nom de famille même si le prénom n’est pas dans la liste', () => {
     const state = addManualMention(createState(), 'Dimitri Kowal', 'PERSONNE');
-    expect(mask('M. Kowal, Mme Kowal et D. Kowal', state).masked).toBe('[NOM_1], [NOM_1] et [PRENOM_1] [NOM_1]');
+    expect(mask('M. Kowal, Mme Kowal et D. Kowal', state).masked).toBe('M. [NOM_1], Mme [NOM_1] et [PRENOM_1] [NOM_1]');
   });
   it('comprend une forme de référence inversée', () => {
     const state = addManualMention(createState(), 'Garnier Jean', 'PERSONNE');
