@@ -10,7 +10,7 @@ import type { Conflict, ConversationState, Mention } from './types.js';
 /**
  * Détecte puis accepte automatiquement ce que les règles et les variantes ont repéré.
  * Les conflits restent à trancher par l'utilisateur. Répète jusqu'à stabilité, car une entité
- * nouvelle apporte de nouvelles variantes (« Mme Moreau » après « Isabelle Moreau »).
+ * nouvelle apporte de nouvelles variantes (« Mme Brunet » après « Isabelle Brunet »).
  */
 export function ingestText(
   state: ConversationState,

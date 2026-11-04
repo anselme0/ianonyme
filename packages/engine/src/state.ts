@@ -77,7 +77,7 @@ function createEntity(state: ConversationState, category: Category, text: string
   let parts: Entity['parts'];
   const parsed = category === 'PERSONNE' ? parseName(canonical) : null;
   if (parsed && parsed.firstNames.length > 0 && parsed.family.length > 0) {
-    // Prénom et nom séparés : « Isabelle Moreau » devient « [PRENOM_1] [NOM_1] ».
+    // Prénom et nom séparés : « Isabelle Brunet » devient « [PRENOM_1] [NOM_1] ».
     const given = namePart(base, 'PRENOM', parsed.firstNames.join(' '));
     const family = namePart(given.state, 'NOM', parsed.family.join(' '));
     base = family.state;
@@ -94,14 +94,14 @@ function createEntity(state: ConversationState, category: Category, text: string
   return { ...base, entityCounter, entities: { ...base.entities, [id]: entity } };
 }
 
-/** Formes réduites au seul nom de famille d'une personne (« Moreau », « M. Moreau »…). */
+/** Formes réduites au seul nom de famille d'une personne (« Brunet », « M. Brunet »…). */
 function familyOnlyForms(familyValue: string): Set<string> {
   return new Set([familyValue, ...CIVILITY_VARIANTS.map((c) => `${c} ${familyValue}`)].map(normalizeValue));
 }
 
 /**
  * Repère de nom de famille à utiliser pour `value` quand toutes les entités qui la portent n'en
- * désignent que le nom de famille (« l'affaire Moreau » quand Isabelle et Patrick Moreau existent) :
+ * désignent que le nom de famille (« l'affaire Brunet » quand Isabelle et Patrick Brunet existent) :
  * il n'y a alors rien à trancher. Renvoie l'entité qui porte le nom et le repère.
  */
 export function sharedFamily(

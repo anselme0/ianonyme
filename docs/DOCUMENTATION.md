@@ -446,7 +446,7 @@ export interface Conversation {
 ### A.2 Format des placeholders
 
 - Forme : `[CATEGORIE_N]`, par exemple `[PERSONNE_1]`, `[ORGANISATION_2]`. Motif de reconnaissance : `\[[A-Z_]+_\d+\]`.
-- **Personnes dont le prénom et le nom sont connus** : le prénom et le nom de famille ont chacun leur repère, `[PRENOM_1] [NOM_1]`. Les repères sont partagés : « Isabelle Moreau » et « Patrick Moreau » donnent `[PRENOM_1] [NOM_1]` et `[PRENOM_2] [NOM_1]`, et « l'affaire Moreau » devient « l'affaire `[NOM_1]` », sans ambiguïté à trancher. L'assistant voit ainsi le lien entre les personnes de même nom. Une personne connue par son seul nom garde `[PERSONNE_N]`. Dans l'interface, le prénom et le nom restent côte à côte et aucun repère n'est affiché.
+- **Personnes dont le prénom et le nom sont connus** : le prénom et le nom de famille ont chacun leur repère, `[PRENOM_1] [NOM_1]`. Les repères sont partagés : « Isabelle Brunet » et « Patrick Brunet » donnent `[PRENOM_1] [NOM_1]` et `[PRENOM_2] [NOM_1]`, et « l'affaire Brunet » devient « l'affaire `[NOM_1]` », sans ambiguïté à trancher. L'assistant voit ainsi le lien entre les personnes de même nom. Une personne connue par son seul nom garde `[PERSONNE_N]`. Dans l'interface, le prénom et le nom restent côte à côte et aucun repère n'est affiché.
 - `N` est un compteur par catégorie et par conversation.
 - Un numéro n'est **jamais réattribué ni réutilisé**, même si l'entité est supprimée.
 - Une même entité garde le même placeholder pendant toute la conversation.
@@ -675,7 +675,7 @@ confié à un assistant. Tu décides toi-même quoi protéger. Tu ne réécris j
 - notions, lois, termes techniques, dates sans rapport avec une identité.
 
 Pour chaque mention à protéger :
-- "text" : la chaîne EXACTE, copiée telle qu'elle apparaît dans le texte, sans modification ; pour un nom propre, uniquement le nom (« Moreau », pas « l'affaire Moreau ») ;
+- "text" : la chaîne EXACTE, copiée telle qu'elle apparaît dans le texte, sans modification ; pour un nom propre, uniquement le nom (« Brunet », pas « l'affaire Brunet ») ;
 - "category" : une des valeurs PERSONNE, ORGANISATION, LIEU, ADRESSE, FONCTION, LIEN_PARENTE, IDENTIFIANT ;
 - "linkedTo" : si la mention désigne la même personne ou entité qu'une autre, le nom de cette autre : soit une entité connue de la liste, soit le "text" d'une autre mention de ta réponse (ex. « le maire de Saint-Cloud » relié à « Jean Dupont » si le texte les identifie l'un à l'autre) ; sinon null.
   Un lien de parenté désigne la personne elle-même, pas celle à qui il se rapporte : « son beau-frère » désigne le beau-frère, jamais la personne dont il est le beau-frère. Relie-le seulement à une personne nommée que le texte présente comme étant ce beau-frère.

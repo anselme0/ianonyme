@@ -59,7 +59,7 @@ export interface Entity {
   placeholder: string;
   /**
    * Personne dont le prénom et le nom de famille sont séparés : repères partagés entre les personnes
-   * qui portent le même prénom ou le même nom (« Isabelle Moreau » et « Patrick Moreau » partagent le nom).
+   * qui portent le même prénom ou le même nom (« Isabelle Brunet » et « Patrick Brunet » partagent le nom).
    */
   parts?: { given: string; family: string };
 }
