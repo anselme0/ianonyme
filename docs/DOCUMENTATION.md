@@ -592,6 +592,7 @@ Ajouts au contrat ci-dessus, faits au niveau 1 du développement (aucun n'en cha
 - Les repères déjà présents dans un texte (`[PERSONNE_1]`) ne sont jamais retouchés par le masquage.
 - Les civilités sont propagées en variantes (`M.`, `Mme`, `Me`…) : un nom masqué avec sa civilité est restitué sous sa forme de référence, sans civilité.
 - Liste de prénoms : écrite à la main (environ 400 prénoms courants), sans source externe ; à relire.
+- Les variantes de civilité suivent le genre du premier prénom connu : « M. Brunet » n'est une variante que de Patrick Brunet, « Mme Brunet » que d'Isabelle Brunet. Un prénom inconnu ou mixte garde toutes les civilités, et les titres neutres (Me, Dr, Pr) restent communs.
 - Les juridictions publiques (« tribunal judiciaire de Dijon ») ne sont pas masquées par défaut (B.3), bien que « tribunal » figure dans les mots-clés d'organisation de B.1.
 
 ---

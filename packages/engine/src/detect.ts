@@ -6,7 +6,7 @@ import { runRules } from './rules.js';
 import type { Category, Conflict, ConversationState, Mention } from './types.js';
 import type { Haystack } from './normalize.js';
 import { canonicalFor, entityValues, sharedFamily } from './state.js';
-import { parseName } from './names.js';
+import { genderCompatible, parseName } from './names.js';
 
 interface Candidate {
   start: number;
@@ -101,7 +101,7 @@ export function detect(
       const pool = exact.length > 0 ? exact : overlapping;
       ids = [...new Set(pool.flatMap((e) => e.entityIds))];
       if (c.category === 'PERSONNE' && exact.length === 0) {
-        ids = ids.filter((id) => sameFirstName(state, id, text.slice(c.start, c.end)));
+        ids = ids.filter((id) => sameFirstName(state, id, text.slice(c.start, c.end)) && sameGender(state, id, text.slice(c.start, c.end)));
       }
     }
     if (ids.length > 1) {
@@ -141,6 +141,12 @@ export function detect(
     mentions.push(mention);
   }
   return { mentions, conflicts };
+}
+
+/** « M. » désigne un homme, « Mme » une femme : une personne de l'autre genre n'est pas candidate. */
+function sameGender(state: ConversationState, entityId: string, hitText: string): boolean {
+  const entity = state.entities[entityId];
+  return !entity || genderCompatible(entity.canonical, hitText);
 }
 
 /** Deux personnes ne peuvent être la même si leurs prénoms (ou initiales) diffèrent. */

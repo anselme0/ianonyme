@@ -76,6 +76,28 @@ describe('conflits', () => {
     expect(back).toBe("Patrick Moreau et l'affaire Moreau");
   });
 
+  it('« M. » et « Mme » suivent le genre du prénom : chacun va à la bonne personne', () => {
+    const state = ingestText(createState(), 'Isabelle Brunet et Patrick Brunet sont mariés.').state;
+    const byName = (n: string) => Object.values(state.entities).find((e) => e.canonical === n)!;
+    const isabelle = byName('Isabelle Brunet');
+    const patrick = byName('Patrick Brunet');
+    expect(isabelle.variants).toContain('Mme Brunet');
+    expect(isabelle.variants).not.toContain('M. Brunet');
+    expect(patrick.variants).toContain('M. Brunet');
+    expect(patrick.variants).not.toContain('Mme Brunet');
+    const r = detect('M. Brunet et Mme Brunet.', state);
+    expect(r.conflicts).toHaveLength(0);
+    expect(r.mentions.map((m) => m.entityId)).toEqual([patrick.id, isabelle.id]);
+    expect(mask('M. Brunet et Mme Brunet.', state).masked).toBe('M. [NOM_1] et Mme [NOM_1].');
+    // Accepter « M. Brunet » (par exemple proposé par le LLM) le rattache à Patrick, jamais à Isabelle.
+    const accepted = acceptMention(state, { id: 'x', text: 'M. Brunet', span: { start: 0, end: 9 }, category: 'PERSONNE', source: 'llm', status: 'suggested' });
+    expect(accepted.entities[isabelle.id]!.variants).not.toContain('M. Brunet');
+    expect(accepted.entities[patrick.id]!.variants).toContain('M. Brunet');
+    // Un titre neutre (Me, Dr) ou un prénom inconnu garde toutes les civilités.
+    const inconnu = addManualMention(createState(), 'Dimitri Kowal', 'PERSONNE');
+    expect(Object.values(inconnu.entities)[0]!.variants).toEqual(expect.arrayContaining(['M. Kowal', 'Mme Kowal', 'Dr Kowal']));
+  });
+
   it('signale deux personnes qui se confondent (même initiale), sans fusion', () => {
     const state = ingestText(createState(), 'Jean Dupuis et Jacques Dupuis sont frères.').state;
     expect(Object.keys(state.entities)).toHaveLength(2);

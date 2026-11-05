@@ -3,7 +3,7 @@
 
 import { EngineError } from './errors.js';
 import { normalizeValue } from './normalize.js';
-import { CIVILITY_VARIANTS, ORG_KEYWORDS_STRIPPED, parseName, stripCivility, variantsFor } from './names.js';
+import { CIVILITY_VARIANTS, ORG_KEYWORDS_STRIPPED, genderCompatible, parseName, stripCivility, variantsFor } from './names.js';
 import type { Category, ConversationState, Entity, Mention } from './types.js';
 
 export function createState(): ConversationState {
@@ -160,7 +160,12 @@ function acceptText(
   if (normalizeValue(text).length === 0) throw new EngineError('empty_value');
   const base = withoutRejected(state, text);
   if (entityId) return markRole(attach(base, entityId, text), entityId, category, text);
-  const existing = findEntityByValue(base, canonicalFor(category, text)) ?? findEntityByValue(base, text);
+  let existing = findEntityByValue(base, canonicalFor(category, text)) ?? findEntityByValue(base, text);
+  if (existing && category === 'PERSONNE') {
+    // Plusieurs personnes portent ce nom : « M. » va à l'homme, « Mme » à la femme.
+    const same = entitiesWithValue(base, canonicalFor(category, text)).filter((e) => genderCompatible(e.canonical, text));
+    existing = same[0] ?? existing;
+  }
   if (existing) return markRole(attach(base, existing.id, text), existing.id, category, text);
   return createEntity(base, category, text);
 }

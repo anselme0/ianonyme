@@ -37,6 +37,48 @@ export function isFirstName(token: string): boolean {
   return FIRST_NAMES.has(normalizeValue(first));
 }
 
+/** Prénoms féminins de la liste ci-dessus (le reste est masculin, sauf les prénoms mixtes ci-dessous). */
+const FEMALE_FIRST_NAMES_RAW = `Agathe Agnès Alice Alicia Amandine Amélie Andrée Anaïs Anne Annie Astrid Audrey Aurélie Barbara Béatrice
+Bernadette Brigitte Capucine Carine Carole Caroline Catherine Cécile Céline Charlotte Chloé Christelle Christiane Christine
+Claire Clara Claudine Clémence Colette Corinne Danielle Delphine Denise Diane Dorothée Édith Elisa Élise Élodie Emilie Émilie
+Emma Emmanuelle Estelle Eugénie Eva Fanny Florence Francine Françoise Gabrielle Gaëlle Geneviève Ginette Gisèle Gladys Hélène
+Henriette Inès Irène Isabelle Jacqueline Jeanne Joëlle Josette Josiane Julie Juliette Justine Karine Laetitia Laure Laurence
+Léa Léonie Liliane Lina Line Lise Lola Louise Lucie Lydie Magali Manon Marcelle Margaux Marguerite Maria Marianne Marie Marine
+Marion Marthe Martine Mathilde Mélanie Mélissa Michèle Micheline Monique Morgane Muriel Mylène Nadège Nadia Nadine Nathalie
+Nicole Noémie Océane Odette Odile Olivia Pascale Patricia Paulette Pauline Perrine Pierrette Rachel Raymonde Renée Rose Sabine
+Salomé Sandra Sandrine Sarah Simone Solange Sonia Sophie Stéphanie Suzanne Sylvie Thérèse Valérie Vanessa Véronique Victoire
+Violette Virginie Yvette Yvonne Zoé`;
+
+/** Prénoms portés par les deux sexes : le genre n'est pas déduit. */
+const MIXED_FIRST_NAMES_RAW = 'Alix Camille Claude Dominique Gaël Lou Sacha Yannick';
+
+const FEMALE_FIRST_NAMES: Set<string> = new Set(FEMALE_FIRST_NAMES_RAW.split(/\s+/).filter(Boolean).map(normalizeValue));
+const MIXED_FIRST_NAMES: Set<string> = new Set(MIXED_FIRST_NAMES_RAW.split(/\s+/).filter(Boolean).map(normalizeValue));
+
+/** Genre déduit du premier prénom, `null` s'il est inconnu ou mixte (aucune civilité n'est alors écartée). */
+export function genderOf(firstName: string): 'F' | 'M' | null {
+  const first = normalizeValue(firstName.split(/[-‐-―]/)[0] ?? firstName);
+  if (MIXED_FIRST_NAMES.has(first)) return null;
+  if (FEMALE_FIRST_NAMES.has(first)) return 'F';
+  return FIRST_NAMES.has(first) ? 'M' : null;
+}
+
+/** Genre porté par la civilité qui commence `text` (« M. », « Mme »…), `null` sinon ou pour un titre neutre. */
+export function civilityGender(text: string): 'M' | 'F' | null {
+  const civility = /^(M\.?|Monsieur|Mme|Madame|Mlle)(?=\s)/u.exec(text.trim())?.[1];
+  if (!civility) return null;
+  return /^(M\.?|Monsieur)$/u.test(civility) ? 'M' : 'F';
+}
+
+/** Vrai si la civilité de `text` est compatible avec le prénom de la personne (inconnu ou titre neutre : compatible). */
+export function genderCompatible(canonical: string, text: string): boolean {
+  const wanted = civilityGender(text);
+  if (!wanted) return true;
+  const first = parseName(canonical).firstNames[0];
+  const gender = first ? genderOf(first) : null;
+  return !gender || gender === wanted;
+}
+
 /** Civilités et titres reconnus devant un nom. */
 export const CIVILITIES = ['Monsieur', 'Madame', 'Mademoiselle', 'Maître', 'Mlle', 'Mme', 'Me', 'Dr', 'Pr', 'M'];
 
@@ -44,6 +86,8 @@ export const CIVILITY_SOURCE = String.raw`(?:Monsieur|Madame|Mademoiselle|Maîtr
 
 /** Variantes de civilité ajoutées devant le nom de famille. */
 export const CIVILITY_VARIANTS = ['M.', 'Monsieur', 'Mme', 'Madame', 'Mlle', 'Me', 'Maître', 'Dr', 'Pr'];
+const MALE_CIVILITIES = new Set(['M.', 'Monsieur']);
+const FEMALE_CIVILITIES = new Set(['Mme', 'Madame', 'Mlle']);
 
 /** Mots capitalisés qui ne font jamais partie d'un nom (début de phrase, articles…). */
 export const NAME_STOPWORDS = new Set(
@@ -106,7 +150,13 @@ export function personVariants(canonical: string): string[] {
   const familyOk = familyStr.replace(/[^\p{L}]/gu, '').length >= 3 && !isCommonWord(familyStr);
   if (!familyOk || firstNames.length === 0) return out;
   out.push(familyStr);
-  for (const civ of CIVILITY_VARIANTS) out.push(`${civ} ${familyStr}`);
+  // « M. Brunet » est Patrick, « Mme Brunet » est Isabelle : une civilité de l'autre genre n'est pas une variante.
+  const gender = genderOf(firstNames[0] as string);
+  for (const civ of CIVILITY_VARIANTS) {
+    if (gender === 'F' && MALE_CIVILITIES.has(civ)) continue;
+    if (gender === 'M' && FEMALE_CIVILITIES.has(civ)) continue;
+    out.push(`${civ} ${familyStr}`);
+  }
   const initials = firstNames.map((f) => `${f[0]?.toUpperCase() ?? ''}.`);
   out.push(`${firstNames.join(' ')} ${familyStr}`);
   out.push(`${initials[0]} ${familyStr}`);
