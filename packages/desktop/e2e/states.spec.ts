@@ -84,3 +84,13 @@ test('conversations : création, renommage, effacement, suppression', async () =
   await expect(page.getByTestId('conversation-item')).toHaveCount(1);
   await app.close();
 });
+
+test('les tests ouvrent la fenêtre hors écran, sans prendre le focus', async () => {
+  const { app } = await launch();
+  const { x, y } = await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0]!.getBounds());
+  expect(x).toBeLessThan(-5000);
+  expect(y).toBeLessThan(-5000);
+  const focusable = await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0]!.isFocusable());
+  expect(focusable).toBe(false);
+  await app.close();
+});

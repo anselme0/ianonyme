@@ -24,7 +24,7 @@ test('l’application empaquetée démarre, charge le module natif et déroule u
   const app = await electron.launch({
     executablePath: EXE,
     args: [`--user-data-dir=${join(dir, 'data')}`],
-    env: { ...process.env, IANONYME_CONFIG: config, IANONYME_PROBE: '1' },
+    env: { ...process.env, IANONYME_CONFIG: config, IANONYME_PROBE: '1', IANONYME_E2E: '1' },
   });
   const page = await app.firstWindow();
   await page.setViewportSize({ width: 1400, height: 900 });

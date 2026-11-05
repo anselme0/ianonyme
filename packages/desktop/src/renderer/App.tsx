@@ -1,4 +1,4 @@
-import { TriangleAlert, X } from 'lucide-react';
+import { Loader2, TriangleAlert, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Category, LeakItem, Mention, Segment } from 'engine';
 import type {
@@ -659,6 +659,26 @@ export function App() {
               )}
             </div>
           )}
+          {queued && (
+            <div className="banner banner-amber" role="status" data-testid="queued-banner">
+              <Loader2 size={16} className="spin" aria-hidden />
+              <span className="banner-text">{t.composer.queuedSend}</span>
+              <button type="button" className="btn btn-primary btn-sm" onClick={skipAnalysis} data-testid="skip-analysis">
+                {t.composer.skipAnalysis}
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => {
+                  queueToken.current++;
+                  setQueued(false);
+                }}
+                data-testid="cancel-queued"
+              >
+                {t.composer.cancelQueued}
+              </button>
+            </div>
+          )}
           <div className={error?.kind === 'blocked' ? 'blocked-field' : undefined}>
             <Composer
               value={text}
@@ -680,11 +700,6 @@ export function App() {
               onSend={() => void onSend()}
               onVerify={() => void onVerify()}
               onStop={() => void api.chat.stop(conv.id)}
-              onSkipAnalysis={skipAnalysis}
-              onCancelQueued={() => {
-                queueToken.current++;
-                setQueued(false);
-              }}
               onPickFiles={pickFiles}
               onRemoveFile={(i) => {
                 const f = files[i];

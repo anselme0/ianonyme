@@ -42,6 +42,12 @@ function csp(): string {
 
 let mainWindow: BrowserWindow | null = null;
 
+/**
+ * Pendant les tests de bout en bout, la fenêtre s'ouvre hors écran, sans prendre le focus ni apparaître dans la barre
+ * des tâches : on peut continuer à travailler. `IANONYME_E2E_VISIBLE=1` la montre normalement (pour déboguer).
+ */
+const quiet = Boolean(process.env.IANONYME_E2E) && !process.env.IANONYME_E2E_VISIBLE;
+
 function createWindow(): BrowserWindow {
   const icon = [join(process.resourcesPath ?? '', 'icon.png'), join(app.getAppPath(), 'resources', 'icon.png')].find(existsSync);
   const win = new BrowserWindow({
@@ -50,6 +56,7 @@ function createWindow(): BrowserWindow {
     minWidth: 960,
     minHeight: 600,
     show: false,
+    ...(quiet ? { x: -10000, y: -10000, focusable: false, skipTaskbar: true } : {}),
     backgroundColor: '#14202f',
     title: 'IAnonyme',
     ...(icon ? { icon } : {}),
@@ -64,7 +71,7 @@ function createWindow(): BrowserWindow {
     },
   });
   win.setMenuBarVisibility(false);
-  win.once('ready-to-show', () => win.show());
+  win.once('ready-to-show', () => (quiet ? win.showInactive() : win.show()));
   // Aucune navigation ni fenêtre externe depuis l'application.
   win.webContents.on('will-navigate', (e) => e.preventDefault());
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));

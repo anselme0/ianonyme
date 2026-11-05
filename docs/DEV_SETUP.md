@@ -259,3 +259,7 @@ Pour la première session de code, dans cet ordre :
 5. Brancher l'interface sur le moteur via les canaux IPC de l'annexe A.6.
 
 Le planning détaillé par jour et par personne est traité à part.
+
+## Tests de bout en bout : fenêtre discrète
+
+Les tests Playwright (`corepack pnpm --filter desktop test:e2e`) ouvrent la fenêtre de l'application **hors écran**, sans prendre le focus ni apparaître dans la barre des tâches : on peut continuer à travailler pendant qu'ils tournent. Pour la voir (déboguer un test), lancer avec la variable `IANONYME_E2E_VISIBLE=1`.

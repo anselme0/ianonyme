@@ -165,6 +165,35 @@ test('« Envoyer » pendant l’analyse part tout seul à la fin', async () => {
   slow.close();
 });
 
+test('« Envoyer » pendant l’analyse en arrière-plan propose d’attendre ou de passer', async () => {
+  const slow = await slowServer();
+  const { app, page } = await launch({ localModel: slowModel(slow.url) });
+  await expect(page.getByTestId('analysis-status')).toContainText('active');
+  await page.getByTestId('composer-input').fill('Le maire de la commune a signé hier.');
+  // L'analyse en arrière-plan démarre après la pause de frappe : on clique pendant qu'elle tourne.
+  await page.getByText('Analyse approfondie en cours…').waitFor();
+  await page.getByTestId('send').click();
+  await expect(page.getByTestId('skip-analysis')).toBeVisible({ timeout: 1500 });
+  await expect(page.getByTestId('cancel-queued')).toBeVisible();
+  await expect(page.getByTestId('assistant-text')).toHaveCount(0);
+  await expect(page.getByTestId('assistant-text')).toHaveCount(1, { timeout: 15_000 });
+  await app.close();
+  slow.close();
+});
+
+test('« Envoyer » pendant l’analyse d’un document propose d’attendre ou de passer', async () => {
+  const slow = await slowServer();
+  const { app, page } = await launch({ localModel: slowModel(slow.url) });
+  await expect(page.getByTestId('analysis-status')).toContainText('active');
+  await page.getByTestId('file-input').setInputFiles(resolve(DEMO, 'expertise-affaire-brunet.docx'));
+  await expect(page.locator('.file-tile.file-deep')).toBeVisible();
+  await page.getByTestId('send').click();
+  await expect(page.getByTestId('skip-analysis')).toBeVisible({ timeout: 1500 });
+  await expect(page.getByTestId('assistant-text')).toHaveCount(0);
+  await app.close();
+  slow.close();
+});
+
 test('« Envoyer » en attente : « Passer en analyse de base » envoie sans attendre', async () => {
   const slow = await slowServer();
   const { app, page } = await launch({ localModel: slowModel(slow.url) });
