@@ -28,6 +28,7 @@ interface Props {
   onSend(): void;
   onVerify(): void;
   onStop(): void;
+  onSkipAnalysis(): void;
   onCancelQueued(): void;
   onPickFiles(files: File[]): void;
   onRemoveFile(index: number): void;
@@ -138,9 +139,14 @@ export function Composer(p: Props) {
             <span className="composer-analysing" role="status">
               <Loader2 size={14} className="spin" aria-hidden /> {p.queued ? t.composer.queuedSend : t.composer.analysing}
               {p.queued && (
-                <button type="button" className="link-btn" onClick={p.onCancelQueued} data-testid="cancel-queued">
-                  {t.composer.cancelQueued}
-                </button>
+                <>
+                  <button type="button" className="link-btn" onClick={p.onSkipAnalysis} data-testid="skip-analysis">
+                    {t.composer.skipAnalysis}
+                  </button>
+                  <button type="button" className="link-btn" onClick={p.onCancelQueued} data-testid="cancel-queued">
+                    {t.composer.cancelQueued}
+                  </button>
+                </>
               )}
             </span>
           )}

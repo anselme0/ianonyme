@@ -112,8 +112,10 @@ test('« Vérifier » ouvre le volet tout de suite, sans attendre la fin de l’
   await page.getByTestId('composer-input').fill('Le maire de la commune a signé hier.');
   await page.getByTestId('verify').click();
   await expect(page.getByTestId('review')).toBeVisible({ timeout: 2000 });
+  await expect(page.getByTestId('review-wait')).toBeVisible();
   await expect(page.getByTestId('review-continue')).toBeDisabled();
-  await expect(page.getByTestId('review-continue')).toBeEnabled({ timeout: 15_000 });
+  await expect(page.getByTestId('review-wait')).toHaveCount(0, { timeout: 15_000 });
+  await expect(page.getByTestId('review-continue')).toBeEnabled();
   await app.close();
   slow.close();
 });
@@ -135,15 +137,42 @@ test('les boutons restent cliquables pendant l’analyse d’un document', async
   slow.close();
 });
 
-test('« Envoyer » pendant l’analyse part tout seul à la fin, sans option de passer', async () => {
+test('l’écran d’attente du volet propose de passer en analyse de base', async () => {
+  const slow = await slowServer();
+  const { app, page } = await launch({ localModel: slowModel(slow.url) });
+  await expect(page.getByTestId('analysis-status')).toContainText('active');
+  await page.getByTestId('composer-input').fill('Le maire de la commune a signé hier.');
+  await page.getByTestId('verify').click();
+  await expect(page.getByTestId('review-wait')).toBeVisible({ timeout: 2000 });
+  await page.getByTestId('review-skip').click();
+  await expect(page.getByTestId('review-wait')).toHaveCount(0, { timeout: 2000 });
+  await expect(page.getByTestId('review')).toContainText('Analyse de base');
+  await expect(page.getByTestId('review-continue')).toBeEnabled();
+  await app.close();
+  slow.close();
+});
+
+test('« Envoyer » pendant l’analyse part tout seul à la fin', async () => {
   const slow = await slowServer();
   const { app, page } = await launch({ localModel: slowModel(slow.url) });
   await expect(page.getByTestId('analysis-status')).toContainText('active');
   await page.getByTestId('composer-input').fill('Le maire de la commune a signé hier.');
   await page.getByTestId('send').click();
   await expect(page.getByTestId('cancel-queued')).toBeVisible();
-  await expect(page.getByTestId('skip-analysis')).toHaveCount(0);
+  await expect(page.getByTestId('skip-analysis')).toBeVisible();
   await expect(page.getByTestId('assistant-text')).toHaveCount(1, { timeout: 20_000 });
+  await app.close();
+  slow.close();
+});
+
+test('« Envoyer » en attente : « Passer en analyse de base » envoie sans attendre', async () => {
+  const slow = await slowServer();
+  const { app, page } = await launch({ localModel: slowModel(slow.url) });
+  await expect(page.getByTestId('analysis-status')).toContainText('active');
+  await page.getByTestId('composer-input').fill('Le maire de la commune a signé hier.');
+  await page.getByTestId('send').click();
+  await page.getByTestId('skip-analysis').click();
+  await expect(page.getByTestId('assistant-text')).toHaveCount(1, { timeout: 2500 });
   await app.close();
   slow.close();
 });

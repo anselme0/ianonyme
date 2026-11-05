@@ -35,6 +35,7 @@ export interface ReviewProps {
   onIgnore(mention: Mention): void;
   onLink(mention: Mention, entityId: string): void;
   onAddManual(text: string, category: Category, entityId?: string): void;
+  onSkip(): void;
   onCancel(): void;
   onContinue(): void;
 }
@@ -240,6 +241,16 @@ export function Review(p: ReviewProps) {
       </div>
 
       <div className="review-body">
+        {p.running && (
+          <div className="review-wait" role="status" data-testid="review-wait">
+            <Loader2 size={28} className="spin" aria-hidden />
+            <h3>{t.review.waitTitle}</h3>
+            <p className="text-2">{t.review.waitText}</p>
+            <button type="button" className="btn btn-secondary" onClick={p.onSkip} data-testid="review-skip">
+              {t.composer.skipAnalysis}
+            </button>
+          </div>
+        )}
         <section className="review-doc" aria-label={t.review.document}>
           {tab.buffer ? (
             <div className="doc-word" data-testid="review-doc">

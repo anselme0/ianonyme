@@ -127,6 +127,8 @@ export function App() {
   const drainRef = useRef<Promise<void>>(Promise.resolve());
   const processing = useRef(false);
   const queueToken = useRef(0);
+  /** L'utilisateur a choisi de passer en analyse de base : les analyses approfondies suivantes sont sautées. */
+  const skipDeep = useRef(false);
   const verifySeq = useRef(0);
   /** Ferme le volet et rend caduques les résultats d'analyse encore attendus pour lui. */
   const closeReview = (): void => {
@@ -256,6 +258,7 @@ export function App() {
       const again = deepCache.current.get(key);
       if (again) return again;
       if (skipIfStale && latestText.current !== target) return { suggestions: [], degraded: null };
+      if (skipDeep.current) return { suggestions: [], degraded: 'absent' };
       setBackground((n) => n + 1);
       try {
         const r = await api.llm.propose(current.id, target);
@@ -433,9 +436,20 @@ export function App() {
 
   /** Attend la fin de la lecture des fichiers et de l'analyse approfondie du message. */
   const gather = async (): Promise<Prepared> => {
-    await drainRef.current;
-    const message: DeepResult = text.trim().length > 0 ? await deepAnalyse(text, false) : { suggestions: [], degraded: null };
-    return { text, files: filesRef.current.filter((f) => f.chip && f.stage === 'ready'), message };
+    skipDeep.current = false;
+    try {
+      await drainRef.current;
+      const message: DeepResult = text.trim().length > 0 ? await deepAnalyse(text, false) : { suggestions: [], degraded: null };
+      return { text, files: filesRef.current.filter((f) => f.chip && f.stage === 'ready'), message };
+    } finally {
+      skipDeep.current = false;
+    }
+  };
+
+  /** « Passer en analyse de base » : abandonne l'analyse approfondie en cours et saute celles qui suivent. */
+  const skipAnalysis = (): void => {
+    skipDeep.current = true;
+    if (convRef.current) void api.llm.skip(convRef.current.id);
   };
 
   /** Vrai quand il faut encore attendre : un fichier en cours de lecture ou l'analyse du message. */
@@ -666,6 +680,7 @@ export function App() {
               onSend={() => void onSend()}
               onVerify={() => void onVerify()}
               onStop={() => void api.chat.stop(conv.id)}
+              onSkipAnalysis={skipAnalysis}
               onCancelQueued={() => {
                 queueToken.current++;
                 setQueued(false);
@@ -704,6 +719,7 @@ export function App() {
           onIgnore={(m) => onDecision({ action: 'reject', mention: m }, m)}
           onLink={(m, entityId) => onDecision({ action: 'link', mention: m, entityId }, m)}
           onAddManual={(value, category, entityId) => onDecision({ action: 'add', text: value, category, entityId })}
+          onSkip={skipAnalysis}
           onCancel={() => closeReview()}
           onContinue={() => void afterReview()}
         />
