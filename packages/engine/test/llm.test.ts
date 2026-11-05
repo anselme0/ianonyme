@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   acceptMention,
+  addManualMention,
   applyLlmMentions,
   buildLlmPrompt,
+  checkLeak,
   chunkText,
   createState,
   ingestText,
@@ -10,6 +12,7 @@ import {
   mergeLlmMentions,
   parseLlmOutput,
   rejectMention,
+  restore,
 } from '../src/index.js';
 
 const TEXT = 'M. Jean Garnier, maire de la commune, a signé. Le maire de la commune a précisé que son beau-frère est venu.';
@@ -150,5 +153,63 @@ describe('application d’office des propositions', () => {
     expect(masked).not.toContain('voisin');
     expect(masked).not.toContain('Saint-Cloud');
     expect(masked).toContain('architecte');
+  });
+});
+
+describe('fonction rattachée à une personne : le repère est ajouté, la fonction reste lisible', () => {
+  const role = (text: string, category: 'FONCTION' | 'LIEN_PARENTE' = 'FONCTION') => ({
+    id: 'x',
+    text,
+    span: { start: 0, end: 1 },
+    category,
+    source: 'llm' as const,
+    status: 'suggested' as const,
+  });
+
+  function stateWithGerant() {
+    let s = ingestText(createState(), 'M. Étienne Vasseur est le gérant de BÂTIRAVEL SAS.').state;
+    const id = Object.values(s.entities).find((e) => e.category === 'PERSONNE')!.id;
+    s = acceptMention(s, role('gérant'), id);
+    s = acceptMention(s, role('Le gérant'), id);
+    return s;
+  }
+
+  it('ajoute le repère de la personne devant la fonction seule', () => {
+    const s = stateWithGerant();
+    expect(mask('Le gérant a répondu.', s).masked).toBe('[PRENOM_1] [NOM_1] (Le gérant) a répondu.');
+  });
+
+  it('ne répète pas le repère quand le nom est juste à côté', () => {
+    const s = stateWithGerant();
+    expect(mask('M. Étienne Vasseur, gérant, a répondu.', s).masked).toBe('[PRENOM_1] [NOM_1], gérant, a répondu.');
+    expect(mask('Le gérant, M. Vasseur, a répondu.', s).masked).toBe('Le gérant, [NOM_1], a répondu.'.replace('[NOM_1]', 'M. [NOM_1]'));
+  });
+
+  it('une fonction qui contient une valeur protégée voit cette valeur masquée', () => {
+    let s = ingestText(createState(), 'Jean Garnier, maire de Valmont-sur-Aure.').state;
+    s = addManualMention(s, 'Valmont-sur-Aure', 'LIEU');
+    const id = Object.values(s.entities).find((e) => e.category === 'PERSONNE')!.id;
+    s = acceptMention(s, role('maire de Valmont-sur-Aure'), id);
+    const out = mask('Le maire de Valmont-sur-Aure a parlé.', s).masked;
+    expect(out).toBe('Le [PRENOM_1] [NOM_1] (maire de [LIEU_1]) a parlé.');
+    expect(checkLeak(out, s).ok).toBe(true);
+  });
+
+  it('une fonction dont un mot identifiant n’est pas protégé est remplacée en entier', () => {
+    let s = ingestText(createState(), 'Jean Garnier, maire de Valmont-sur-Aure.').state;
+    const id = Object.values(s.entities).find((e) => e.category === 'PERSONNE')!.id;
+    s = acceptMention(s, role('maire de Valmont-sur-Aure'), id);
+    expect(mask('Le maire de Valmont-sur-Aure a parlé.', s).masked).toBe('Le [PRENOM_1] [NOM_1] a parlé.');
+  });
+
+  it('une fonction générique laissée visible n’est pas une fuite', () => {
+    const s = stateWithGerant();
+    const { masked } = mask('Le gérant a répondu.', s);
+    expect(checkLeak(masked, s).ok).toBe(true);
+  });
+
+  it('la restitution remet le nom devant la fonction', () => {
+    const s = stateWithGerant();
+    expect(restore('[PRENOM_1] [NOM_1] (Le gérant) a répondu.', s).restored).toBe('Étienne Vasseur (Le gérant) a répondu.');
   });
 });

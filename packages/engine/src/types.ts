@@ -62,6 +62,11 @@ export interface Entity {
    * qui portent le même prénom ou le même nom (« Isabelle Brunet » et « Patrick Brunet » partagent le nom).
    */
   parts?: { given: string; family: string };
+  /**
+   * Formes de fonction ou de lien de parenté rattachées à l'entité (« le gérant », « son beau-frère »). Elles sont
+   * remplacées par le repère de l'entité, mais leur texte générique reste lisible : l'assistant garde la fonction.
+   */
+  roles?: string[];
 }
 
 export interface Conflict {

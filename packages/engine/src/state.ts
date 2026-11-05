@@ -140,6 +140,17 @@ function attach(state: ConversationState, entityId: string, text: string): Conve
   return { ...state, entities: { ...state.entities, [entityId]: next } };
 }
 
+const ROLE_CATEGORIES: readonly Category[] = ['FONCTION', 'LIEN_PARENTE'];
+
+/** Une fonction ou un lien de parenté rattaché à une entité d'une autre catégorie devient l'un de ses « rôles ». */
+function markRole(state: ConversationState, entityId: string, category: Category, text: string): ConversationState {
+  const entity = state.entities[entityId];
+  if (!entity || !ROLE_CATEGORIES.includes(category) || entity.category === category) return state;
+  const nv = normalizeValue(text);
+  if ((entity.roles ?? []).some((r) => normalizeValue(r) === nv)) return state;
+  return { ...state, entities: { ...state.entities, [entityId]: { ...entity, roles: [...(entity.roles ?? []), text.trim()] } } };
+}
+
 function acceptText(
   state: ConversationState,
   category: Category,
@@ -148,9 +159,9 @@ function acceptText(
 ): ConversationState {
   if (normalizeValue(text).length === 0) throw new EngineError('empty_value');
   const base = withoutRejected(state, text);
-  if (entityId) return attach(base, entityId, text);
+  if (entityId) return markRole(attach(base, entityId, text), entityId, category, text);
   const existing = findEntityByValue(base, canonicalFor(category, text)) ?? findEntityByValue(base, text);
-  if (existing) return attach(base, existing.id, text);
+  if (existing) return markRole(attach(base, existing.id, text), existing.id, category, text);
   return createEntity(base, category, text);
 }
 
@@ -180,6 +191,7 @@ export function rejectMention(state: ConversationState, mention: Mention): Conve
       entities[entity.id] = {
         ...entity,
         variants: entity.variants.filter((v) => normalizeValue(v) !== nv),
+        ...(entity.roles ? { roles: entity.roles.filter((r) => normalizeValue(r) !== nv) } : {}),
       };
     }
     next = { ...next, entities };

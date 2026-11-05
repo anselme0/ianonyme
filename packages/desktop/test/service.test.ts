@@ -176,7 +176,7 @@ describe('analyse approfondie', () => {
     // L'analyse protège d'office : rien ne reste à vérifier hors cas ambigus.
     expect(r.mentions).toEqual([]);
     const a = h.service.analyze(conv.id, 'Le maire de la commune a signé.');
-    expect(a.maskedText).toMatch(/^\[PRENOM_\d\] \[NOM_\d\] a signé\.$/);
+    expect(a.maskedText).toMatch(/^\[PRENOM_\d\] \[NOM_\d\] \(Le maire de la commune\) a signé\.$/);
   });
 
   it('tranche d’office une ambiguïté avec le modèle, sinon la laisse en point de vigilance', async () => {

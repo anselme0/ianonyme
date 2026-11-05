@@ -66,7 +66,7 @@ Réponses obtenues lors de l'essai (extraits) : Q1 donne le nom du gérant, son 
 ## 7. Limites connues, à savoir avant de les rencontrer
 
 - **Variabilité du modèle** : d'une exécution à l'autre, un lien peut manquer (« son beau-frère ») ou un faux positif apparaître (par exemple « gérant » seul protégé). L'utilisateur corrige d'un clic.
-- **Fonction rattachée à une personne** : « maire de Valmont-sur-Aure » est remplacé en entier par la personne. L'IA perd l'information « maire » ; elle voit deux fois le même repère de suite quand le nom et la fonction se suivent (« M. Garnier, maire de … »).
+- **Fonction rattachée à une personne** : la fonction reste lisible à côté du repère (« [repère] (le gérant) », « maire de [lieu] »), donc l'IA répond « Étienne Vasseur est le gérant de BÂTIRAVEL ». Une fonction qui contient un mot identifiant non protégé est remplacée en entier.
 - **Désignations très vagues** (« l'adjointe au maire », « les services ») : à la discrétion du modèle.
 - **Contexte long** : le modèle local lit le texte par morceaux de 2 000 caractères ; les liens entre morceaux éloignés peuvent être manqués.
 

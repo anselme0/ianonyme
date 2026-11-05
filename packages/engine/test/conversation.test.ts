@@ -126,7 +126,7 @@ describe('décisions de l\'utilisateur', () => {
       { id: 'x', text: 'le président de l\'association', span: { start: 0, end: 5 }, category: 'FONCTION', source: 'llm', status: 'suggested' },
       id,
     );
-    expect(mask('Le président de l\'association parle.', state).masked).toBe('[PRENOM_1] [NOM_1] parle.');
+    expect(mask('Le président de l\'association parle.', state).masked).toBe("[PRENOM_1] [NOM_1] (Le président de l'association) parle.");
   });
 
   it('ajout manuel d\'une catégorie sans variantes', () => {
