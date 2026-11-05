@@ -246,12 +246,8 @@ function organisations(text: string, out: RuleHit[]): void {
         a--;
       }
       if (/^(et|&|de|du|des)$/.test(toks[a]!.value)) a++;
-      // Inclut le mot « société » qui précède directement.
-      let start = toks[a]!.start;
-      const before = text.slice(Math.max(0, start - 12), start);
-      const prefix = /(?:Société|société|Sté|sté|Entreprise|entreprise)[  ]+$/u.exec(before);
-      if (prefix) start -= prefix[0].length;
-      hit(out, text, start, toks[k]!.end, 'ORGANISATION', 4);
+      // Le mot qui précède (« société ») reste lisible : seul le nom propre est protégé.
+      hit(out, text, toks[a]!.start, toks[k]!.end, 'ORGANISATION', 4);
       k = toks.length;
     }
   }
@@ -268,7 +264,8 @@ function organisations(text: string, out: RuleHit[]): void {
     const first = toks[0];
     const last = toks[toks.length - 1];
     if (!first || !last || isStop(first.value)) continue;
-    hit(out, text, m.index, last.end, 'ORGANISATION', 4);
+    // Le mot-clé (cabinet, association…) reste lisible : seul le nom propre qui suit est protégé.
+    hit(out, text, ind[1][0], last.end, 'ORGANISATION', 4);
   }
 }
 

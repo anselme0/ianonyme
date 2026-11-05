@@ -376,7 +376,7 @@ export class ChatService {
     const empty = {
       mentions: [] as Mention[],
       conflicts: [],
-      stats: { proposed: 0, retained: 0, invalidJson: 0, hallucinated: 0, invalidCategory: 0, duplicates: 0, capped: 0, durationMs: 0 },
+      stats: { proposed: 0, retained: 0, invalidJson: 0, hallucinated: 0, invalidCategory: 0, duplicates: 0, capped: 0, generic: 0, durationMs: 0 },
     };
     const llm = this.deps.llm;
     if (llm.status() !== 'ready') {

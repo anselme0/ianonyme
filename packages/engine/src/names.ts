@@ -122,7 +122,7 @@ export const LEGAL_FORM_SOURCE = `(?:${LEGAL_FORMS.join('|')})`;
 
 export const ORG_KEYWORDS_STRIPPED = ['société', 'societe', 'sté', 'entreprise'];
 
-/** Variantes d'une organisation : sans forme juridique, avec « Société ». Propagation prudente. */
+/** Variantes d'une organisation : sans forme juridique. Propagation prudente. */
 export function organisationVariants(canonical: string): string[] {
   const tokens = canonical.split(/\s+/).filter(Boolean);
   const out: string[] = [];
@@ -131,7 +131,6 @@ export function organisationVariants(canonical: string): string[] {
     const short = tokens.slice(0, -1).join(' ');
     if (short.replace(/[^\p{L}]/gu, '').length >= 4 && !isCommonWord(short)) {
       out.push(short);
-      out.push(`Société ${short}`);
     }
   }
   return out;

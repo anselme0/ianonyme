@@ -81,10 +81,10 @@ describe('règles déterministes (valeurs fictives)', () => {
 
   it('organisation : forme juridique et mot-clé', () => {
     expect(found('La société BATIFRANCE SARL, représentée')[0]).toEqual({
-      text: 'société BATIFRANCE SARL',
+      text: 'BATIFRANCE SARL',
       category: 'ORGANISATION',
     });
-    expect(found('Cabinet Rolland et Associés - 22 boulevard Gambetta')[0]?.text).toBe('Cabinet Rolland et Associés');
+    expect(found('Cabinet Rolland et Associés - 22 boulevard Gambetta')[0]?.text).toBe('Rolland et Associés');
   });
 
   it('ne masque pas les dates de faits ni les juridictions publiques (B.3)', () => {

@@ -614,7 +614,7 @@ Principe : **privilégier le rappel**. Les faux positifs sont acceptables, car l
 | `DATE_NAISSANCE` | Règle de contexte | Date précédée d'indices (« né(e) le », « date de naissance », « née le »). Voir B.3 sur les autres dates |
 | `ADRESSE` | Règles | Numéro + type de voie (rue, avenue, boulevard, chemin, impasse, place…) + nom ; code postal + ville |
 | `PERSONNE` | Règles + variantes | Civilité (M., Mme, Me, Maître, Dr, Pr, Monsieur, Madame) suivie de mots capitalisés ; suite de mots capitalisés dont le premier est un prénom connu (liste de prénoms courants, source à identifier) ; noms en majuscules |
-| `ORGANISATION` | Règles | Formes juridiques (SARL, SAS, SA, SCI, EURL…) précédées d'un nom ; mots-clés (cabinet, société, association, tribunal, mairie…) suivis de mots capitalisés |
+| `ORGANISATION` | Règles | Formes juridiques (SARL, SAS, SA, SCI, EURL…) précédées d'un nom ; mots-clés (cabinet, société, association, mairie…) suivis de mots capitalisés. **Seul le nom propre est protégé** : le mot qui précède (« société », « cabinet ») reste lisible (« la société [ORGANISATION_1] »). Les juridictions et administrations publiques (« tribunal judiciaire », « services municipaux »), les fonctions ordinaires seules (« le gérant », « l'avocat », « le juge des référés ») et les dates de faits ne sont pas protégées, y compris quand le LLM local les propose (C.5) |
 | `LIEU`, `FONCTION`, `LIEN_PARENTE` | LLM seulement | Pas de règle déterministe fiable : cas typique « le maire de la commune », « son beau-frère » |
 
 ### B.2 Propagation des variantes de noms
@@ -672,7 +672,8 @@ confié à un assistant. Tu décides toi-même quoi protéger. Tu ne réécris j
 - toute formulation qui désigne indirectement une personne ou une entité connue.
 
 À LAISSER (ne pas renvoyer) : le contexte utile à l'assistant, qui n'identifie personne :
-- métiers et qualités génériques (ex. « l'architecte », « l'expert », « le propriétaire », « le locataire » seuls, sans lieu ni nom) ;
+- métiers et qualités génériques (ex. « l'architecte », « l'expert », « le propriétaire », « le locataire » seuls, sans lieu ni nom) ; la fonction d'une personne nommée, comme « le gérant », « la directrice », « l'avocat », reste aussi lisible : seul le nom propre qui l'accompagne (société, lieu, personne) est à protéger ;
+- juridictions et administrations publiques (ex. « tribunal judiciaire », « cour d'appel », « services municipaux ») et fonctions judiciaires (ex. « le juge des référés ») ;
 - notions, lois, termes techniques, dates sans rapport avec une identité.
 
 Pour chaque mention à protéger :

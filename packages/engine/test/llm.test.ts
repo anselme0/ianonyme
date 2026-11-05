@@ -213,3 +213,50 @@ describe('fonction rattachée à une personne : le repère est ajouté, la fonct
     expect(restore('[PRENOM_1] [NOM_1] (Le gérant) a répondu.', s).restored).toBe('Étienne Vasseur (Le gérant) a répondu.');
   });
 });
+
+describe('propositions écartées : contexte ordinaire et institutions publiques', () => {
+  const TEXTE = 'Le gérant de la société BÂTIRAVEL SAS a répondu. Le juge des référés du tribunal judiciaire a statué. Le maire de Valmont-sur-Aure a parlé.';
+
+  it('écarte une fonction ordinaire, une juridiction et leurs variantes', () => {
+    const r = mergeLlmMentions(
+      [
+        { text: 'Le gérant de la société BÂTIRAVEL SAS', category: 'FONCTION', linkedTo: null },
+        { text: 'gérant', category: 'FONCTION', linkedTo: null },
+        { text: 'Juge des référés', category: 'FONCTION', linkedTo: null },
+        { text: 'Tribunal judiciaire', category: 'ORGANISATION', linkedTo: null },
+        { text: 'services municipaux', category: 'ORGANISATION', linkedTo: null },
+      ],
+      TEXTE,
+      createState(),
+    );
+    expect(r.mentions).toEqual([]);
+    expect(r.stats.generic).toBe(5);
+  });
+
+  it('écarte une date de fait proposée comme identifiant', () => {
+    const r = mergeLlmMentions(
+      [
+        { text: '6 décembre 2025', category: 'IDENTIFIANT', linkedTo: null },
+        { text: '12/03/2024', category: 'IDENTIFIANT', linkedTo: null },
+      ],
+      'Les désordres sont apparus le 6 décembre 2025 puis le 12/03/2024.',
+      createState(),
+    );
+    expect(r.mentions).toEqual([]);
+    expect(r.stats.generic).toBe(2);
+  });
+
+  it('garde une désignation qui identifie : « le maire de Valmont-sur-Aure »', () => {
+    const r = mergeLlmMentions([{ text: 'Le maire de Valmont-sur-Aure', category: 'FONCTION', linkedTo: null }], TEXTE, createState());
+    expect(r.mentions).toHaveLength(1);
+    expect(r.stats.generic).toBe(0);
+  });
+});
+
+describe('organisation : le mot « société » ou « cabinet » reste lisible', () => {
+  it('seul le nom propre est remplacé, y compris en minuscules dans un message', () => {
+    const s = ingestText(createState(), 'La société BÂTIRAVEL SAS a livré. Cabinet Maurel Expertises - Dossier.').state;
+    expect(mask('Qui est le gérant de la société batiravel ?', s).masked).toMatch(/^Qui est le gérant de la société \[ORGANISATION_\d\] \?$/);
+    expect(mask('Cabinet Maurel Expertises', s).masked).toMatch(/^Cabinet \[ORGANISATION_\d\]$/);
+  });
+});

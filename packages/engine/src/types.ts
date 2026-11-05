@@ -164,5 +164,7 @@ export interface LlmStats {
   invalidCategory: number;
   duplicates: number;
   capped: number;
+  /** Propositions écartées : fonction ordinaire, juridiction ou administration publique. */
+  generic: number;
   durationMs: number;
 }

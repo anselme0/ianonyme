@@ -34,7 +34,8 @@ confié à un assistant. Tu décides toi-même quoi protéger. Tu ne réécris j
 - toute formulation qui désigne indirectement une personne ou une entité connue.
 
 À LAISSER (ne pas renvoyer) : le contexte utile à l'assistant, qui n'identifie personne :
-- métiers et qualités génériques (ex. « l'architecte », « l'expert », « le propriétaire », « le locataire » seuls, sans lieu ni nom) ;
+- métiers et qualités génériques (ex. « l'architecte », « l'expert », « le propriétaire », « le locataire » seuls, sans lieu ni nom) ; la fonction d'une personne nommée, comme « le gérant », « la directrice », « l'avocat », reste aussi lisible : seul le nom propre qui l'accompagne (société, lieu, personne) est à protéger ;
+- juridictions et administrations publiques (ex. « tribunal judiciaire », « cour d'appel », « services municipaux ») et fonctions judiciaires (ex. « le juge des référés ») ;
 - notions, lois, termes techniques, dates sans rapport avec une identité.
 
 Pour chaque mention à protéger :
@@ -58,6 +59,37 @@ export function buildLlmPrompt(chunk: string, state: ConversationState): string 
     '{{texte}}',
     chunk,
   );
+}
+
+const DETERMINERS = new Set(['le', 'la', 'les', 'l', 'un', 'une', 'son', 'sa', 'ses', 'leur', 'notre', 'ce', 'cette']);
+
+/** Fonctions ordinaires : du contexte pour l'assistant, jamais protégées seules (« le gérant », « l'avocat »). */
+const GENERIC_ROLES = new Set(
+  `gerant gerante directeur directrice president presidente dirigeant responsable representant representante expert experte
+  architecte avocat avocate notaire juge huissier greffier procureur proprietaire locataire entrepreneur sous-traitant
+  employe salarie ouvrier artisan syndic medecin ingenieur technicien demandeur demanderesse defendeur defenderesse plaignant`.split(/\s+/),
+);
+
+/** Juridictions et administrations publiques : non protégées par défaut (B.3). */
+const PUBLIC_BODIES = new Set(['tribunal', 'cour', 'conseil', 'parquet', 'greffe', 'juridiction', 'ministere', 'services']);
+
+/** Premier mot significatif d'une mention, sans article, sans accent ni casse (« L'avocate de… » -> « avocate »). */
+function headWord(text: string): string {
+  const words = normalizeValue(text).split(/[\s']+/).filter(Boolean);
+  return words.find((w) => !DETERMINERS.has(w)) ?? '';
+}
+
+const MONTHS = 'janvier|février|fevrier|mars|avril|mai|juin|juillet|août|aout|septembre|octobre|novembre|décembre|decembre';
+/** Une date de fait (« 6 décembre 2025 », « 12/03/2024 ») : du contexte, pas une information identifiante. */
+const PLAIN_DATE = new RegExp(`^(?:(?:le\\s+)?\\d{1,2}(?:er)?\\s+(?:${MONTHS})(?:\\s+\\d{4})?|\\d{1,2}[/.-]\\d{1,2}[/.-]\\d{2,4}|(?:${MONTHS})\\s+\\d{4})$`, 'iu');
+
+/** Propositions à écarter : fonction ordinaire, date de fait, ou juridiction et administration publiques. */
+export function isGenericProposal(category: string, text: string): boolean {
+  if (PLAIN_DATE.test(text.trim())) return true;
+  const head = headWord(text);
+  if (category === 'FONCTION') return GENERIC_ROLES.has(head) || PUBLIC_BODIES.has(head);
+  if (category === 'ORGANISATION' || category === 'LIEU') return PUBLIC_BODIES.has(head);
+  return false;
 }
 
 const PERSON_LIKE: readonly string[] = ['PERSONNE', 'FONCTION', 'LIEN_PARENTE'];
@@ -118,6 +150,7 @@ function emptyStats(): LlmStats {
     invalidCategory: 0,
     duplicates: 0,
     capped: 0,
+    generic: 0,
     durationMs: 0,
   };
 }
@@ -163,6 +196,10 @@ export function mergeLlmMentions(
     const nv = normalizeValue(value);
     if (nv.length === 0) {
       stats.hallucinated++;
+      continue;
+    }
+    if (isGenericProposal(item.category, value)) {
+      stats.generic++;
       continue;
     }
     const occurrences = findOccurrences(nt, value);
