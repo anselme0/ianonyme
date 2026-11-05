@@ -118,6 +118,23 @@ test('« Vérifier » ouvre le volet tout de suite, sans attendre la fin de l’
   slow.close();
 });
 
+test('les boutons restent cliquables pendant l’analyse d’un document', async () => {
+  const slow = await slowServer();
+  const { app, page } = await launch({ localModel: slowModel(slow.url) });
+  await expect(page.getByTestId('analysis-status')).toContainText('active');
+  await page.getByTestId('file-input').setInputFiles(resolve(DEMO, 'expertise-affaire-brunet.docx'));
+  await expect(page.locator('.file-tile.file-deep')).toBeVisible();
+  await expect(page.getByTestId('verify')).toBeEnabled();
+  await expect(page.getByTestId('send')).toBeEnabled();
+  await page.getByTestId('verify').click();
+  await expect(page.getByTestId('review')).toBeVisible({ timeout: 2000 });
+  await expect(page.getByTestId('review-continue')).toBeDisabled();
+  await expect(page.getByTestId('review-continue')).toBeEnabled({ timeout: 20_000 });
+  await expect(page.getByTestId('review-doc').locator('mark.dx-mark').first()).toBeVisible();
+  await app.close();
+  slow.close();
+});
+
 test('« Envoyer » pendant l’analyse part tout seul à la fin, sans option de passer', async () => {
   const slow = await slowServer();
   const { app, page } = await launch({ localModel: slowModel(slow.url) });

@@ -80,7 +80,8 @@ export function Composer(p: Props) {
     if (picked.length > 0) p.onPickFiles(picked);
   };
 
-  const canSend = (p.value.trim().length > 0 || p.files.some((f) => f.stage === 'ready')) && !p.generating;
+  // Un document encore en cours d'analyse compte déjà : on peut cliquer, le volet ou l'envoi attend la fin.
+  const canSend = (p.value.trim().length > 0 || p.files.some((f) => f.stage !== 'failed')) && !p.generating;
 
   return (
     <div className="composer" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>

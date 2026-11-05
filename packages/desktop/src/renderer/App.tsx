@@ -482,7 +482,8 @@ export function App() {
     const mine = ++verifySeq.current;
     const cached = deepCache.current.get(`${convRef.current.id}\u0000${text}`);
     const pending = analysisPending();
-    await openReview({ text, files: filesRef.current.filter((f) => f.chip && f.stage === 'ready'), message: cached ?? { suggestions: [], degraded: null } }, pending);
+    // Les documents encore en lecture ou en analyse ont déjà leur onglet : leur contenu s'y ajoutera.
+    await openReview({ text, files: filesRef.current.filter((f) => f.stage !== 'failed'), message: cached ?? { suggestions: [], degraded: null } }, pending);
     if (!pending) return;
     const full = await gather();
     // Le volet a pu être fermé ou rouvert entre-temps.
@@ -501,7 +502,7 @@ export function App() {
     const p = await gather();
     if (queueToken.current !== token) return;
     setQueued(false);
-    if (!convRef.current) return;
+    if (!convRef.current || (p.text.trim().length === 0 && p.files.length === 0)) return;
     const current = convRef.current;
     const pending = p.message.suggestions.length + p.files.reduce((n, f) => n + f.suggestions.length, 0);
     const pv = await api.chat.preview(current.id, p.text, p.files.map((f) => f.chip!.id), pending);
