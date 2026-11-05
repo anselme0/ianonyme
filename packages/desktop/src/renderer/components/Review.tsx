@@ -4,8 +4,12 @@ import type { Category, Mention } from 'engine';
 import type { AnalysisView, EntityView } from '../../shared/api.js';
 import { DEFAULT_CATEGORY, FAMILY_ORDER, familyOf } from '../families.js';
 import type { FamilyId } from '../families.js';
+import { normalizeValue } from 'engine';
 import { marksFrom } from '../marks.js';
+import type { MarkKind } from '../marks.js';
 import { t } from '../messages.js';
+import { DocxView } from './DocxView.js';
+import type { DocxTerm } from './DocxView.js';
 import { Marked } from './Marked.js';
 
 /** Un onglet par texte transmis : le message, puis chaque document. */
@@ -16,6 +20,8 @@ export interface ReviewTab {
   analysis: AnalysisView | null;
   suggestions: Mention[];
   total: number;
+  /** Fichier Word d'origine : affiché comme dans Word au lieu du texte brut. */
+  buffer?: ArrayBuffer;
 }
 
 export interface ReviewProps {
@@ -146,6 +152,25 @@ export function Review(p: ReviewProps) {
   }, [analysis]);
 
   // Arborescence comme dans le volet Protection : l'élément principal, puis ses autres formes présentes dans ce texte.
+  // Valeurs à surligner dans le rendu Word (recherchées par valeur : Word découpe le texte comme il veut).
+  const terms = useMemo(() => {
+    const out: DocxTerm[] = [];
+    const seen = new Set<string>();
+    const conflictIds = new Set((analysis?.conflicts ?? []).map((c) => c.mentionId));
+    const add = (m: Mention, kind: MarkKind): void => {
+      const key = `${normalizeValue(m.text)}|${kind}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push({ id: m.id, text: m.text, family: familyOf(m.category), kind, ...(labels[m.id] ? { label: labels[m.id] } : {}) });
+    };
+    for (const m of analysis?.mentions ?? []) {
+      if (m.status === 'rejected') continue;
+      add(m, conflictIds.has(m.id) ? 'conflict' : m.status === 'accepted' ? 'protected' : 'suggested');
+    }
+    for (const m of suggestions) add(m, 'suggested');
+    return out;
+  }, [analysis, suggestions, labels]);
+
   const autoGroups = useMemo(() => {
     interface Node {
       key: string;
@@ -216,27 +241,48 @@ export function Review(p: ReviewProps) {
 
       <div className="review-body">
         <section className="review-doc" aria-label={t.review.document}>
-          <div className="doc-text" ref={doc} onMouseUp={onMouseUp} data-testid="review-doc">
-            <Marked
-              text={text}
-              marks={marks}
-              labels={showSent ? labels : undefined}
-              onRemove={
-                showSent
-                  ? undefined
-                  : (m) => {
-                      const mention = analysis?.mentions.find((x) => x.id === m.id);
-                      if (mention) p.onIgnore(mention);
-                    }
-              }
-              removeLabel={t.review.unprotect}
-              selectedId={current?.mention.id ?? null}
-              onMarkClick={(m) => {
-                const index = items.findIndex((it) => it.mention.id === m.id);
-                if (index >= 0) setSelected(index);
-              }}
-            />
-          </div>
+          {tab.buffer ? (
+            <div className="doc-word" data-testid="review-doc">
+              <DocxView
+                buffer={tab.buffer}
+                terms={terms}
+                sent={showSent}
+                selectedId={current?.mention.id ?? null}
+                removeLabel={t.review.unprotect}
+                onMarkClick={(id) => {
+                  const index = items.findIndex((it) => it.mention.id === id);
+                  if (index >= 0) setSelected(index);
+                }}
+                onRemove={(id) => {
+                  const mention = analysis?.mentions.find((x) => x.id === id);
+                  if (mention) p.onIgnore(mention);
+                }}
+                onSelectText={(value, x, y) => setSelection({ text: value, x, y })}
+              />
+            </div>
+          ) : (
+            <div className="doc-text" ref={doc} onMouseUp={onMouseUp} data-testid="review-doc">
+              <Marked
+                text={text}
+                marks={marks}
+                labels={showSent ? labels : undefined}
+                onRemove={
+                  showSent
+                    ? undefined
+                    : (m) => {
+                        const mention = analysis?.mentions.find((x) => x.id === m.id);
+                        if (mention) p.onIgnore(mention);
+                      }
+                }
+                removeLabel={t.review.unprotect}
+                selectedId={current?.mention.id ?? null}
+                onMarkClick={(m) => {
+                  const index = items.findIndex((it) => it.mention.id === m.id);
+                  if (index >= 0) setSelected(index);
+                }}
+              />
+            </div>
+          )}
           {selection && (
             <div className="selection-menu" style={{ left: selection.x, top: selection.y }} role="menu" data-testid="selection-menu">
               <select aria-label={t.review.selectionFamily} value={family} onChange={(e) => {

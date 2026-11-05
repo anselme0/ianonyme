@@ -34,6 +34,8 @@ type UiFile = ComposerFile & {
   /** Cas ambigus laissés par l'analyse approfondie, à traiter à la vérification. */
   suggestions: Mention[];
   degraded: Degraded;
+  /** Fichier Word d'origine, pour l'afficher comme dans Word à la vérification. */
+  buffer?: ArrayBuffer;
 };
 
 interface ReviewState {
@@ -360,14 +362,15 @@ export function App() {
     const entry: UiFile = { uid, chip: null, name: file.name, stage: 'reading', text: '', suggestions: [], degraded: null };
     updateFiles((f) => [...f, entry]);
     const patch = (p: Partial<UiFile>): void => updateFiles((list) => list.map((x) => (x.uid === uid ? { ...x, ...p } : x)));
-    const res = await api.files.import(current.id, file.name, await file.arrayBuffer());
+    const bytes = await file.arrayBuffer();
+    const res = await api.files.import(current.id, file.name, bytes);
     if (!res.ok || !res.file || res.text === undefined) {
       const reason = res.blocked?.reason ?? 'file_unreadable';
       patch({ stage: 'failed', error: t.file.refused(reason) });
       setError({ kind: 'code', code: reason });
       return;
     }
-    patch({ chip: res.file, stage: 'detecting', text: res.text });
+    patch({ chip: res.file, stage: 'detecting', text: res.text, ...(/\.docx$/i.test(file.name) ? { buffer: bytes } : {}) });
     if (info?.localAnalysis === 'ready') patch({ stage: 'deep' });
     const found = await deepAnalyse(res.text, false);
     setConv(await api.conversations.get(current.id));
@@ -436,14 +439,14 @@ export function App() {
   const buildTabs = async (p: Prepared): Promise<ReviewTab[]> => {
     const current = convRef.current!;
     const tabs: ReviewTab[] = [];
-    const make = async (key: string, title: string, body: string, suggestions: Mention[]): Promise<ReviewTab> => {
+    const make = async (key: string, title: string, body: string, suggestions: Mention[], buffer?: ArrayBuffer): Promise<ReviewTab> => {
       const a = await api.detect.run(current.id, body, true);
       const covered = (m: Mention): boolean => a.mentions.some((x) => x.status === 'accepted' && m.span.start >= x.span.start && m.span.end <= x.span.end);
       const open = suggestions.filter((s) => !covered(s));
-      return { key, title, text: body, analysis: a, suggestions: open, total: open.length + a.conflicts.length };
+      return { key, title, text: body, analysis: a, suggestions: open, total: open.length + a.conflicts.length, ...(buffer ? { buffer } : {}) };
     };
     if (p.text.trim().length > 0) tabs.push(await make('message', t.review.messageTab, p.text, p.message.suggestions));
-    for (const f of p.files) tabs.push(await make(f.uid, f.name, f.text, f.suggestions));
+    for (const f of p.files) tabs.push(await make(f.uid, f.name, f.text, f.suggestions, f.buffer));
     return tabs;
   };
 

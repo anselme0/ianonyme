@@ -496,4 +496,4 @@ Le prototype est attendu mercredi 4 novembre. Le temps est court : on construit 
 - **Documents en tuiles** (nom entier, deux lignes au plus), dans la zone de saisie et dans le message envoyé.
 - **Volet Protection** : pas de repères entre crochets ; liste par famille, nom principal puis variantes en sous-liste indentée.
 - **Ambiguïtés** : tranchées d'office par le modèle local quand le contexte le permet ; sinon point de vigilance dans le volet.
-
+- **Document Word dans le volet de vérification** : un fichier `.docx` s'affiche comme dans Word (pages, en-tête et pied de page, tableaux, polices), avec le même surlignage, la même croix au survol et le même commutateur « Votre texte | Ce que l'IA va recevoir ». Les autres fichiers gardent l'affichage en texte.

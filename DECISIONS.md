@@ -67,3 +67,7 @@ Si le premier mot d'un nom de personne n'est pas dans la liste de prénoms, on s
 
 ## D22. Confusables et caractères invisibles
 La normalisation ramène à leur équivalent latin les lettres cyrilliques et grecques identiques à l'œil, et ignore les caractères invisibles (largeur nulle, sens d'écriture, trait d'union conditionnel, accents combinants). Un nom écrit avec un « а » cyrillique est donc masqué. Limites assumées : lettres espacées (`J e a n`), encodage de pourcentage, ligatures `œ` et `æ` : non traités (testés comme « limites connues »).
+
+## D23 — Affichage Word du volet de vérification : `docx-preview`
+
+Le volet de vérification affiche un `.docx` comme dans Word (pages, en-têtes, tableaux, mise en forme). Choix : la bibliothèque `docx-preview` 0.4.1 (licence Apache-2.0, maintenue, rendu dans le navigateur, aucun envoi réseau). Le surlignage est posé après le rendu, **par valeur** : le texte de chaque paragraphe est recollé avant la recherche, car Word découpe les mots en plusieurs morceaux. Écartés : convertir en HTML avec mammoth (perd les tableaux colorés, les en-têtes, les polices) ; réécrire un moteur de rendu (hors proportion). Les autres formats (texte, PDF) gardent l'affichage en texte brut. Les valeurs détectées restent calculées sur le texte extrait, pas sur le rendu : le rendu ne sert qu'à l'affichage.

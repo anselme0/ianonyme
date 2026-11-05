@@ -59,6 +59,31 @@ test('une croix au survol d’un élément protégé le retire', async () => {
   await app.close();
 });
 
+test('un document Word s’affiche comme dans Word, avec les éléments surlignés et leur croix', async () => {
+  const { app, page } = await launch();
+  await page.getByTestId('file-input').setInputFiles(resolve(DEMO, 'expertise-affaire-brunet.docx'));
+  await expect(page.locator('.file-tile.file-ready')).toBeVisible({ timeout: 30_000 });
+  await page.getByTestId('verify').click();
+  const doc = page.getByTestId('review-doc');
+  await expect(doc.locator('section.docx').first()).toBeVisible();
+  await expect(doc).toContainText('RAPPORT D’EXPERTISE JUDICIAIRE');
+  await expect(doc.locator('table').first()).toBeVisible();
+  const marks = doc.locator('mark.dx-mark.mark-protected');
+  expect(await marks.count()).toBeGreaterThan(5);
+  // Le nom d'un participant, dans le tableau, est surligné : la croix au survol le retire.
+  const cell = doc.locator('td mark.dx-mark.mark-protected', { hasText: 'Isabelle Brunet' }).first();
+  await expect(cell).toBeVisible();
+  const before = await doc.locator('mark.dx-mark').allInnerTexts();
+  await cell.hover();
+  await cell.locator('button.mark-x').click();
+  await expect.poll(async () => (await doc.locator('mark.dx-mark').allInnerTexts()).join('|')).not.toBe(before.join('|'));
+  // Vue « ce que l'IA va recevoir » : même document, repères à la place des valeurs.
+  await page.getByTestId('review-see-sent').click();
+  await expect(doc).toContainText('[NOM_');
+  await page.screenshot({ path: `${SHOTS}/18-document-word.png` });
+  await app.close();
+});
+
 test('écran de démarrage pendant la préparation de l’analyse, avec sortie vers l’analyse de base', async () => {
   // Un serveur qui ne termine jamais le téléchargement : l'analyse approfondie reste « en préparation ».
   const server = createServer((_req, res) => {

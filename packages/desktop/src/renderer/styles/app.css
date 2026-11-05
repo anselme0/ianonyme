@@ -974,6 +974,22 @@ h3 {
   line-height: 1.7;
   user-select: text;
 }
+.doc-word {
+  user-select: text;
+}
+.doc-word .docx-wrapper {
+  background: transparent;
+  padding: 4px 0 var(--space-4);
+}
+.doc-word .docx-wrapper > section.docx {
+  margin: 0 auto var(--space-4);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.28);
+}
+.doc-word mark.dx-mark {
+  position: relative;
+  padding: 0;
+  border-radius: 3px;
+}
 .selection-menu {
   position: fixed;
   z-index: 30;
