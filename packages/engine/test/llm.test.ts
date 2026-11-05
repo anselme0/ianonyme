@@ -233,6 +233,20 @@ describe('propositions écartées : contexte ordinaire et institutions publiques
     expect(r.stats.generic).toBe(5);
   });
 
+  it('écarte un montant proposé comme identifiant', () => {
+    const r = mergeLlmMentions(
+      [
+        { text: '12 840 euros', category: 'IDENTIFIANT', linkedTo: null },
+        { text: '64 200 € HT', category: 'IDENTIFIANT', linkedTo: null },
+        { text: '18 500,50 euros hors taxes', category: 'IDENTIFIANT', linkedTo: null },
+      ],
+      'Le solde de 12 840 euros, un devis de 64 200 € HT et 18 500,50 euros hors taxes.',
+      createState(),
+    );
+    expect(r.mentions).toEqual([]);
+    expect(r.stats.generic).toBe(3);
+  });
+
   it('écarte une date de fait proposée comme identifiant', () => {
     const r = mergeLlmMentions(
       [

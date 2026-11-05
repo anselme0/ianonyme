@@ -675,7 +675,7 @@ confié à un assistant. Tu décides toi-même quoi protéger. Tu ne réécris j
 À LAISSER (ne pas renvoyer) : le contexte utile à l'assistant, qui n'identifie personne :
 - métiers et qualités génériques (ex. « l'architecte », « l'expert », « le propriétaire », « le locataire » seuls, sans lieu ni nom) ; la fonction d'une personne nommée, comme « le gérant », « la directrice », « l'avocat », reste aussi lisible : seul le nom propre qui l'accompagne (société, lieu, personne) est à protéger ;
 - juridictions et administrations publiques (ex. « tribunal judiciaire », « cour d'appel », « services municipaux ») et fonctions judiciaires (ex. « le juge des référés ») ;
-- notions, lois, termes techniques, dates sans rapport avec une identité.
+- notions, lois, termes techniques, montants en euros, dates sans rapport avec une identité.
 
 Pour chaque mention à protéger :
 - "text" : la chaîne EXACTE, copiée telle qu'elle apparaît dans le texte, sans modification ; pour un nom propre, uniquement le nom (« Brunet », pas « l'affaire Brunet ») ;

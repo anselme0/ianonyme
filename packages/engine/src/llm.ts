@@ -36,7 +36,7 @@ confié à un assistant. Tu décides toi-même quoi protéger. Tu ne réécris j
 À LAISSER (ne pas renvoyer) : le contexte utile à l'assistant, qui n'identifie personne :
 - métiers et qualités génériques (ex. « l'architecte », « l'expert », « le propriétaire », « le locataire » seuls, sans lieu ni nom) ; la fonction d'une personne nommée, comme « le gérant », « la directrice », « l'avocat », reste aussi lisible : seul le nom propre qui l'accompagne (société, lieu, personne) est à protéger ;
 - juridictions et administrations publiques (ex. « tribunal judiciaire », « cour d'appel », « services municipaux ») et fonctions judiciaires (ex. « le juge des référés ») ;
-- notions, lois, termes techniques, dates sans rapport avec une identité.
+- notions, lois, termes techniques, montants en euros, dates sans rapport avec une identité.
 
 Pour chaque mention à protéger :
 - "text" : la chaîne EXACTE, copiée telle qu'elle apparaît dans le texte, sans modification ; pour un nom propre, uniquement le nom (« Brunet », pas « l'affaire Brunet ») ;
@@ -83,9 +83,12 @@ const MONTHS = 'janvier|février|fevrier|mars|avril|mai|juin|juillet|août|aout|
 /** Une date de fait (« 6 décembre 2025 », « 12/03/2024 ») : du contexte, pas une information identifiante. */
 const PLAIN_DATE = new RegExp(`^(?:(?:le\\s+)?\\d{1,2}(?:er)?\\s+(?:${MONTHS})(?:\\s+\\d{4})?|\\d{1,2}[/.-]\\d{1,2}[/.-]\\d{2,4}|(?:${MONTHS})\\s+\\d{4})$`, 'iu');
 
-/** Propositions à écarter : fonction ordinaire, date de fait, ou juridiction et administration publiques. */
+/** Un montant (« 12 840 euros », « 64 200 € HT ») : du contexte, jamais protégé (B.3). */
+const AMOUNT = /^\d[\d\s .,]*\s*(?:€|euros?|eur|k€|m€)(?:\s*(?:ht|ttc|hors\s+taxes|toutes\s+taxes\s+comprises))?$/iu;
+
+/** Propositions à écarter : fonction ordinaire, date de fait, montant, ou juridiction et administration publiques. */
 export function isGenericProposal(category: string, text: string): boolean {
-  if (PLAIN_DATE.test(text.trim())) return true;
+  if (PLAIN_DATE.test(text.trim()) || AMOUNT.test(text.trim())) return true;
   const head = headWord(text);
   if (category === 'FONCTION') return GENERIC_ROLES.has(head) || PUBLIC_BODIES.has(head);
   if (category === 'ORGANISATION' || category === 'LIEU') return PUBLIC_BODIES.has(head);
