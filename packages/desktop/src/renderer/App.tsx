@@ -42,6 +42,8 @@ interface ReviewState {
   tabs: ReviewTab[];
   active: number;
   degraded: Degraded;
+  /** L'analyse approfondie se poursuit : les résultats arrivent dans le volet au fur et à mesure. */
+  running: boolean;
 }
 
 interface DeepResult {
@@ -99,8 +101,8 @@ export function App() {
   const [generating, setGenerating] = useState(false);
   /** Analyses approfondies en cours en arrière-plan. */
   const [background, setBackground] = useState(0);
-  /** L'utilisateur a cliqué sur Vérifier ou Envoyer et attend la fin de l'analyse. */
-  const [waiting, setWaiting] = useState(false);
+  /** « Envoyer » est en attente de la fin de l'analyse : l'envoi partira tout seul. */
+  const [queued, setQueued] = useState(false);
   const [error, setError] = useState<UiError>(null);
   const [review, setReview] = useState<ReviewState | null>(null);
   const reviewRef = useRef<ReviewState | null>(null);
@@ -124,6 +126,13 @@ export function App() {
   const deepChain = useRef<Promise<unknown>>(Promise.resolve());
   const drainRef = useRef<Promise<void>>(Promise.resolve());
   const processing = useRef(false);
+  const queueToken = useRef(0);
+  const verifySeq = useRef(0);
+  /** Ferme le volet et rend caduques les résultats d'analyse encore attendus pour lui. */
+  const closeReview = (): void => {
+    verifySeq.current++;
+    setReview(null);
+  };
 
   const dark = theme === 'dark' || (theme === 'system' && systemDark);
 
@@ -287,7 +296,7 @@ export function App() {
     updateFiles(() => []);
     setAnalysis(null);
     setError(null);
-    setReview(null);
+    closeReview();
     setFocusEntity(null);
     deepCache.current.clear();
     queue.current = [];
@@ -401,7 +410,7 @@ export function App() {
     const current = convRef.current;
     if (!current) return;
     setError(null);
-    setReview(null);
+    closeReview();
     snapshot.current = { text, files: filesRef.current };
     const ids = filesRef.current.filter((f) => f.chip && f.stage === 'ready').map((f) => f.chip!.id);
     setPendingUser(text.trim());
@@ -423,17 +432,17 @@ export function App() {
   };
 
   /** Attend la fin de la lecture des fichiers et de l'analyse approfondie du message. */
-  const prepare = async (): Promise<Prepared | null> => {
-    if (!convRef.current || !info || generating || waiting) return null;
-    setError(null);
-    setWaiting(true);
-    try {
-      await drainRef.current;
-      const message: DeepResult = text.trim().length > 0 ? await deepAnalyse(text, false) : { suggestions: [], degraded: null };
-      return { text, files: filesRef.current.filter((f) => f.chip && f.stage === 'ready'), message };
-    } finally {
-      setWaiting(false);
-    }
+  const gather = async (): Promise<Prepared> => {
+    await drainRef.current;
+    const message: DeepResult = text.trim().length > 0 ? await deepAnalyse(text, false) : { suggestions: [], degraded: null };
+    return { text, files: filesRef.current.filter((f) => f.chip && f.stage === 'ready'), message };
+  };
+
+  /** Vrai quand il faut encore attendre : un fichier en cours de lecture ou l'analyse du message. */
+  const analysisPending = (): boolean => {
+    const id = convRef.current?.id ?? '';
+    const messagePending = text.trim().length > 0 && info?.localAnalysis === 'ready' && !deepCache.current.has(`${id}\u0000${text}`);
+    return messagePending || processing.current;
   };
 
   const buildTabs = async (p: Prepared): Promise<ReviewTab[]> => {
@@ -455,21 +464,44 @@ export function App() {
     return p.message.degraded ?? p.files.find((f) => f.degraded)?.degraded ?? null;
   };
 
-  const openReview = async (p: Prepared): Promise<void> => {
+  const openReview = async (p: Prepared, running = false, keepActive = false): Promise<void> => {
     const tabs = await buildTabs(p);
     setConv(await api.conversations.get(convRef.current!.id));
-    setReview({ tabs, active: 0, degraded: degradedOf(p) });
+    setReview((prev) => ({ tabs, active: keepActive && prev ? Math.min(prev.active, tabs.length - 1) : 0, degraded: degradedOf(p), running }));
   };
 
+  /**
+   * « Vérifier » ouvre le volet tout de suite ; si l'analyse approfondie n'est pas finie, ses résultats
+   * s'ajoutent au volet dès qu'ils arrivent. Rien n'est bloqué et aucun choix n'est imposé.
+   */
   const onVerify = async (): Promise<void> => {
-    const p = await prepare();
-    if (p) await openReview(p);
+    if (!convRef.current || !info || generating) return;
+    queueToken.current++;
+    setQueued(false);
+    setError(null);
+    const mine = ++verifySeq.current;
+    const cached = deepCache.current.get(`${convRef.current.id}\u0000${text}`);
+    const pending = analysisPending();
+    await openReview({ text, files: filesRef.current.filter((f) => f.chip && f.stage === 'ready'), message: cached ?? { suggestions: [], degraded: null } }, pending);
+    if (!pending) return;
+    const full = await gather();
+    // Le volet a pu être fermé ou rouvert entre-temps.
+    if (verifySeq.current === mine) await openReview(full, false, true);
   };
 
-  /** « Envoyer » : mêmes vérifications que « Vérifier », sans les montrer sauf en cas de doute. */
+  /**
+   * « Envoyer » : mêmes vérifications que « Vérifier », sans les montrer sauf en cas de doute. Si l'analyse n'est
+   * pas finie, l'envoi est mis en attente et part tout seul (annulable) : on ne peut pas envoyer avant la protection.
+   */
   const onSend = async (): Promise<void> => {
-    const p = await prepare();
-    if (!p || !convRef.current) return;
+    if (!convRef.current || !info || generating || queued) return;
+    setError(null);
+    const token = ++queueToken.current;
+    if (analysisPending()) setQueued(true);
+    const p = await gather();
+    if (queueToken.current !== token) return;
+    setQueued(false);
+    if (!convRef.current) return;
     const current = convRef.current;
     const pending = p.message.suggestions.length + p.files.reduce((n, f) => n + f.suggestions.length, 0);
     const pv = await api.chat.preview(current.id, p.text, p.files.map((f) => f.chip!.id), pending);
@@ -492,7 +524,7 @@ export function App() {
     const ready = filesRef.current.filter((f) => f.chip && f.stage === 'ready');
     const pv = await api.chat.preview(current.id, text, ready.map((f) => f.chip!.id), 0);
     if (!pv.leak.ok) {
-      setReview(null);
+      closeReview();
       setError({ kind: 'blocked', leaks: pv.leak.leaks });
       return;
     }
@@ -618,18 +650,25 @@ export function App() {
               marks={marks}
               files={files}
               protectedCount={analysis?.protectedInText ?? 0}
-              waiting={waiting}
+              queued={queued}
               generating={generating}
               analysing={background > 0}
               inputRef={inputRef}
               onChange={(v) => {
+                if (queued) {
+                  queueToken.current++;
+                  setQueued(false);
+                }
                 setText(v);
                 if (error?.kind === 'blocked') setError(null);
               }}
               onSend={() => void onSend()}
               onVerify={() => void onVerify()}
               onStop={() => void api.chat.stop(conv.id)}
-              onSkipAnalysis={() => void api.llm.skip(conv.id)}
+              onCancelQueued={() => {
+                queueToken.current++;
+                setQueued(false);
+              }}
               onPickFiles={pickFiles}
               onRemoveFile={(i) => {
                 const f = files[i];
@@ -658,13 +697,13 @@ export function App() {
           active={review.active}
           onTab={(i) => setReview((r) => (r ? { ...r, active: i } : r))}
           entities={conv.entities}
-          running={false}
+          running={review.running}
           degraded={review.degraded}
           onProtect={(m, entityId) => onDecision({ action: 'accept', mention: m, entityId }, m)}
           onIgnore={(m) => onDecision({ action: 'reject', mention: m }, m)}
           onLink={(m, entityId) => onDecision({ action: 'link', mention: m, entityId }, m)}
           onAddManual={(value, category, entityId) => onDecision({ action: 'add', text: value, category, entityId })}
-          onCancel={() => setReview(null)}
+          onCancel={() => closeReview()}
           onContinue={() => void afterReview()}
         />
       )}

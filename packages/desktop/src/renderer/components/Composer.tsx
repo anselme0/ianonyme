@@ -18,8 +18,8 @@ interface Props {
   marks: Mark[];
   files: ComposerFile[];
   protectedCount: number;
-  /** Vérification demandée par l'utilisateur en cours : seul cas où l'on propose de passer en analyse de base. */
-  waiting: boolean;
+  /** « Envoyer » attend la fin de l'analyse : l'envoi partira tout seul. */
+  queued: boolean;
   generating: boolean;
   /** Analyse approfondie en arrière-plan pendant la frappe. */
   analysing: boolean;
@@ -28,7 +28,7 @@ interface Props {
   onSend(): void;
   onVerify(): void;
   onStop(): void;
-  onSkipAnalysis(): void;
+  onCancelQueued(): void;
   onPickFiles(files: File[]): void;
   onRemoveFile(index: number): void;
   inputRef?: React.RefObject<HTMLTextAreaElement | null>;
@@ -64,7 +64,7 @@ export function Composer(p: Props) {
   const onKey = (e: KeyboardEvent<HTMLTextAreaElement>): void => {
     if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
-      if (!p.waiting && !p.generating) p.onSend();
+      if (!p.queued && !p.generating) p.onSend();
     }
   };
 
@@ -80,7 +80,7 @@ export function Composer(p: Props) {
     if (picked.length > 0) p.onPickFiles(picked);
   };
 
-  const canSend = (p.value.trim().length > 0 || p.files.some((f) => f.stage === 'ready')) && !p.waiting && !p.generating;
+  const canSend = (p.value.trim().length > 0 || p.files.some((f) => f.stage === 'ready')) && !p.generating;
 
   return (
     <div className="composer" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
@@ -133,12 +133,12 @@ export function Composer(p: Props) {
           <span className="composer-count" data-testid="protect-count" role="status">
             {t.composer.willProtect(p.protectedCount)}
           </span>
-          {(p.analysing || p.waiting) && (
+          {(p.analysing || p.queued) && (
             <span className="composer-analysing" role="status">
-              <Loader2 size={14} className="spin" aria-hidden /> {t.composer.analysing}
-              {p.waiting && (
-                <button type="button" className="link-btn" onClick={p.onSkipAnalysis} data-testid="skip-analysis">
-                  {t.composer.skipAnalysis}
+              <Loader2 size={14} className="spin" aria-hidden /> {p.queued ? t.composer.queuedSend : t.composer.analysing}
+              {p.queued && (
+                <button type="button" className="link-btn" onClick={p.onCancelQueued} data-testid="cancel-queued">
+                  {t.composer.cancelQueued}
                 </button>
               )}
             </span>
@@ -153,7 +153,7 @@ export function Composer(p: Props) {
               <button type="button" className="btn btn-secondary" disabled={!canSend} onClick={p.onVerify} data-testid="verify">
                 <SearchCheck size={16} aria-hidden /> {t.composer.verify}
               </button>
-              <button type="button" className="btn btn-primary" disabled={!canSend} onClick={p.onSend} data-testid="send">
+              <button type="button" className="btn btn-primary" disabled={!canSend || p.queued} onClick={p.onSend} data-testid="send">
                 <SendHorizontal size={16} aria-hidden /> {t.composer.send}
               </button>
             </>

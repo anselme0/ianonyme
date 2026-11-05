@@ -84,6 +84,53 @@ test('un document Word s’affiche comme dans Word, avec les éléments surlign�
   await app.close();
 });
 
+/** Serveur local lent : l'analyse approfondie met 3 secondes à répondre. */
+async function slowServer(): Promise<{ url: string; close(): void }> {
+  const server = createServer((req, res) => {
+    const reply = (): void => {
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify(req.url?.endsWith('/models') ? { data: [] } : { choices: [{ message: { content: '{"mentions":[]}' } }] }));
+    };
+    if (req.url?.endsWith('/models')) reply();
+    else setTimeout(reply, 3000);
+  });
+  await new Promise<void>((r) => server.listen(0, '127.0.0.1', () => r()));
+  const port = (server.address() as AddressInfo).port;
+  return { url: `http://127.0.0.1:${port}/v1`, close: () => { server.closeAllConnections(); server.close(); } };
+}
+
+const slowModel = (url: string) => ({
+  engine: 'openai-compatible',
+  active: 's',
+  registry: [{ id: 's', file: '', downloadUrl: '', sha256: '', contextSize: 0, chunkChars: 2000, timeoutMs: 20000, baseUrl: url, model: 'm' }],
+});
+
+test('« Vérifier » ouvre le volet tout de suite, sans attendre la fin de l’analyse', async () => {
+  const slow = await slowServer();
+  const { app, page } = await launch({ localModel: slowModel(slow.url) });
+  await expect(page.getByTestId('analysis-status')).toContainText('active');
+  await page.getByTestId('composer-input').fill('Le maire de la commune a signé hier.');
+  await page.getByTestId('verify').click();
+  await expect(page.getByTestId('review')).toBeVisible({ timeout: 2000 });
+  await expect(page.getByTestId('review-continue')).toBeDisabled();
+  await expect(page.getByTestId('review-continue')).toBeEnabled({ timeout: 15_000 });
+  await app.close();
+  slow.close();
+});
+
+test('« Envoyer » pendant l’analyse part tout seul à la fin, sans option de passer', async () => {
+  const slow = await slowServer();
+  const { app, page } = await launch({ localModel: slowModel(slow.url) });
+  await expect(page.getByTestId('analysis-status')).toContainText('active');
+  await page.getByTestId('composer-input').fill('Le maire de la commune a signé hier.');
+  await page.getByTestId('send').click();
+  await expect(page.getByTestId('cancel-queued')).toBeVisible();
+  await expect(page.getByTestId('skip-analysis')).toHaveCount(0);
+  await expect(page.getByTestId('assistant-text')).toHaveCount(1, { timeout: 20_000 });
+  await app.close();
+  slow.close();
+});
+
 test('écran de démarrage pendant la préparation de l’analyse, avec sortie vers l’analyse de base', async () => {
   // Un serveur qui ne termine jamais le téléchargement : l'analyse approfondie reste « en préparation ».
   const server = createServer((_req, res) => {
